@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:movie_app/screens/export_screens.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -19,7 +21,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.black,
       ),
-      home: const Scaffold(),
+      home: const HomeScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
