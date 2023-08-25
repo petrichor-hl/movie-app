@@ -18,7 +18,10 @@ class CustomAppBar extends StatelessWidget {
       child: SafeArea(
         child: Row(
           children: [
-            Image.asset(Assets.netflixLogo0),
+            Image.asset(
+              Assets.netflixSymbol,
+              height: 80,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Row(

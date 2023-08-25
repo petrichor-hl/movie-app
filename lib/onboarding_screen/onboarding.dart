@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+
+import 'package:movie_app/assets.dart';
+
+import 'package:movie_app/onboarding_screen/intro_page/intro_page_1.dart';
+import 'package:movie_app/onboarding_screen/intro_page/intro_page_2.dart';
+import 'package:movie_app/onboarding_screen/intro_page/intro_page_3.dart';
+
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class Onboarding extends StatefulWidget {
@@ -18,20 +25,47 @@ class _OnboardingState extends State<Onboarding> {
         children: [
           PageView(
             controller: _pageController,
-            children: [
-              Container(
-                color: Colors.black,
-              ),
-              Container(
-                color: Colors.black,
-              ),
-              Container(
-                color: Colors.black,
-              ),
-              Container(
-                color: Colors.black,
-              ),
+            children: const [
+              IntroPage1(),
+              IntroPage2(),
+              IntroPage3(),
             ],
+          ),
+          Positioned(
+            top: 0,
+            left: 8,
+            right: 20,
+            child: SafeArea(
+              child: Row(
+                children: [
+                  Image.asset(
+                    Assets.netflixLogo,
+                    width: 120,
+                    fit: BoxFit.cover,
+                  ),
+                  const Spacer(),
+                  const Text(
+                    'Quyền riêng tư',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                  const Text(
+                    'Trợ giúp',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                ],
+              ),
+            ),
           ),
           Positioned(
             bottom: 0,
@@ -42,7 +76,7 @@ class _OnboardingState extends State<Onboarding> {
                 children: [
                   SmoothPageIndicator(
                     controller: _pageController,
-                    count: 4,
+                    count: 3,
                     axisDirection: Axis.horizontal,
                     effect: WormEffect(
                       spacing: 10,

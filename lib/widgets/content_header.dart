@@ -87,7 +87,7 @@ class _ContentHeaderState extends State<ContentHeader> {
                 gradient: LinearGradient(
                   colors: [
                     Colors.transparent,
-                    Colors.black,
+                    Colors.black87,
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
