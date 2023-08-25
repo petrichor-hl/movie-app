@@ -25,13 +25,12 @@ class CustomAppBar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _AppBarButton('TV Shows', () {}),
-                  _AppBarButton('Movie', () {}),
-                  _AppBarButton('My List', () {}),
+                  _AppBarButton('TV Shows', scrollOffset, () {}),
+                  _AppBarButton('Movie', scrollOffset, () {}),
+                  _AppBarButton('My List', scrollOffset, () {}),
                 ],
               ),
             ),
-
           ],
         ),
       ),
@@ -40,9 +39,10 @@ class CustomAppBar extends StatelessWidget {
 }
 
 class _AppBarButton extends StatelessWidget {
-  const _AppBarButton(this.text, this.onTap);
+  const _AppBarButton(this.text, this.scrollOffset, this.onTap);
 
   final String text;
+  final double scrollOffset;
   final void Function() onTap;
 
   @override
@@ -52,7 +52,10 @@ class _AppBarButton extends StatelessWidget {
       child: TextButton(
         onPressed: onTap,
         style: TextButton.styleFrom(
-            backgroundColor: Colors.white.withOpacity(0.6)),
+          backgroundColor: Colors.white.withOpacity(
+            1 - (scrollOffset / 350).clamp(0.25, 1).toDouble(),
+          ),
+        ),
         child: Text(
           text,
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

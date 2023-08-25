@@ -106,9 +106,4 @@ const List<Content> trending = [
   Content(name: 'Tiger King', imageUrl: Assets.tigerKing),
   Content(name: 'The Crown', imageUrl: Assets.crown),
   Content(name: 'Dogs', imageUrl: Assets.dogs),
-  Content(name: 'Explained', imageUrl: Assets.explained),
-  Content(name: 'Avatar The Last Airbender', imageUrl: Assets.atla),
-  Content(name: 'Tiger King', imageUrl: Assets.tigerKing),
-  Content(name: 'The Crown', imageUrl: Assets.crown),
-  Content(name: 'Dogs', imageUrl: Assets.dogs),
 ];
