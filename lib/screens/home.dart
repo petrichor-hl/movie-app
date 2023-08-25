@@ -42,6 +42,21 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(
             child: ContentHeader(featuredContent: sintelContent),
           ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 10),
+            sliver: SliverToBoxAdapter(
+              child: Previews(title: 'Previews', contentList: previews),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: ContentList(title: 'My List', content: myList),
+          ),
+          SliverToBoxAdapter(
+            child: ContentList(title: 'Netflix Originals', content: originals),
+          ),
+          SliverToBoxAdapter(
+            child: ContentList(title: 'Trending', content: trending),
+          ),
         ],
       ),
     );

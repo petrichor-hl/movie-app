@@ -45,8 +45,50 @@ class ContentHeader extends StatelessWidget {
           left: 0,
           right: 0,
           child: Row(
-              // TODO: Add list of genres hear
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton.icon(
+                onPressed: () {},
+                icon: Icon(Icons.add),
+                label: Text('List'),
+                style: FilledButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
+              FilledButton.icon(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.play_arrow_rounded,
+                  size: 30,
+                ),
+                label: const Text(
+                  'Play',
+                  style: TextStyle(fontSize: 16),
+                ),
+                style: FilledButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {},
+                icon: Icon(Icons.info),
+                label: Text('Info'),
+                style: FilledButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
