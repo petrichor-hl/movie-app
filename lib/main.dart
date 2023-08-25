@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:movie_app/onboarding_screen/onboarding.dart';
 
 import 'package:movie_app/screens/export_screens.dart';
 
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.black,
       ),
-      home: const BottomNavScreen(),
+      home: const Onboarding(),
       debugShowCheckedModeBanner: false,
     );
   }
