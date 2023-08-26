@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import 'package:movie_app/assets.dart';
 
-import 'package:movie_app/onboarding_screen/intro_page/intro_page_1.dart';
-import 'package:movie_app/onboarding_screen/intro_page/intro_page_2.dart';
-import 'package:movie_app/onboarding_screen/intro_page/intro_page_3.dart';
+import 'package:movie_app/onboarding/intro_page/intro_page_1.dart';
+import 'package:movie_app/onboarding/intro_page/intro_page_2.dart';
+import 'package:movie_app/onboarding/intro_page/intro_page_3.dart';
+import 'package:movie_app/screens/auth/sign_in.dart';
 
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -38,29 +39,36 @@ class _OnboardingState extends State<Onboarding> {
             child: SafeArea(
               child: Row(
                 children: [
-                  Image.asset(
-                    Assets.netflixLogo,
-                    width: 120,
-                    fit: BoxFit.cover,
+                  Hero(
+                    tag: 'NetflixLogo',
+                    child: Image.asset(
+                      Assets.netflixLogo,
+                      width: 120,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                   const Spacer(),
-                  const Text(
-                    'Quyền riêng tư',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                  TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(foregroundColor: Colors.white),
+                    child: const Text(
+                      'Quyền riêng tư',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   const SizedBox(
                     width: 10,
                   ),
-                  const Text(
-                    'Trợ giúp',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                  TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(foregroundColor: Colors.white),
+                    child: const Text(
+                      'Trợ giúp',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   )
                 ],
@@ -94,13 +102,19 @@ class _OnboardingState extends State<Onboarding> {
                   SizedBox(
                     width: MediaQuery.sizeOf(context).width - 40,
                     child: FilledButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => const SignIn(),
+                          ),
+                        );
+                      },
                       style: FilledButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text('ĐĂNG NHẬP'),
+                      child: const Text('BẮT ĐẦU'),
                     ),
                   ),
                 ],

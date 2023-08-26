@@ -1,4 +1,5 @@
 class Assets {
+  // IMAGES
   static const String _images = 'assets/images/';
 
   static const String netflixSymbol = '${_images}netflix_symbol_rgb.png';

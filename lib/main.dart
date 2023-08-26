@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:movie_app/onboarding_screen/onboarding.dart';
+import 'package:movie_app/onboarding/onboarding.dart';
 
 import 'package:movie_app/screens/export_screens.dart';
 

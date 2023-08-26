@@ -23,11 +23,11 @@ class _ContentHeaderState extends State<ContentHeader> {
 
   Future<void> _loadContentHeader() async {
     final http.Response response;
-    int randomeMovieId = Random().nextInt(600);
-    print(randomeMovieId);
+    int randomMovieId = Random().nextInt(600);
+    print(randomMovieId);
     try {
       final Uri uri =
-          Uri.https('api.themoviedb.org', '/3/movie/$randomeMovieId', {
+          Uri.https('api.themoviedb.org', '/3/movie/$randomMovieId', {
         'api_key': 'a29284b32c092cc59805c9f5513d3811',
         'language': 'vi-VN',
       });
