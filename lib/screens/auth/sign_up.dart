@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:movie_app/main.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -10,14 +12,73 @@ class SignUpScreen extends StatefulWidget {
 class _SignInState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _signUpAccount() {
+  bool _isProcessing = false;
+
+  void _signUpAccount() async {
     final isValid = _formKey.currentState!.validate();
 
     if (!isValid) {
       return;
     }
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    final enteredEmail = _emailController.text;
+    final enteredPassword = _passwordController.text;
+
+    try {
+      await supabase.auth.signUp(
+        email: enteredEmail,
+        password: enteredPassword,
+        emailRedirectTo: 'io.supabase.movie-app://login-callback/',
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Xác thực Email trong Hộp thư đến.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } on AuthException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.message),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Có lỗi xảy ra, vui lòng thử lại.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isProcessing = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -39,6 +100,7 @@ class _SignInState extends State<SignUpScreen> {
                 height: 30,
               ),
               TextFormField(
+                controller: _emailController,
                 decoration: const InputDecoration(
                   filled: true,
                   fillColor: Color.fromARGB(255, 51, 51, 51),
@@ -68,21 +130,32 @@ class _SignInState extends State<SignUpScreen> {
               const SizedBox(
                 height: 20,
               ),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _signUpAccount,
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+              _isProcessing
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: _signUpAccount,
+                        style: FilledButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        child: const Text(
+                          'ĐĂNG KÝ',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'ĐĂNG KÝ',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
             ],
           ),
         ),

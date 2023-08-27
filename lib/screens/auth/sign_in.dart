@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:movie_app/main.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key, required this.pageController});
@@ -12,14 +14,70 @@ class SignInScreen extends StatefulWidget {
 class _SignInState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _submit() {
+  bool _isProcessing = false;
+
+  void _submit() async {
     final isValid = _formKey.currentState!.validate();
 
     if (!isValid) {
       return;
     }
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    final enteredEmail = _emailController.text;
+    final enteredPassword = _passwordController.text;
+
+    try {
+      await supabase.auth.signInWithPassword(
+        email: enteredEmail,
+        password: enteredPassword,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đăng nhập thành công.'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } on AuthException catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error.message),
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Có lỗi xảy ra, vui lòng thử lại.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _isProcessing = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -63,21 +121,32 @@ class _SignInState extends State<SignInScreen> {
               const SizedBox(
                 height: 20,
               ),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _submit,
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+              _isProcessing
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: _submit,
+                        style: FilledButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        child: const Text(
+                          'ĐĂNG NHẬP',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'ĐĂNG NHẬP',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
               const SizedBox(
                 height: 16,
               ),

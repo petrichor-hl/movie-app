@@ -1,14 +1,45 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:movie_app/assets.dart';
+import 'package:movie_app/main.dart';
 
 import 'package:movie_app/screens/auth/sign_in.dart';
 import 'package:movie_app/screens/auth/sign_up.dart';
+import 'package:movie_app/screens/export_screens.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AuthScreen extends StatelessWidget {
-  AuthScreen({super.key});
+class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
 
+  @override
+  State<AuthScreen> createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends State<AuthScreen> {
   final _pageController = PageController();
+
+  late final StreamSubscription<AuthState> _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSubscription = supabase.auth.onAuthStateChange.listen((event) {
+      final session = event.session;
+      if (session != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (ctx) => const BottomNavScreen()),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

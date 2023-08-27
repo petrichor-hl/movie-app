@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<!-- Add this array for Deep Links -->
-	<!-- <key>CFBundleURLTypes</key>
+	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>io.supabase.flutterquickstart</string>
+				<string>io.supabase.movie-app</string>
 			</array>
 		</dict>
-	</array> -->
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

@@ -105,7 +105,7 @@ class _OnboardingState extends State<Onboarding> {
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (ctx) => AuthScreen(),
+                            builder: (ctx) => const AuthScreen(),
                           ),
                         );
                       },
