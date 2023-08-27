@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-
-import 'package:movie_app/screens/export_screens.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:google_fonts/google_fonts.dart';
+
+import 'package:movie_app/screens/splash.dart';
 
 void main() async {
   await Supabase.initialize(
@@ -27,6 +29,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromARGB(255, 229, 9, 21),
         ),
+        textTheme: GoogleFonts.montserratTextTheme(),
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.black,
       ),

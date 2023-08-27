@@ -31,15 +31,6 @@ class CustomAppBar extends StatelessWidget {
                 ],
               ),
             ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              clipBehavior: Clip.antiAlias,
-              child: Image.network(
-                'https://i.imgur.com/6ZIfuJG.png',
-                width: 32,
-                height: 32,
-              ),
-            ),
           ],
         ),
       ),

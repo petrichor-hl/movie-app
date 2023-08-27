@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/appbar/app_bar_cubit.dart';
-import 'package:movie_app/screens/export_screens.dart';
+import 'package:movie_app/screens/main/downloaded.dart';
+import 'package:movie_app/screens/main/home.dart';
+import 'package:movie_app/screens/main/new_hot.dart';
+import 'package:movie_app/screens/main/profile.dart';
 
 const Map<String, IconData> _icons = {
   'Trang chủ': Icons.home_rounded,
   'Mới & Hot': Icons.video_stable_rounded,
   'Tải xuống': Icons.download_rounded,
+  'Hồ sơ': Icons.account_box,
 };
 
 class BottomNavScreen extends StatefulWidget {
@@ -21,8 +25,9 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
     HomeScreen(
       key: PageStorageKey('homeScreen'),
     ),
-    Scaffold(),
-    Scaffold(),
+    NewHotScreen(),
+    DownloadedScreen(),
+    ProfileScreen(),
   ];
 
   int _currentIndex = 0;
@@ -50,6 +55,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
         onTap: (value) => setState(() {
           _currentIndex = value;
         }),
+        type: BottomNavigationBarType.fixed,
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.black,
       ),

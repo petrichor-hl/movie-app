@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:movie_app/main.dart';
+
 import 'package:movie_app/onboarding/onboarding.dart';
-import 'package:movie_app/screens/export_screens.dart';
+import 'package:movie_app/screens/bottom_nav.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

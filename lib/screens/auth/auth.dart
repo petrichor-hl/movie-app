@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:movie_app/assets.dart';
 import 'package:movie_app/main.dart';
 
 import 'package:movie_app/screens/auth/sign_in.dart';
 import 'package:movie_app/screens/auth/sign_up.dart';
-import 'package:movie_app/screens/export_screens.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:movie_app/screens/bottom_nav.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
