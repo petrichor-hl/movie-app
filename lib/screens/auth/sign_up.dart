@@ -12,6 +12,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignInState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  final _usernameControllber = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -76,6 +77,7 @@ class _SignInState extends State<SignUpScreen> {
 
   @override
   void dispose() {
+    _usernameControllber.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -209,12 +211,16 @@ class _PasswordTextFieldState extends State<_PasswordTextField> {
         if (value == null || value.isEmpty) {
           return 'Bạn chưa nhập Mật khẩu';
         }
+        if (value.length < 6) {
+          return 'Mật khẩu gồm 6 ký tự trở lên.';
+        }
         return null;
       },
       onChanged: (value) {
         if (value.isEmpty) {
           _isShowPassword = false;
         }
+
         if (value.length <= 1) setState(() {});
       },
     );

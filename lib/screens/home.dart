@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size(_screenSize.width, 60),
+        preferredSize: Size(_screenSize.width, 70),
         child: BlocBuilder<AppBarCubit, double>(
           builder: (context, scrollOffset) {
             return CustomAppBar(

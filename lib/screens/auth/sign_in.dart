@@ -53,6 +53,7 @@ class _SignInState extends State<SignInScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error.message),
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -76,6 +77,7 @@ class _SignInState extends State<SignInScreen> {
 
   @override
   void dispose() {
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -92,6 +94,7 @@ class _SignInState extends State<SignInScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
+                controller: _emailController,
                 decoration: const InputDecoration(
                   filled: true,
                   fillColor: Color.fromARGB(255, 51, 51, 51),
@@ -243,6 +246,9 @@ class _PasswordTextFieldState extends State<_PasswordTextField> {
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Bạn chưa nhập Mật khẩu';
+        }
+        if (value.length < 6) {
+          return 'Mật khẩu gồm 6 ký tự trở lên.';
         }
         return null;
       },

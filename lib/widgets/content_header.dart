@@ -86,6 +86,7 @@ class _ContentHeaderState extends State<ContentHeader> {
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
+                    Colors.black87,
                     Colors.transparent,
                     Colors.black87,
                   ],
