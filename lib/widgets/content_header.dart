@@ -17,14 +17,14 @@ class ContentHeader extends StatefulWidget {
 }
 
 class _ContentHeaderState extends State<ContentHeader> {
-  List<String> _genres = [];
+  final List<String> _genres = [];
 
   late Future<void> _futureGenres;
 
   Future<void> _loadContentHeader() async {
     final http.Response response;
     int randomMovieId = Random().nextInt(600);
-    print(randomMovieId);
+    // print(randomMovieId);
     try {
       final Uri uri =
           Uri.https('api.themoviedb.org', '/3/movie/$randomMovieId', {

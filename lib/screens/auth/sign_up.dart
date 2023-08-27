@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 
-class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key, required this.pageController});
-
-  final PageController pageController;
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<SignInScreen> createState() => _SignInState();
+  State<SignUpScreen> createState() => _SignInState();
 }
 
-class _SignInState extends State<SignInScreen> {
+class _SignInState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _passwordController = TextEditingController();
 
-  void _submit() {
+  void _signUpAccount() {
     final isValid = _formKey.currentState!.validate();
 
     if (!isValid) {
@@ -25,7 +23,7 @@ class _SignInState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: const Alignment(0, -0.15),
+      alignment: const Alignment(0, -0.25),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Form(
@@ -33,6 +31,13 @@ class _SignInState extends State<SignInScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const Text(
+                'Chưa hoàn thành',
+                style: TextStyle(color: Colors.white, fontSize: 30),
+              ),
+              const SizedBox(
+                height: 30,
+              ),
               TextFormField(
                 decoration: const InputDecoration(
                   filled: true,
@@ -66,61 +71,17 @@ class _SignInState extends State<SignInScreen> {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _submit,
+                  onPressed: _signUpAccount,
                   style: FilledButton.styleFrom(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                   child: const Text(
-                    'ĐĂNG NHẬP',
+                    'ĐĂNG KÝ',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-              InkWell(
-                onTap: () {},
-                borderRadius: BorderRadius.circular(8),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  child: Text(
-                    'Khôi phục mật khẩu',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 24,
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Bạn chưa có tài khoản? ',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      widget.pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.linear,
-                      );
-                    },
-                    child: Text(
-                      'Đăng ký',
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
