@@ -9,14 +9,14 @@ import 'package:movie_app/screens/auth/auth.dart';
 
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-class Onboarding extends StatefulWidget {
-  const Onboarding({super.key});
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
 
   @override
-  State<Onboarding> createState() => _OnboardingState();
+  State<OnboardingScreen> createState() => _OnboardingState();
 }
 
-class _OnboardingState extends State<Onboarding> {
+class _OnboardingState extends State<OnboardingScreen> {
   final _pageController = PageController();
 
   @override

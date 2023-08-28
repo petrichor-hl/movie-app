@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:movie_app/onboarding/onboarding.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:movie_app/assets.dart';
