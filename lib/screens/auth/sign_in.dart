@@ -44,7 +44,7 @@ class _SignInState extends State<SignInScreen> {
           const SnackBar(
             content: Text('Đăng nhập thành công.'),
             behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 2),
+            duration: Duration(seconds: 3),
           ),
         );
       }

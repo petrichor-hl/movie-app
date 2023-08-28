@@ -37,6 +37,10 @@ class _SignInState extends State<SignUpScreen> {
         email: enteredEmail,
         password: enteredPassword,
         emailRedirectTo: 'io.supabase.movie-app://login-callback/',
+        data: {
+          'full_name': 'Tran Le Hoang Lam',
+          'avatar_url': 'https://i.imgur.com/zBr1CQ3.png',
+        },
       );
 
       if (mounted) {

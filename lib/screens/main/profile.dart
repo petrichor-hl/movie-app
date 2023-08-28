@@ -6,12 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:movie_app/main.dart';
 
-const Map<String, IconData> _item = {
-  'Thông báo': Icons.notification_important,
-  'Danh sách': Icons.list,
-  'Cài đặt ứng dụng': Icons.settings,
-  'Trợ giúp': Icons.help_center,
-};
+String? _fullname;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -22,6 +17,18 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late final StreamSubscription<AuthState> _authSubscription;
+  late final Future<void> _futureUserInfo;
+
+  Future<void> _fetchUserInfo() async {
+    final userId = supabase.auth.currentUser!.id;
+    final data = await supabase
+        .from('profiles')
+        .select('full_name, avatar_url')
+        .eq('id', userId)
+        .single();
+
+    _fullname = data['full_name'];
+  }
 
   @override
   void initState() {
@@ -29,11 +36,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _authSubscription = supabase.auth.onAuthStateChange.listen((event) {
       final session = event.session;
       if (session == null) {
-        Navigator.of(context).pushReplacement(
+        Navigator.pushAndRemoveUntil(
+          context,
           MaterialPageRoute(builder: (ctx) => const OnboardingScreen()),
+          (route) => false,
         );
       }
     });
+
+    if (_fullname == null) {
+      _futureUserInfo = _fetchUserInfo();
+    }
   }
 
   @override
@@ -44,9 +57,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = supabase.auth.currentUser;
-    final fullName = 'Tran Le Hoang Lam';
-
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -54,115 +64,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  clipBehavior: Clip.antiAlias,
-                  child: Image.network(
-                    'https://i.imgur.com/zBr1CQ3.png',
-                    width: 120,
-                  ),
-                ),
-                const SizedBox(
-                  width: 16,
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Thông tin',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      Text(
-                        'Email: ${currentUser!.email!}',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        'Tên: $fullName',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        children: [
-                          InkWell(
-                            onTap: () {},
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.white.withAlpha(27),
-                              ),
-                              child: const Icon(
-                                Icons.edit,
-                                color: Colors.white,
-                              ),
+            _fullname == null
+                ? FutureBuilder(
+                    future: _futureUserInfo,
+                    builder: (ctx, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(
+                          height: 120,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+
+                      if (snapshot.hasError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Truy xuất thông tin thất bại.'),
+                          ),
+                        );
+
+                        return const SizedBox(
+                          height: 120,
+                          width: 120,
+                          child: Center(
+                            child: Icon(
+                              Icons.error,
+                              size: 30,
                             ),
                           ),
-                          const SizedBox(
-                            width: 12,
-                          ),
-                          InkWell(
-                            onTap: () {},
-                            borderRadius: BorderRadius.circular(8),
-                            child: Container(
-                              height: 40,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.white.withAlpha(27),
-                              ),
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 12),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.delete,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    Text(
-                                      'Delete',
-                                      style: TextStyle(color: Colors.white),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ],
-            ),
+                        );
+                      }
+
+                      return const Header();
+                    },
+                  )
+                : const Header(),
             const SizedBox(
               height: 70,
             ),
             _ProfileSettingItem(
               title: 'Thông báo',
-              iconData: Icons.notification_important,
+              iconData: Icons.notifications,
               onTap: () {},
             ),
             _ProfileSettingItem(
@@ -184,7 +127,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 50,
             ),
             FilledButton(
-              onPressed: () => supabase.auth.signOut(),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    title: const Text('Đăng xuất'),
+                    content: const Text('Bạn có chắc muốn tiếp tục?'),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    backgroundColor: Colors.white,
+                    actions: [
+                      TextButton(
+                        onPressed: () async {
+                          try {
+                            await supabase.auth.signOut();
+                          } catch (error) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        'Có lỗi xảy ra, đăng xuất thất bại')),
+                              );
+                            }
+                          }
+                        },
+                        child: const Text('Có'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Huỷ'),
+                      )
+                    ],
+                  ),
+                );
+              },
               style: FilledButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -198,6 +177,102 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class Header extends StatelessWidget {
+  const Header({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final currentUser = supabase.auth.currentUser;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Thông tin',
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(
+          height: 4,
+        ),
+        Text(
+          'Email: ${currentUser!.email!}',
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          'Tên: $_fullname',
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        Row(
+          children: [
+            InkWell(
+              onTap: () {},
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white.withAlpha(27),
+                ),
+                child: const Icon(
+                  Icons.edit,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            const SizedBox(
+              width: 12,
+            ),
+            InkWell(
+              onTap: () {},
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white.withAlpha(27),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        'Delete',
+                        style: TextStyle(color: Colors.white),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        )
+      ],
     );
   }
 }

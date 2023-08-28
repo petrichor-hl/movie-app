@@ -114,7 +114,10 @@ class _OnboardingState extends State<OnboardingScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text('BẮT ĐẦU'),
+                      child: const Text(
+                        'BẮT ĐẦU',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],

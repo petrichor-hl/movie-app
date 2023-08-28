@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movie_app/models/content.dart';
+import 'package:movie_app/screens/movie_detail.dart';
 
 class ContentList extends StatelessWidget {
   const ContentList({
@@ -37,7 +38,13 @@ class ContentList extends StatelessWidget {
             itemBuilder: (ctx, index) {
               final content = contentList[index];
               return GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (ctx) => const MovieDeital(),
+                    ),
+                  );
+                },
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   height: isOriginals ? 400 : 200,

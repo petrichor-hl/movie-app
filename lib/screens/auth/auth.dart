@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:movie_app/onboarding/onboarding.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:movie_app/assets.dart';
@@ -29,8 +28,10 @@ class _AuthScreenState extends State<AuthScreen> {
     _authSubscription = supabase.auth.onAuthStateChange.listen((event) {
       final session = event.session;
       if (session != null) {
-        Navigator.of(context).pushReplacement(
+        Navigator.pushAndRemoveUntil(
+          context,
           MaterialPageRoute(builder: (ctx) => const BottomNavScreen()),
+          (route) => false,
         );
       }
     });
