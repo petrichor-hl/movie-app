@@ -16,6 +16,7 @@ void main() async {
 }
 
 final supabase = Supabase.instance.client;
+const tmdbApiKey = 'a29284b32c092cc59805c9f5513d3811';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

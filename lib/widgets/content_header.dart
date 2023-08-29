@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-
 import 'package:http/http.dart' as http;
 
+import 'package:movie_app/main.dart';
 import 'package:movie_app/models/content.dart';
 
 class ContentHeader extends StatefulWidget {
@@ -28,7 +28,7 @@ class _ContentHeaderState extends State<ContentHeader> {
     try {
       final Uri uri =
           Uri.https('api.themoviedb.org', '/3/movie/$randomMovieId', {
-        'api_key': 'a29284b32c092cc59805c9f5513d3811',
+        'api_key': tmdbApiKey,
         'language': 'vi-VN',
       });
       response = await http.get(uri);
