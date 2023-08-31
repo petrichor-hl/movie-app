@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -37,7 +38,6 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
 
     if (_overlayVisible) {
       // Hide the overlay after a delay
-
       _timer = Timer(const Duration(seconds: 3), () {
         setState(() {
           _overlayVisible = false;
@@ -79,18 +79,18 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: GestureDetector(
+        onTap: _toggleOverlay,
         child: Stack(
           children: [
-            GestureDetector(
-              onTap: _toggleOverlay,
+            Center(
               child: AspectRatio(
                 aspectRatio: _videoPlayerController.value.isInitialized
                     ? _videoPlayerController.value.aspectRatio
                     : 16 / 9,
                 child: _videoPlayerController.value.isInitialized
                     ? VideoPlayer(_videoPlayerController)
-                    : Image.asset(Assets.sintel, fit: BoxFit.cover),
+                    : const CircularProgressIndicator(),
               ),
             ),
             Positioned(
@@ -99,20 +99,17 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
               right: 0,
               bottom: 0,
               child: _overlayVisible
-                  ? InkWell(
-                      onTap: _toggleOverlay,
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black54,
-                              Colors.transparent,
-                              Colors.transparent,
-                              Colors.black87,
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
+                  ? Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.black54,
+                            Colors.transparent,
+                            Colors.transparent,
+                            Colors.black87,
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
                         ),
                       ),
                     ).animate().fade()
@@ -126,8 +123,10 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                   ? Row(
                       children: [
                         IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back,
+                          icon: Icon(
+                            Platform.isIOS
+                                ? Icons.arrow_back_ios_rounded
+                                : Icons.arrow_back_rounded,
                             color: Colors.white,
                           ),
                           onPressed: () {
@@ -154,6 +153,59 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                     ).animate().fade().slideY(curve: Curves.easeInOut)
                   : const SizedBox.shrink(),
             ),
+            if (_overlayVisible)
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        _videoPlayerController.seekTo(
+                            _videoPlayerController.value.position -
+                                const Duration(seconds: 10));
+                      },
+                      icon: const Icon(
+                        Icons.replay_10_rounded,
+                        size: 40,
+                      ),
+                      style:
+                          IconButton.styleFrom(foregroundColor: Colors.white),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        if (_videoPlayerController.value.isPlaying) {
+                          _videoPlayerController.pause();
+                          _timer.cancel();
+                        } else {
+                          _videoPlayerController.play();
+                        }
+                        setState(() {});
+                      },
+                      icon: Icon(
+                        _videoPlayerController.value.isPlaying
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        size: 40,
+                      ),
+                      style:
+                          IconButton.styleFrom(foregroundColor: Colors.white),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        _videoPlayerController.seekTo(
+                            _videoPlayerController.value.position +
+                                const Duration(seconds: 10));
+                      },
+                      icon: const Icon(
+                        Icons.forward_10_rounded,
+                        size: 40,
+                      ),
+                      style:
+                          IconButton.styleFrom(foregroundColor: Colors.white),
+                    ),
+                  ],
+                ),
+              )
           ],
         ),
       ),
