@@ -1,6 +1,8 @@
-import 'package:chewie/chewie.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/assets.dart';
 import 'package:video_player/video_player.dart';
 
@@ -24,19 +26,22 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   late final VideoPlayerController _videoPlayerController;
   bool _overlayVisible = false;
 
+  late Timer _timer = Timer(const Duration(seconds: 0), () {});
+
   void _toggleOverlay() {
+    _timer.cancel();
+
     setState(() {
       _overlayVisible = !_overlayVisible;
     });
 
     if (_overlayVisible) {
       // Hide the overlay after a delay
-      Future.delayed(const Duration(seconds: 3), () {
-        if (mounted) {
-          setState(() {
-            _overlayVisible = false;
-          });
-        }
+
+      _timer = Timer(const Duration(seconds: 3), () {
+        setState(() {
+          _overlayVisible = false;
+        });
       });
     }
   }
@@ -92,37 +97,62 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
               top: 0,
               left: 0,
               right: 0,
-              child: AnimatedOpacity(
-                opacity: _overlayVisible ? 1.0 : 0.0,
-                duration:
-                    const Duration(milliseconds: 500), // Animation duration
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        SystemChrome.setPreferredOrientations([
-                          DeviceOrientation.portraitUp,
-                        ]);
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    Expanded(
-                      child: Text(
-                        widget.title,
-                        style: const TextStyle(
-                          color: Colors.white,
+              bottom: 0,
+              child: _overlayVisible
+                  ? InkWell(
+                      onTap: _toggleOverlay,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black54,
+                              Colors.transparent,
+                              Colors.transparent,
+                              Colors.black87,
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                    ),
-                    const SizedBox(width: 48),
-                  ],
-                ),
-              ),
+                    ).animate().fade()
+                  : const SizedBox.shrink(),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: _overlayVisible
+                  ? Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back,
+                            color: Colors.white,
+                          ),
+                          onPressed: () {
+                            SystemChrome.setPreferredOrientations([
+                              DeviceOrientation.portraitUp,
+                            ]);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        Expanded(
+                          child: Text(
+                            widget.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 48,
+                        )
+                      ],
+                    ).animate().fade().slideY(curve: Curves.easeInOut)
+                  : const SizedBox.shrink(),
             ),
           ],
         ),

@@ -175,7 +175,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-          ].animate(interval: .04.seconds).fade().slideX(),
+          ].animate(interval: 40.ms).fade().slideX(),
         ),
       ),
     );
