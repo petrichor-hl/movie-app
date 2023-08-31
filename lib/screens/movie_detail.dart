@@ -3,11 +3,12 @@ import 'dart:math';
 import 'dart:ui' as dart_ui;
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/widgets/video_player_view.dart';
 
 class MovieDeital extends StatefulWidget {
   const MovieDeital({super.key});
@@ -23,7 +24,7 @@ class _MovieDeitalState extends State<MovieDeital> {
   Future<void> _fetchMovie() async {
     final http.Response response;
     int randomMovieId = Random().nextInt(600);
-    // print('movieId = $randomMovieId');
+    print('movieId = $randomMovieId');
     try {
       final Uri uri =
           Uri.https('api.themoviedb.org', '/3/movie/$randomMovieId', {
@@ -84,8 +85,9 @@ class _MovieDeitalState extends State<MovieDeital> {
 
           final textPainter = TextPainter(
             text: TextSpan(
-                text: movie == null ? '' : movie!['overview'],
-                style: const TextStyle(color: Colors.white)),
+              text: movie == null ? '' : movie!['overview'],
+              style: const TextStyle(color: Colors.white),
+            ),
             maxLines: 4,
             textDirection: dart_ui.TextDirection.ltr,
           )..layout(minWidth: 0, maxWidth: MediaQuery.sizeOf(context).width);
@@ -144,7 +146,16 @@ class _MovieDeitalState extends State<MovieDeital> {
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => const VideoPlayerView(
+                            title: 'Episode 1',
+                            episodeUrl: 'assets/videos/8803266984862641061.mp4',
+                          ),
+                        ),
+                      );
+                    },
                     icon: const Icon(Icons.play_arrow_rounded),
                     label: const Text(
                       'Phát',
@@ -177,15 +188,13 @@ class _MovieDeitalState extends State<MovieDeital> {
                 const SizedBox(
                   height: 6,
                 ),
-                RichText(
-                  text: TextSpan(
-                    text: movie!['overview'],
-                    style:
-                        GoogleFonts.montserrat().copyWith(color: Colors.white),
+                if (movie!['overview'] != '')
+                  Text(
+                    movie!['overview'],
+                    style: const TextStyle(color: Colors.white),
+                    maxLines: _isExpandOverview ? null : 4,
+                    textAlign: TextAlign.justify,
                   ),
-                  maxLines: _isExpandOverview ? null : 4,
-                  textAlign: TextAlign.justify,
-                ),
                 if (isOverflowed)
                   InkWell(
                     onTap: () => setState(() {
@@ -199,9 +208,10 @@ class _MovieDeitalState extends State<MovieDeital> {
                       ),
                     ),
                   ),
-                const SizedBox(
-                  height: 12,
-                ),
+                if (movie!['overview'] != '')
+                  const SizedBox(
+                    height: 12,
+                  ),
                 if (genres.isNotEmpty)
                   const Text(
                     'Thể loại:',
@@ -222,7 +232,11 @@ class _MovieDeitalState extends State<MovieDeital> {
                 ),
                 ActorsList(cast: cast),
               ],
-            ),
+            ).animate().fade().slideY(
+                  curve: Curves.easeInOut,
+                  begin: 0.1,
+                  end: 0,
+                ),
           );
         },
       ),

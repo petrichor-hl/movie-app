@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -174,7 +175,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
-          ],
+          ].animate(interval: .04.seconds).fade().slideX(),
         ),
       ),
     );
