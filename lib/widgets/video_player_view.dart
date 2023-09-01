@@ -67,19 +67,20 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    _videoPlayerController = VideoPlayerController.asset(widget.episodeUrl)
-      ..initialize().then((value) {
-        _videoPlayerController.addListener(_onVideoPlayerPositionChanged);
+    _videoPlayerController =
+        VideoPlayerController.networkUrl(Uri.parse(widget.episodeUrl))
+          ..initialize().then((value) {
+            _videoPlayerController.addListener(_onVideoPlayerPositionChanged);
 
-        _videoPlayerController.addListener(() {
-          _videoPlayerController.value.isPlaying
-              ? context.read<VideoPlayControlCubit>().play()
-              : context.read<VideoPlayControlCubit>().pause();
-        });
+            _videoPlayerController.addListener(() {
+              _videoPlayerController.value.isPlaying
+                  ? context.read<VideoPlayControlCubit>().play()
+                  : context.read<VideoPlayControlCubit>().pause();
+            });
 
-        setState(() {});
-      })
-      ..play();
+            setState(() {});
+          })
+          ..play();
   }
 
   @override
@@ -110,15 +111,13 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
             Container(
               color: Colors.black,
               alignment: Alignment.center,
-              child: SafeArea(
-                child: AspectRatio(
-                  aspectRatio: _videoPlayerController.value.isInitialized
-                      ? _videoPlayerController.value.aspectRatio
-                      : 16 / 9,
-                  child: _videoPlayerController.value.isInitialized
-                      ? VideoPlayer(_videoPlayerController)
-                      : const Center(child: CircularProgressIndicator()),
-                ),
+              child: AspectRatio(
+                aspectRatio: _videoPlayerController.value.isInitialized
+                    ? _videoPlayerController.value.aspectRatio
+                    : 16 / 9,
+                child: _videoPlayerController.value.isInitialized
+                    ? VideoPlayer(_videoPlayerController)
+                    : const Center(child: CircularProgressIndicator()),
               ),
             ),
             AnimatedOpacity(
@@ -349,49 +348,50 @@ class _SliderVideo extends StatelessWidget {
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
       child: SafeArea(
-          child: IgnorePointer(
-        ignoring: !overlayVisible,
-        child: Row(
-          children: [
-            Expanded(
-              child: Slider(
-                value: progressSlider,
-                label: _convertFromSeconds(
-                  (progressSlider *
-                          videoPlayerController.value.duration.inSeconds)
-                      .toInt(),
+        child: IgnorePointer(
+          ignoring: !overlayVisible,
+          child: Row(
+            children: [
+              Expanded(
+                child: Slider(
+                  value: progressSlider,
+                  label: _convertFromSeconds(
+                    (progressSlider *
+                            videoPlayerController.value.duration.inSeconds)
+                        .toInt(),
+                  ),
+                  onChanged: (value) {
+                    context.read<VideoSliderCubit>().setProgress(value);
+                  },
+                  onChangeStart: (value) async {
+                    await videoPlayerController.pause();
+                    removeProgressListener();
+                    cancelTimer();
+                  },
+                  onChangeEnd: (value) async {
+                    await videoPlayerController.seekTo(
+                      Duration(
+                        milliseconds: (value *
+                                videoPlayerController
+                                    .value.duration.inMilliseconds)
+                            .toInt(),
+                      ),
+                    );
+                    addProgressListener();
+                    videoPlayerController.play();
+                    startCountdownToDismissControls();
+                  },
                 ),
-                onChanged: (value) {
-                  context.read<VideoSliderCubit>().setProgress(value);
-                },
-                onChangeStart: (value) async {
-                  await videoPlayerController.pause();
-                  removeProgressListener();
-                  cancelTimer();
-                },
-                onChangeEnd: (value) async {
-                  await videoPlayerController.seekTo(
-                    Duration(
-                      milliseconds: (value *
-                              videoPlayerController
-                                  .value.duration.inMilliseconds)
-                          .toInt(),
-                    ),
-                  );
-                  addProgressListener();
-                  videoPlayerController.play();
-                  startCountdownToDismissControls();
-                },
               ),
-            ),
-            Text(
-              _convertFromDuration(videoPlayerController.value.duration -
-                  videoPlayerController.value.position),
-              style: const TextStyle(color: Colors.white),
-            ),
-          ],
+              Text(
+                _convertFromDuration(videoPlayerController.value.duration -
+                    videoPlayerController.value.position),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
         ),
-      )),
+      ),
     );
   }
 }

@@ -162,7 +162,8 @@ class _MovieDeitalState extends State<MovieDeital> {
                             ],
                             child: const VideoPlayerView(
                               title: 'Episode 1',
-                              episodeUrl: 'assets/videos/fly_away.mp4',
+                              episodeUrl:
+                                  'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/film/jujutsu_kaisen/season_1/jujutsu_kaisen_trailer.mp4?t=2023-09-01T12%3A34%3A55.249Z',
                             ),
                           ),
                         ),
