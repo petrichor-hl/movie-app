@@ -4,9 +4,11 @@ import 'dart:ui' as dart_ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
+import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/widgets/video_player_view.dart';
 
@@ -148,9 +150,12 @@ class _MovieDeitalState extends State<MovieDeital> {
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (ctx) => const VideoPlayerView(
-                            title: 'Episode 1',
-                            episodeUrl: 'assets/videos/fly_away.mp4',
+                          builder: (ctx) => BlocProvider(
+                            create: (ctx) => VideoSliderCubit(),
+                            child: const VideoPlayerView(
+                              title: 'Episode 1',
+                              episodeUrl: 'assets/videos/fly_away.mp4',
+                            ),
                           ),
                         ),
                       );

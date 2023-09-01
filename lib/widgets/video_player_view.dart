@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoPlayerView extends StatefulWidget {
@@ -27,8 +29,6 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
 
   late Timer _timer = Timer(const Duration(seconds: 0), () {});
 
-  double _progressSlider = 0;
-
   void _toggleOverlay() {
     _timer.cancel();
 
@@ -38,12 +38,16 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
 
     if (_overlayVisible) {
       // Hide the overlay after a delay
-      _timer = Timer(const Duration(seconds: 3), () {
-        setState(() {
-          _overlayVisible = false;
-        });
-      });
+      _startCountdownToDismissControls();
     }
+  }
+
+  void _startCountdownToDismissControls() {
+    _timer = Timer(const Duration(seconds: 3), () {
+      setState(() {
+        _overlayVisible = false;
+      });
+    });
   }
 
   @override
@@ -60,11 +64,9 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
       ..initialize().then(
         (value) => setState(() {
           _videoPlayerController.addListener(() {
-            setState(() {
-              _progressSlider =
-                  _videoPlayerController.value.position.inMilliseconds /
-                      _videoPlayerController.value.duration.inMilliseconds;
-            });
+            context.read<VideoSliderCubit>().setProgress(
+                _videoPlayerController.value.position.inMilliseconds /
+                    _videoPlayerController.value.duration.inMilliseconds);
           });
         }),
       )
@@ -77,27 +79,14 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
 
     // Nếu gọi lệnh ở "setPreferredOrientations" ở đây thay vì ở arrow_back button thì
     // hướng màn hình sẽ không chuyển thành portrait ngay lập tức.
+    // Mà phải về màn hình trước đó mới chuyển
 
-    // Dành cho trường hợp không nhấn backbutton trên màn hình mà lướt về
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
 
     _timer.cancel();
     super.dispose();
-  }
-
-  String _convertFromDuration(Duration duration) {
-    int mins = duration.inMinutes;
-    int secs = duration.inSeconds % 60;
-
-    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
-  }
-
-  String _convertFromSeconds(int initalSeconds) {
-    int mins = (initalSeconds ~/ 60);
-    int secs = (initalSeconds % 60);
-    return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -237,63 +226,102 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
               bottom: 0,
               left: 0,
               right: 0,
-              child: AnimatedSlide(
-                duration: const Duration(milliseconds: 250),
-                offset:
-                    _overlayVisible ? const Offset(0, -0) : const Offset(0, 1),
-                curve: Curves.easeInOut,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Slider(
-                              value: _progressSlider,
-                              label: _convertFromSeconds((_progressSlider *
-                                      _videoPlayerController
-                                          .value.duration.inSeconds)
-                                  .toInt()),
-                              onChanged: (value) {
-                                setState(() {
-                                  _progressSlider = value;
-                                });
-                              },
-                              onChangeStart: (value) {
-                                _videoPlayerController.pause();
-                                _timer.cancel();
-                              },
-                              onChangeEnd: (value) {
-                                _videoPlayerController.seekTo(
-                                  Duration(
-                                      milliseconds: (value *
-                                              _videoPlayerController.value
-                                                  .duration.inMilliseconds)
-                                          .toInt()),
-                                );
-                                _videoPlayerController.play();
-                                _timer = Timer(const Duration(seconds: 3), () {
-                                  setState(() {
-                                    _overlayVisible = false;
-                                  });
-                                });
-                              },
-                            ),
-                          ),
-                          Text(
-                            _convertFromDuration(
-                                _videoPlayerController.value.duration -
-                                    _videoPlayerController.value.position),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      )
-                    ],
+              child: Column(
+                children: [
+                  BlocBuilder<VideoSliderCubit, double>(
+                    builder: (ctx, progress) {
+                      return _SliderVideo(
+                        progress,
+                        _overlayVisible,
+                        _videoPlayerController,
+                        _startCountdownToDismissControls,
+                        () => _timer.cancel(),
+                      );
+                    },
                   ),
-                ),
+                ],
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _convertFromDuration(Duration duration) {
+  int mins = duration.inMinutes;
+  int secs = duration.inSeconds % 60;
+
+  return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+}
+
+String _convertFromSeconds(int initalSeconds) {
+  int mins = (initalSeconds ~/ 60);
+  int secs = (initalSeconds % 60);
+  return '${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+}
+
+class _SliderVideo extends StatelessWidget {
+  const _SliderVideo(
+    this.progressSlider,
+    this.overlayVisible,
+    this.videoPlayerController,
+    this.startCountdownToDismissControls,
+    this.cancelTimer,
+  );
+
+  final double progressSlider;
+  final bool overlayVisible;
+  final VideoPlayerController videoPlayerController;
+  final void Function() cancelTimer;
+  final void Function() startCountdownToDismissControls;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 250),
+      offset: overlayVisible ? const Offset(0, -0) : const Offset(0, 1),
+      curve: Curves.easeInOut,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Slider(
+                    value: progressSlider,
+                    label: _convertFromSeconds((progressSlider *
+                            videoPlayerController.value.duration.inSeconds)
+                        .toInt()),
+                    onChanged: (value) {
+                      context.read<VideoSliderCubit>().setProgress(value);
+                    },
+                    onChangeStart: (value) {
+                      videoPlayerController.pause();
+                      cancelTimer();
+                    },
+                    onChangeEnd: (value) {
+                      videoPlayerController.seekTo(
+                        Duration(
+                            milliseconds: (value *
+                                    videoPlayerController
+                                        .value.duration.inMilliseconds)
+                                .toInt()),
+                      );
+                      videoPlayerController.play();
+                      startCountdownToDismissControls();
+                    },
+                  ),
+                ),
+                Text(
+                  _convertFromDuration(videoPlayerController.value.duration -
+                      videoPlayerController.value.position),
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            )
           ],
         ),
       ),
