@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:movie_app/main.dart';
@@ -70,11 +71,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     future: _futureUserInfo,
                     builder: (ctx, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const SizedBox(
-                          height: 120,
-                          child: Center(
-                            child: CircularProgressIndicator(),
-                          ),
+                        return const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SkeletonLoading(height: 26, width: 90),
+                            SizedBox(
+                              height: 7,
+                            ),
+                            SkeletonLoading(height: 40, width: 220),
+                            SizedBox(
+                              height: 7,
+                            ),
+                            Row(
+                              children: [
+                                SkeletonLoading(height: 40, width: 40),
+                                SizedBox(
+                                  width: 12,
+                                ),
+                                SkeletonLoading(height: 40, width: 106),
+                              ],
+                            )
+                          ],
                         );
                       }
 
@@ -326,6 +343,31 @@ class _ProfileSettingItem extends StatelessWidget {
                 color: Colors.white,
               )
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SkeletonLoading extends StatelessWidget {
+  const SkeletonLoading({super.key, required this.height, required this.width});
+
+  final double height;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: Colors.white.withAlpha(100),
+      highlightColor: Colors.grey,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: SizedBox(
+          height: height,
+          width: width,
+          child: ColoredBox(
+            color: Colors.white.withAlpha(100),
           ),
         ),
       ),

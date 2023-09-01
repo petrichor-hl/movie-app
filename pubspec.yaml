@@ -44,6 +44,8 @@ dependencies:
   supabase_flutter: ^1.10.14
   intl: ^0.18.1
   flutter_animate: ^4.2.0+1
+  wakelock: ^0.6.2
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:

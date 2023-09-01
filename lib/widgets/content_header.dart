@@ -146,7 +146,7 @@ class _ContentHeaderState extends State<ContentHeader> {
                           ),
                           label: const Text(
                             'Phát',
-                            style: TextStyle(fontSize: 16),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           style: FilledButton.styleFrom(
                             foregroundColor: Colors.black,
@@ -161,8 +161,13 @@ class _ContentHeaderState extends State<ContentHeader> {
                       Expanded(
                         child: FilledButton.icon(
                           onPressed: () {},
-                          icon: const Icon(Icons.add),
-                          label: const Text('Danh sách'),
+                          icon: const Icon(
+                            Icons.add,
+                          ),
+                          label: const Text(
+                            'Danh sách',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           style: FilledButton.styleFrom(
                             foregroundColor: Colors.white,
                             backgroundColor: Colors.white.withOpacity(0.4),

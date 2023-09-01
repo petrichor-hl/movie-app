@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:movie_app/screens/splash.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(
     url: 'https://kpaxjjmelbqpllxenpxz.supabase.co',
     anonKey:

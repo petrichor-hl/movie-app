@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:video_player/video_player.dart';
+import 'package:wakelock/wakelock.dart';
 
 class VideoPlayerView extends StatefulWidget {
   const VideoPlayerView({
@@ -61,6 +62,9 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   void initState() {
     super.initState();
 
+    // prevents the screen from turning off automatically.
+    Wakelock.enable();
+
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
@@ -85,6 +89,8 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
 
   @override
   void dispose() {
+    Wakelock.disable();
+
     // Nếu gọi lệnh ở "setPreferredOrientations" ở đây thay vì ở arrow_back button thì
     // hướng màn hình sẽ không chuyển thành portrait ngay lập tức.
     // Mà phải về màn hình trước đó mới chuyển
