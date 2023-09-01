@@ -70,6 +70,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
     _videoPlayerController = VideoPlayerController.asset(widget.episodeUrl)
       ..initialize().then((value) {
         _videoPlayerController.addListener(_onVideoPlayerPositionChanged);
+
         _videoPlayerController.addListener(() {
           _videoPlayerController.value.isPlaying
               ? context.read<VideoPlayControlCubit>().play()
@@ -91,6 +92,8 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
       DeviceOrientation.portraitUp,
     ]);
 
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
     _videoPlayerController.dispose();
     _timer.cancel();
 
@@ -107,13 +110,15 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
             Container(
               color: Colors.black,
               alignment: Alignment.center,
-              child: AspectRatio(
-                aspectRatio: _videoPlayerController.value.isInitialized
-                    ? _videoPlayerController.value.aspectRatio
-                    : 16 / 9,
-                child: _videoPlayerController.value.isInitialized
-                    ? VideoPlayer(_videoPlayerController)
-                    : const Center(child: CircularProgressIndicator()),
+              child: SafeArea(
+                child: AspectRatio(
+                  aspectRatio: _videoPlayerController.value.isInitialized
+                      ? _videoPlayerController.value.aspectRatio
+                      : 16 / 9,
+                  child: _videoPlayerController.value.isInitialized
+                      ? VideoPlayer(_videoPlayerController)
+                      : const Center(child: CircularProgressIndicator()),
+                ),
               ),
             ),
             AnimatedOpacity(
@@ -152,8 +157,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                 offset:
                     _overlayVisible ? const Offset(0, 0) : const Offset(0, -1),
                 curve: Curves.easeInOut,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: SafeArea(
                   child: Row(
                     children: [
                       IconButton(
@@ -212,7 +216,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   }
 }
 
-class _ControlButtons extends StatelessWidget {
+class _ControlButtons extends StatefulWidget {
   const _ControlButtons(
     this.videoPlayerController,
     this.startCountdownToDismissControls,
@@ -224,32 +228,49 @@ class _ControlButtons extends StatelessWidget {
   final void Function() startCountdownToDismissControls;
 
   @override
+  State<_ControlButtons> createState() => _ControlButtonsState();
+}
+
+class _ControlButtonsState extends State<_ControlButtons> {
+  double replayTurns = 0;
+  double forwardTurns = 0;
+
+  @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        IconButton(
-          onPressed: () {
-            videoPlayerController.seekTo(videoPlayerController.value.position -
-                const Duration(seconds: 10));
-          },
-          icon: const Icon(
-            Icons.replay_10_rounded,
-            size: 60,
+        AnimatedRotation(
+          turns: replayTurns,
+          duration: const Duration(milliseconds: 200),
+          child: IconButton(
+            onPressed: () {
+              setState(() {
+                replayTurns -= 1;
+              });
+              widget.videoPlayerController.seekTo(
+                  widget.videoPlayerController.value.position -
+                      const Duration(seconds: 10));
+
+              widget.cancelTimer();
+              widget.startCountdownToDismissControls();
+            },
+            icon: const Icon(
+              Icons.replay_10_rounded,
+              size: 60,
+            ),
+            style: IconButton.styleFrom(foregroundColor: Colors.white),
           ),
-          style: IconButton.styleFrom(foregroundColor: Colors.white),
         ),
         BlocBuilder<VideoPlayControlCubit, VideoState>(
           builder: (context, videoState) {
             return IconButton(
               onPressed: () {
-                if (videoPlayerController.value.isPlaying) {
-                  videoPlayerController.pause();
-                } else {
-                  videoPlayerController.play();
-                }
-                cancelTimer();
-                startCountdownToDismissControls();
+                videoState == VideoState.playing
+                    ? widget.videoPlayerController.pause()
+                    : widget.videoPlayerController.play();
+                widget.cancelTimer();
+                widget.startCountdownToDismissControls();
               },
               icon: Icon(
                 videoState == VideoState.playing
@@ -261,18 +282,27 @@ class _ControlButtons extends StatelessWidget {
             );
           },
         ),
-        IconButton(
-          onPressed: () {
-            videoPlayerController.seekTo(
-              videoPlayerController.value.position +
-                  const Duration(seconds: 10),
-            );
-          },
-          icon: const Icon(
-            Icons.forward_10_rounded,
-            size: 60,
+        AnimatedRotation(
+          turns: forwardTurns,
+          duration: const Duration(milliseconds: 200),
+          child: IconButton(
+            onPressed: () {
+              setState(() {
+                forwardTurns += 1;
+              });
+              widget.videoPlayerController.seekTo(
+                widget.videoPlayerController.value.position +
+                    const Duration(seconds: 10),
+              );
+              widget.cancelTimer();
+              widget.startCountdownToDismissControls();
+            },
+            icon: const Icon(
+              Icons.forward_10_rounded,
+              size: 60,
+            ),
+            style: IconButton.styleFrom(foregroundColor: Colors.white),
           ),
-          style: IconButton.styleFrom(foregroundColor: Colors.white),
         ),
       ],
     );
@@ -318,51 +348,50 @@ class _SliderVideo extends StatelessWidget {
       opacity: overlayVisible ? 1 : 0,
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
-      child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: SafeArea(
           child: IgnorePointer(
-            ignoring: !overlayVisible,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Slider(
-                    value: progressSlider,
-                    label: _convertFromSeconds(
-                      (progressSlider *
-                              videoPlayerController.value.duration.inSeconds)
+        ignoring: !overlayVisible,
+        child: Row(
+          children: [
+            Expanded(
+              child: Slider(
+                value: progressSlider,
+                label: _convertFromSeconds(
+                  (progressSlider *
+                          videoPlayerController.value.duration.inSeconds)
+                      .toInt(),
+                ),
+                onChanged: (value) {
+                  context.read<VideoSliderCubit>().setProgress(value);
+                },
+                onChangeStart: (value) async {
+                  await videoPlayerController.pause();
+                  removeProgressListener();
+                  cancelTimer();
+                },
+                onChangeEnd: (value) async {
+                  await videoPlayerController.seekTo(
+                    Duration(
+                      milliseconds: (value *
+                              videoPlayerController
+                                  .value.duration.inMilliseconds)
                           .toInt(),
                     ),
-                    onChanged: (value) {
-                      context.read<VideoSliderCubit>().setProgress(value);
-                    },
-                    onChangeStart: (value) async {
-                      await videoPlayerController.pause();
-                      removeProgressListener();
-                      cancelTimer();
-                    },
-                    onChangeEnd: (value) async {
-                      await videoPlayerController.seekTo(
-                        Duration(
-                          milliseconds: (value *
-                                  videoPlayerController
-                                      .value.duration.inMilliseconds)
-                              .toInt(),
-                        ),
-                      );
-                      addProgressListener();
-                      videoPlayerController.play();
-                      startCountdownToDismissControls();
-                    },
-                  ),
-                ),
-                Text(
-                  _convertFromDuration(videoPlayerController.value.duration -
-                      videoPlayerController.value.position),
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ],
+                  );
+                  addProgressListener();
+                  videoPlayerController.play();
+                  startCountdownToDismissControls();
+                },
+              ),
             ),
-          )),
+            Text(
+              _convertFromDuration(videoPlayerController.value.duration -
+                  videoPlayerController.value.position),
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      )),
     );
   }
 }
