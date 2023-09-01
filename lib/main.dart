@@ -33,6 +33,9 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.montserratTextTheme(),
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.black,
+        sliderTheme: const SliderThemeData(
+          showValueIndicator: ShowValueIndicator.always,
+        ),
       ),
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,

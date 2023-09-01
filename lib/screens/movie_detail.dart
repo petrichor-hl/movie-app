@@ -24,7 +24,6 @@ class _MovieDeitalState extends State<MovieDeital> {
   Future<void> _fetchMovie() async {
     final http.Response response;
     int randomMovieId = Random().nextInt(600);
-    print('movieId = $randomMovieId');
     try {
       final Uri uri =
           Uri.https('api.themoviedb.org', '/3/movie/$randomMovieId', {
@@ -151,7 +150,7 @@ class _MovieDeitalState extends State<MovieDeital> {
                         MaterialPageRoute(
                           builder: (ctx) => const VideoPlayerView(
                             title: 'Episode 1',
-                            episodeUrl: 'assets/videos/8803266984862641061.mp4',
+                            episodeUrl: 'assets/videos/fly_away.mp4',
                           ),
                         ),
                       );
