@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 
 class BrightnessSlider extends StatefulWidget {
   const BrightnessSlider(
@@ -37,6 +38,11 @@ class _BrightnessSliderState extends State<BrightnessSlider> {
                   value: brightness,
                   onChangeStart: (_) => widget.cancelTimer(),
                   onChanged: (value) {
+                    try {
+                      ScreenBrightness().setScreenBrightness(brightness);
+                    } catch (e) {
+                      //
+                    }
                     setState(() {
                       brightness = value;
                     });

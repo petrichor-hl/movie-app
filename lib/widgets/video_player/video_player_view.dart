@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/widgets/video_player/brightness_slider.dart';
 import 'package:movie_app/widgets/video_player/control_buttons.dart';
 import 'package:movie_app/widgets/video_player/video_bottom_utils.dart';
+import 'package:screen_brightness/screen_brightness.dart';
 
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
@@ -65,12 +66,30 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
             _videoPlayerController.value.duration.inMilliseconds);
   }
 
+  void setBrightness(double brightness) {
+    try {
+      ScreenBrightness().setScreenBrightness(brightness);
+    } catch (e) {
+      //
+    }
+  }
+
+  void resetBrightness() {
+    try {
+      ScreenBrightness().resetScreenBrightness();
+    } catch (e) {
+      //
+    }
+  }
+
   @override
   void initState() {
     super.initState();
 
     // prevents the screen from turning off automatically.
     Wakelock.enable();
+
+    setBrightness(1);
 
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeLeft,
@@ -97,11 +116,11 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   @override
   void dispose() {
     Wakelock.disable();
+    resetBrightness();
 
     // Nếu gọi lệnh ở "setPreferredOrientations" ở đây thay vì ở arrow_back button thì
     // hướng màn hình sẽ không chuyển thành portrait ngay lập tức.
     // Mà phải về màn hình trước đó mới chuyển
-
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
     ]);
@@ -217,7 +236,12 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                     () => _videoPlayerController
                         .addListener(_onVideoPlayerPositionChanged),
                   ),
-                  VideoBottomUtils(_overlayVisible),
+                  VideoBottomUtils(
+                    _overlayVisible,
+                    _videoPlayerController,
+                    _startCountdownToDismissControls,
+                    () => _timer.cancel(),
+                  ),
                 ],
               ),
             ),
