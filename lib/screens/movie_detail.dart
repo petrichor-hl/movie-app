@@ -11,7 +11,7 @@ import 'package:movie_app/assets.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/main.dart';
-import 'package:movie_app/widgets/video_player_view.dart';
+import 'package:movie_app/widgets/video_player/video_player_view.dart';
 
 class MovieDeital extends StatefulWidget {
   const MovieDeital({super.key});
@@ -161,7 +161,7 @@ class _MovieDeitalState extends State<MovieDeital> {
                               ),
                             ],
                             child: const VideoPlayerView(
-                              title: 'Episode 1',
+                              title: 'Jujutsu Kaisen',
                               episodeUrl:
                                   'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/film/jujutsu_kaisen/season_1/jujutsu_kaisen_trailer.mp4?t=2023-09-01T12%3A34%3A55.249Z',
                             ),

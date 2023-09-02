@@ -31,6 +31,12 @@ SE121.011
     <img src="demo/intro_page_2.png" width="45%"/>
 </p>
 
+- Video Play
+<p align="center">
+    <img src="demo/video_play.png" width="75%"/>
+    
+</p>
+
 - NavScreen
 <p align="center">
     <img src="demo/home_screen.png" width="45%"/>
