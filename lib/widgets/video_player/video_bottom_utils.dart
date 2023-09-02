@@ -6,7 +6,8 @@ class VideoBottomUtils extends StatelessWidget {
     this.overlayVisible,
     this.videoPlayerController,
     this.startCountdownToDismissControls,
-    this.cancelTimer, {
+    this.cancelTimer,
+    this.lockControls, {
     super.key,
   });
 
@@ -14,6 +15,8 @@ class VideoBottomUtils extends StatelessWidget {
   final VideoPlayerController videoPlayerController;
   final void Function() cancelTimer;
   final void Function() startCountdownToDismissControls;
+
+  final void Function(bool) lockControls;
 
   final speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5];
 
@@ -86,7 +89,7 @@ class VideoBottomUtils extends StatelessWidget {
               style: TextButton.styleFrom(foregroundColor: Colors.white),
             ),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () => lockControls(true),
               icon: const Icon(Icons.lock_open_rounded),
               label: const Text('Khoá'),
               style: TextButton.styleFrom(foregroundColor: Colors.white),

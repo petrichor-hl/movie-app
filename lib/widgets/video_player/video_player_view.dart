@@ -35,27 +35,69 @@ class VideoPlayerView extends StatefulWidget {
 
 class _VideoPlayerViewState extends State<VideoPlayerView> {
   late final VideoPlayerController _videoPlayerController;
-  bool _overlayVisible = false;
 
-  late Timer _timer = Timer(const Duration(seconds: 0), () {});
+  bool _isLockControls = false;
 
-  void _toggleOverlay() {
-    _timer.cancel();
+  bool _controlsOverlayVisible = false;
+  bool _lockOverlayVisible = true;
+  // True, because when lock controls, Lock IconButton will raise
+
+  late Timer _controlsTimer = Timer(Duration.zero, () {});
+  late Timer _lockTimer = Timer(Duration.zero, () {});
+
+  void setLock(bool value) {
+    _isLockControls = value;
+
+    if (_isLockControls) {
+      _controlsOverlayVisible = false;
+      _lockOverlayVisible = true;
+      _startCountdownToDismissLockButton();
+    } else {
+      _controlsOverlayVisible = true;
+      _startCountdownToDismissControls();
+    }
+
+    setState(() {});
+  }
+
+  void _toggleControlsOverlay() {
+    _controlsTimer.cancel();
 
     setState(() {
-      _overlayVisible = !_overlayVisible;
+      _controlsOverlayVisible = !_controlsOverlayVisible;
     });
 
-    if (_overlayVisible) {
+    if (_controlsOverlayVisible) {
       // Hide the overlay after a delay
       _startCountdownToDismissControls();
     }
   }
 
+  void _toggleLockOverlay() {
+    _lockTimer.cancel();
+
+    setState(() {
+      _lockOverlayVisible = !_lockOverlayVisible;
+    });
+
+    if (_lockOverlayVisible) {
+      // Hide the overlay after a delay
+      _startCountdownToDismissLockButton();
+    }
+  }
+
   void _startCountdownToDismissControls() {
-    _timer = Timer(const Duration(seconds: 3), () {
+    _controlsTimer = Timer(const Duration(seconds: 3), () {
       setState(() {
-        _overlayVisible = false;
+        _controlsOverlayVisible = false;
+      });
+    });
+  }
+
+  void _startCountdownToDismissLockButton() {
+    _lockTimer = Timer(const Duration(seconds: 2), () {
+      setState(() {
+        _lockOverlayVisible = false;
       });
     });
   }
@@ -128,7 +170,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
     _videoPlayerController.dispose();
-    _timer.cancel();
+    _controlsTimer.cancel();
 
     super.dispose();
   }
@@ -137,7 +179,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
-        onTap: _toggleOverlay,
+        onTap: _isLockControls ? _toggleLockOverlay : _toggleControlsOverlay,
         child: Stack(
           children: [
             Container(
@@ -153,7 +195,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
               ),
             ),
             AnimatedOpacity(
-              opacity: _overlayVisible ? 1.0 : 0.0,
+              opacity: _controlsOverlayVisible ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 300),
               child: Container(
                 decoration: const BoxDecoration(
@@ -170,11 +212,11 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                 ),
                 height: double.infinity,
                 child: IgnorePointer(
-                  ignoring: !_overlayVisible,
+                  ignoring: !_controlsOverlayVisible,
                   child: ControlButtons(
                     _videoPlayerController,
                     _startCountdownToDismissControls,
-                    () => _timer.cancel(),
+                    () => _controlsTimer.cancel(),
                   ),
                 ),
               ),
@@ -185,8 +227,9 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
               right: Platform.isAndroid ? 20 : 0,
               child: AnimatedSlide(
                 duration: const Duration(milliseconds: 250),
-                offset:
-                    _overlayVisible ? const Offset(0, 0) : const Offset(0, -1),
+                offset: _controlsOverlayVisible
+                    ? const Offset(0, 0)
+                    : const Offset(0, -1),
                 curve: Curves.easeInOut,
                 child: SafeArea(
                   child: Row(
@@ -227,20 +270,21 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
               child: Column(
                 children: [
                   SliderVideo(
-                    _overlayVisible,
+                    _controlsOverlayVisible,
                     _videoPlayerController,
                     _startCountdownToDismissControls,
-                    () => _timer.cancel(),
+                    () => _controlsTimer.cancel(),
                     () => _videoPlayerController
                         .removeListener(_onVideoPlayerPositionChanged),
                     () => _videoPlayerController
                         .addListener(_onVideoPlayerPositionChanged),
                   ),
                   VideoBottomUtils(
-                    _overlayVisible,
+                    _controlsOverlayVisible,
                     _videoPlayerController,
                     _startCountdownToDismissControls,
-                    () => _timer.cancel(),
+                    () => _controlsTimer.cancel(),
+                    setLock,
                   ),
                 ],
               ),
@@ -250,9 +294,46 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
               top: 0,
               bottom: 0,
               child: BrightnessSlider(
-                _overlayVisible,
+                _controlsOverlayVisible,
                 _startCountdownToDismissControls,
-                () => _timer.cancel(),
+                () => _controlsTimer.cancel(),
+              ),
+            ),
+            Align(
+              alignment: const Alignment(0, 0.9),
+              child: AnimatedSlide(
+                duration: const Duration(milliseconds: 250),
+                offset: _isLockControls && _lockOverlayVisible
+                    ? const Offset(0, 0)
+                    : const Offset(0, 1.3),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        setLock(false);
+                      },
+                      icon: const Icon(
+                        Icons.lock_outline,
+                        size: 32,
+                      ),
+                      style: IconButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 6,
+                    ),
+                    const Text(
+                      'Màn hình đã khoá',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
           ],

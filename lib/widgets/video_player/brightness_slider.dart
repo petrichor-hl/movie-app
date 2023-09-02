@@ -54,7 +54,7 @@ class _BrightnessSliderState extends State<BrightnessSlider> {
             const Icon(
               Icons.sunny,
               color: Colors.white,
-            )
+            ),
           ],
         ),
       ),
