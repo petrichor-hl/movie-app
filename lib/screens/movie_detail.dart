@@ -1,8 +1,10 @@
 import 'dart:ui' as dart_ui;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
@@ -24,7 +26,9 @@ class MovieDeital extends StatefulWidget {
 
 class _MovieDeitalState extends State<MovieDeital> {
   late final Map<String, dynamic>? _movie;
+  late final List<String> genres = [];
   late final _futureMovie = _fetchMovie();
+  late final List<dynamic> _seasons;
 
   Future<void> _fetchMovie() async {
     _movie = await supabase
@@ -34,12 +38,36 @@ class _MovieDeitalState extends State<MovieDeital> {
         )
         .eq('id', widget.filmId)
         .single();
+
+    final List<dynamic> genresData = await supabase
+        .from('film_genre')
+        .select('genre(name)')
+        .eq('film_id', widget.filmId);
+
+    for (final row in genresData) {
+      genres.add(row['genre']['name']);
+    }
+
+    _seasons = await supabase
+        .from('season')
+        .select('name, episode(*)')
+        .eq('film_id', widget.filmId)
+        .order('id', ascending: true);
+
+    // for (final season in seasons) {
+    //   print(season['name']);
+    // }
   }
 
   bool _isExpandOverview = false;
 
+  int segmentIndex = 0;
+
+  late String selectedSeason = _seasons[0]['name'];
+
   @override
   Widget build(BuildContext context) {
+    print('Film ID = ${widget.filmId}');
     return Scaffold(
       appBar: AppBar(
         title: Image.asset(
@@ -84,18 +112,6 @@ class _MovieDeitalState extends State<MovieDeital> {
           )..layout(minWidth: 0, maxWidth: MediaQuery.sizeOf(context).width);
 
           final isOverflowed = textPainter.didExceedMaxLines;
-
-          // String genresText = '';
-          // List<dynamic> genres = movie!['genres'];
-          // if (genres.isNotEmpty) {
-          //   genresText =
-          //       (genres[0]['name'] as String).replaceFirst('Phim ', '');
-          // }
-          // for (int i = 1; i < genres.length; ++i) {
-          //   genresText +=
-          //       ' - ${(genres[i]['name'] as String).replaceFirst('Phim ', '')}';
-          // }
-          // final List<dynamic> cast = movie!['credits']['cast'];
 
           DateTime releaseDate = DateTime.parse(_movie!['release_date']);
           String formattedDate = DateFormat('dd-MM-yyyy').format(releaseDate);
@@ -210,28 +226,116 @@ class _MovieDeitalState extends State<MovieDeital> {
                     ),
                   ),
                 const SizedBox(
-                  height: 12,
+                  height: 8,
                 ),
 
-                // if (genres.isNotEmpty)
-                //   const Text(
-                //     'Thể loại:',
-                //     style: TextStyle(
-                //       color: Colors.white,
-                //       fontWeight: FontWeight.bold,
-                //     ),
-                //   ),
-                // if (genres.isNotEmpty)
-                //   Text(
-                //     genresText,
-                //     style: const TextStyle(
-                //       color: Colors.white,
-                //     ),
-                //   ),
-                const SizedBox(
-                  height: 12,
+                const Text(
+                  'Thể loại:',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () {},
+                      child: Text(
+                        genres[0],
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    for (int i = 1; i < genres.length; ++i)
+                      GestureDetector(
+                        onTap: () {},
+                        child: Text(
+                          ', ${genres[i]}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+
+                // const SizedBox(
+                //   height: 8,
+                // ),
                 // ActorsList(cast: cast),
+
+                const SizedBox(
+                  height: 20,
+                ),
+                CupertinoSlidingSegmentedControl(
+                  backgroundColor: Colors.white.withAlpha(100),
+                  thumbColor: Colors.black,
+                  groupValue: segmentIndex,
+                  children: {
+                    0: buildSegment('Tập phim'),
+                    1: buildSegment('Đề xuất'),
+                  },
+                  onValueChanged: (index) {
+                    setState(() {
+                      segmentIndex = index!;
+                    });
+                  },
+                ),
+
+                const SizedBox(
+                  height: 8,
+                ),
+
+                AnimatedSwitcher(
+                  duration: 100.ms,
+                  child: segmentIndex == 0
+                      ? Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            DropdownButton(
+                              value: selectedSeason,
+                              dropdownColor:
+                                  const Color.fromARGB(255, 33, 33, 33),
+                              style: GoogleFonts.montserrat(fontSize: 16),
+                              items: List.generate(
+                                _seasons.length,
+                                (index) => DropdownMenuItem(
+                                  value: _seasons[index]['name'] as String,
+                                  child: Text(
+                                    _seasons[index]['name'],
+                                  ),
+                                ),
+                              ),
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() {
+                                    selectedSeason = value;
+                                  });
+                                }
+                              },
+                            ),
+                            ...(_seasons[0]['episode'] as List<dynamic>).map(
+                              (e) {
+                                return _Episode(
+                                  e['still_path'],
+                                  e['title'],
+                                  e['runtime'],
+                                  e['subtitle'],
+                                );
+                              },
+                            ),
+                          ],
+                        )
+                      : const SizedBox(
+                          height: 500,
+                          width: double.infinity,
+                          key: ValueKey(2),
+                          child: ColoredBox(color: Colors.grey),
+                        ),
+                ),
               ],
             ).animate().fade().slideY(
                   curve: Curves.easeInOut,
@@ -318,6 +422,91 @@ class ActorsList extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class TabBar extends StatelessWidget {
+  const TabBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
+  }
+}
+
+Widget buildSegment(String text) {
+  return Container(
+    padding: const EdgeInsets.all(10),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  );
+}
+
+class _Episode extends StatelessWidget {
+  const _Episode(this.stillPath, this.title, this.runtime, this.subtitle);
+
+  final String stillPath;
+  final String title;
+  final int runtime;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                clipBehavior: Clip.antiAlias,
+                child: Image.network(
+                  'https://www.themoviedb.org/t/p/w454_and_h254_bestv2$stillPath',
+                  height: 72,
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '$runtime phút',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          Text(
+            subtitle,
+            style: const TextStyle(color: Colors.white70),
+          ),
+          const SizedBox(
+            height: 30,
+          )
+        ],
+      ),
     );
   }
 }
