@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:movie_app/models/content.dart';
 import 'package:movie_app/screens/movie_detail.dart';
+import 'package:page_transition/page_transition.dart';
 
 class ContentList extends StatelessWidget {
   const ContentList({
     super.key,
     required this.title,
-    required this.contentList,
+    required this.films,
     this.isOriginals = false,
   });
 
   final String title;
-  final List<Content> contentList;
+  final List<dynamic> films;
   final bool isOriginals;
 
   @override
@@ -20,7 +20,7 @@ class ContentList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 20),
+          padding: const EdgeInsets.only(left: 20, top: 16, bottom: 6),
           child: Text(
             title,
             style: const TextStyle(
@@ -31,33 +31,39 @@ class ContentList extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: isOriginals ? 500 : 220,
+          height: isOriginals ? 360 : 180,
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             scrollDirection: Axis.horizontal,
             itemBuilder: (ctx, index) {
-              final content = contentList[index];
+              final film = films[index];
               return GestureDetector(
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (ctx) => const MovieDeital(),
+                    PageTransition(
+                      child: MovieDeital(filmId: film['id']),
+                      type: PageTransitionType.rightToLeftWithFade,
                     ),
                   );
                 },
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 8),
-                  height: isOriginals ? 400 : 200,
-                  width: isOriginals ? 200 : 130,
+                  width: isOriginals ? 240 : 120,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     image: DecorationImage(
-                        image: AssetImage(content.imageUrl), fit: BoxFit.cover),
+                      image: NetworkImage(
+                        isOriginals
+                            ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2${film['poster_path']}'
+                            : 'https://image.tmdb.org/t/p/w440_and_h660_face${film['poster_path']}',
+                      ),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               );
             },
-            itemCount: contentList.length,
+            itemCount: films.length,
           ),
         )
       ],

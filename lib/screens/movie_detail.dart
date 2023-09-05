@@ -1,11 +1,8 @@
-import 'dart:convert';
-import 'dart:math';
 import 'dart:ui' as dart_ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
@@ -14,37 +11,29 @@ import 'package:movie_app/main.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 
 class MovieDeital extends StatefulWidget {
-  const MovieDeital({super.key});
+  const MovieDeital({
+    super.key,
+    required this.filmId,
+  });
+
+  final String filmId;
 
   @override
   State<MovieDeital> createState() => _MovieDeitalState();
 }
 
 class _MovieDeitalState extends State<MovieDeital> {
-  Map<String, dynamic>? movie;
+  late final Map<String, dynamic>? _movie;
   late final _futureMovie = _fetchMovie();
 
   Future<void> _fetchMovie() async {
-    final http.Response response;
-    int randomMovieId = Random().nextInt(600);
-    try {
-      final Uri uri =
-          Uri.https('api.themoviedb.org', '/3/movie/$randomMovieId', {
-        'api_key': tmdbApiKey,
-        'append_to_response': 'credits',
-        'language': 'vi-VN',
-      });
-      response = await http.get(uri);
-    } catch (error) {
-      // print('Error in try catch');
-      return;
-    }
-
-    if (response.statusCode >= 400 || response.body == 'null') {
-      throw Exception('404 Not Found');
-    }
-
-    movie = json.decode(response.body);
+    _movie = await supabase
+        .from('film')
+        .select(
+          'name, release_date, vote_average, vote_count, overview, backdrop_path, poster_path, content_rating, trailer',
+        )
+        .eq('id', widget.filmId)
+        .single();
   }
 
   bool _isExpandOverview = false;
@@ -87,7 +76,7 @@ class _MovieDeitalState extends State<MovieDeital> {
 
           final textPainter = TextPainter(
             text: TextSpan(
-              text: movie == null ? '' : movie!['overview'],
+              text: _movie!['overview'],
               style: const TextStyle(color: Colors.white),
             ),
             maxLines: 4,
@@ -96,19 +85,19 @@ class _MovieDeitalState extends State<MovieDeital> {
 
           final isOverflowed = textPainter.didExceedMaxLines;
 
-          String genresText = '';
-          List<dynamic> genres = movie!['genres'];
-          if (genres.isNotEmpty) {
-            genresText =
-                (genres[0]['name'] as String).replaceFirst('Phim ', '');
-          }
-          for (int i = 1; i < genres.length; ++i) {
-            genresText +=
-                ' - ${(genres[i]['name'] as String).replaceFirst('Phim ', '')}';
-          }
-          final List<dynamic> cast = movie!['credits']['cast'];
+          // String genresText = '';
+          // List<dynamic> genres = movie!['genres'];
+          // if (genres.isNotEmpty) {
+          //   genresText =
+          //       (genres[0]['name'] as String).replaceFirst('Phim ', '');
+          // }
+          // for (int i = 1; i < genres.length; ++i) {
+          //   genresText +=
+          //       ' - ${(genres[i]['name'] as String).replaceFirst('Phim ', '')}';
+          // }
+          // final List<dynamic> cast = movie!['credits']['cast'];
 
-          DateTime releaseDate = DateTime.parse(movie!['release_date']);
+          DateTime releaseDate = DateTime.parse(_movie!['release_date']);
           String formattedDate = DateFormat('dd-MM-yyyy').format(releaseDate);
 
           return SingleChildScrollView(
@@ -116,13 +105,13 @@ class _MovieDeitalState extends State<MovieDeital> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Image.network(
-                  'https://image.tmdb.org/t/p/original/${movie!['backdrop_path']}',
+                  'https://image.tmdb.org/t/p/original/${_movie!['backdrop_path']}',
                   height: 240,
                   width: double.infinity,
                   fit: BoxFit.cover,
                 ),
                 Text(
-                  movie!['title'],
+                  _movie!['name'],
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -138,7 +127,7 @@ class _MovieDeitalState extends State<MovieDeital> {
                   ),
                 ),
                 Text(
-                  'Điểm: ${(movie!['vote_average'] as double).toStringAsFixed(2)}',
+                  'Điểm: ${(_movie!['vote_average'] as double).toStringAsFixed(2)}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -160,8 +149,8 @@ class _MovieDeitalState extends State<MovieDeital> {
                                 create: (ctx) => VideoPlayControlCubit(),
                               ),
                             ],
-                            child: const VideoPlayerView(
-                              title: 'Jujutsu Kaisen',
+                            child: VideoPlayerView(
+                              title: _movie!['name'],
                               episodeUrl:
                                   'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/film/jujutsu_kaisen/season_1/jujutsu_kaisen_trailer.mp4?t=2023-09-01T12%3A34%3A55.249Z',
                             ),
@@ -201,13 +190,12 @@ class _MovieDeitalState extends State<MovieDeital> {
                 const SizedBox(
                   height: 6,
                 ),
-                if (movie!['overview'] != '')
-                  Text(
-                    movie!['overview'],
-                    style: const TextStyle(color: Colors.white),
-                    maxLines: _isExpandOverview ? null : 4,
-                    textAlign: TextAlign.justify,
-                  ),
+                Text(
+                  _movie!['overview'],
+                  style: const TextStyle(color: Colors.white),
+                  maxLines: _isExpandOverview ? null : 4,
+                  textAlign: TextAlign.justify,
+                ),
                 if (isOverflowed)
                   InkWell(
                     onTap: () => setState(() {
@@ -221,29 +209,29 @@ class _MovieDeitalState extends State<MovieDeital> {
                       ),
                     ),
                   ),
-                if (movie!['overview'] != '')
-                  const SizedBox(
-                    height: 12,
-                  ),
-                if (genres.isNotEmpty)
-                  const Text(
-                    'Thể loại:',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                if (genres.isNotEmpty)
-                  Text(
-                    genresText,
-                    style: const TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
                 const SizedBox(
                   height: 12,
                 ),
-                ActorsList(cast: cast),
+
+                // if (genres.isNotEmpty)
+                //   const Text(
+                //     'Thể loại:',
+                //     style: TextStyle(
+                //       color: Colors.white,
+                //       fontWeight: FontWeight.bold,
+                //     ),
+                //   ),
+                // if (genres.isNotEmpty)
+                //   Text(
+                //     genresText,
+                //     style: const TextStyle(
+                //       color: Colors.white,
+                //     ),
+                //   ),
+                const SizedBox(
+                  height: 12,
+                ),
+                // ActorsList(cast: cast),
               ],
             ).animate().fade().slideY(
                   curve: Curves.easeInOut,

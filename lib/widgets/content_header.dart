@@ -1,191 +1,117 @@
-import 'dart:convert';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-
-import 'package:movie_app/main.dart';
-import 'package:movie_app/models/content.dart';
+import 'package:movie_app/assets.dart';
 
 class ContentHeader extends StatefulWidget {
-  const ContentHeader({super.key, required this.featuredContent});
+  const ContentHeader({super.key, required this.id, required this.posterPath});
 
-  final Content featuredContent;
+  final String id;
+  final String posterPath;
 
   @override
   State<ContentHeader> createState() => _ContentHeaderState();
 }
 
 class _ContentHeaderState extends State<ContentHeader> {
-  final List<String> _genres = [];
-
-  late Future<void> _futureGenres;
-
-  Future<void> _loadContentHeader() async {
-    final http.Response response;
-    int randomMovieId = Random().nextInt(600);
-    // print(randomMovieId);
-    try {
-      final Uri uri =
-          Uri.https('api.themoviedb.org', '/3/movie/$randomMovieId', {
-        'api_key': tmdbApiKey,
-        'language': 'vi-VN',
-      });
-      response = await http.get(uri);
-    } catch (error) {
-      return;
-    }
-
-    if (response.statusCode >= 400 || response.body == 'null') {
-      return;
-    }
-
-    final Map<String, dynamic> fetchedData = json.decode(response.body);
-    for (final genreItem in fetchedData['genres']) {
-      String genre = genreItem['name'];
-      _genres.add(
-        genre.replaceFirst('Phim ', ''),
-      );
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _futureGenres = _loadContentHeader();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: _futureGenres,
-      builder: (ctx, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(
-            height: 500,
-            child: Center(
-              child: CircularProgressIndicator(),
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          height: 500,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage(Assets.sintel),
+              fit: BoxFit.cover,
             ),
-          );
-        }
-
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            Container(
-              height: 500,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(widget.featuredContent.imageUrl),
-                  fit: BoxFit.cover,
-                ),
+          ),
+        ),
+        Container(
+          height: 500,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.black87,
+                Colors.transparent,
+                Colors.black87,
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 20,
+          left: 0,
+          right: 0,
+          child: Column(
+            children: [
+              SizedBox(
+                width: 240,
+                child: Image.asset(Assets.sintelTitle),
               ),
-            ),
-            Container(
-              height: 500,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black87,
-                    Colors.transparent,
-                    Colors.black87,
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
+              const SizedBox(
+                height: 4,
               ),
-            ),
-            Positioned(
-              bottom: 40,
-              left: 0,
-              right: 0,
-              child: Column(
+              const Text(
+                'Hoạt hình - Hài - Phiêu lưu',
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(
+                height: 14,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  SizedBox(
-                    width: 250,
-                    child: Image.asset(widget.featuredContent.titleImageUrl),
-                  ),
-                  if (_genres.isNotEmpty)
-                    const SizedBox(
-                      height: 8,
-                    ),
-                  if (_genres.isNotEmpty)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _genres[0],
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                        for (int i = 1; i < min(3, _genres.length); ++i)
-                          Text(
-                            ' - ${_genres[i]}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                      ],
-                    ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.play_arrow_rounded,
-                            size: 30,
-                          ),
-                          label: const Text(
-                            'Phát',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          style: FilledButton.styleFrom(
-                            foregroundColor: Colors.black,
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.play_arrow_rounded,
+                        size: 30,
+                      ),
+                      label: const Text(
+                        'Phát',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: FilledButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.add,
-                          ),
-                          label: const Text(
-                            'Danh sách',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          style: FilledButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.white.withOpacity(0.4),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.add,
+                      ),
+                      label: const Text(
+                        'Danh sách',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: FilledButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.white.withOpacity(0.4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      const SizedBox(width: 20),
-                    ],
+                    ),
                   ),
+                  const SizedBox(width: 20),
                 ],
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
