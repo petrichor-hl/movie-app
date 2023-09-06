@@ -30,6 +30,7 @@ class _MovieDeitalState extends State<MovieDeital> {
   late final List<String> genres = [];
   late final _futureMovie = _fetchMovie();
   late final List<dynamic> _seasons;
+  late final isMovie = _seasons[0]['name'] == null;
 
   Future<void> _fetchMovie() async {
     _movie = await supabase
@@ -55,17 +56,13 @@ class _MovieDeitalState extends State<MovieDeital> {
         .eq('film_id', widget.filmId)
         .order('id', ascending: true)
         .order('order', foreignTable: 'episode', ascending: true);
-
-    // for (final season in seasons) {
-    //   print(season['name']);
-    // }
   }
 
   bool _isExpandOverview = false;
 
   @override
   Widget build(BuildContext context) {
-    print('Film ID = ${widget.filmId}');
+    debugPrint('Film ID = ${widget.filmId}');
     return Scaffold(
       appBar: AppBar(
         title: Image.asset(
@@ -111,9 +108,6 @@ class _MovieDeitalState extends State<MovieDeital> {
 
           final isOverflowed = textPainter.didExceedMaxLines;
 
-          DateTime releaseDate = DateTime.parse(_movie!['release_date']);
-          String formattedDate = DateFormat('dd-MM-yyyy').format(releaseDate);
-
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +128,9 @@ class _MovieDeitalState extends State<MovieDeital> {
                 ),
                 // const SizedBox(height: 12),
                 Text(
-                  'Phát hành: $formattedDate',
+                  'Phát hành: ${DateFormat('dd-MM-yyyy').format(
+                    DateTime.parse(_movie!['release_date']),
+                  )}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -267,8 +263,41 @@ class _MovieDeitalState extends State<MovieDeital> {
                 const SizedBox(
                   height: 20,
                 ),
-
-                _SegmentCompose(_seasons),
+                isMovie
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                                border:
+                                    Border.all(width: 2, color: Colors.white),
+                                borderRadius: BorderRadius.circular(4)),
+                            padding: const EdgeInsets.all(8),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Đề xuất',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Icon(
+                                  Icons.recommend_rounded,
+                                  color: Colors.white,
+                                )
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const _GridRecommededFilm()
+                        ],
+                      )
+                    : _SegmentCompose(_seasons),
               ],
             ).animate().fade().slideY(
                   curve: Curves.easeInOut,
@@ -436,54 +465,62 @@ class _Episode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                clipBehavior: Clip.antiAlias,
-                child: Image.network(
-                  'https://www.themoviedb.org/t/p/w454_and_h254_bestv2$stillPath',
-                  height: 72,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 30),
+      child: InkWell(
+        onTap: () {},
+        splashColor: const Color.fromARGB(255, 52, 52, 52),
+        borderRadius: BorderRadius.circular(4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image.network(
+                    'https://www.themoviedb.org/t/p/w454_and_h254_bestv2$stillPath',
+                    height: 80,
+                    width: 143,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '$runtime phút',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      '$runtime phút',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            ],
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          Text(
-            subtitle,
-            style: const TextStyle(color: Colors.white70),
-          ),
-          const SizedBox(
-            height: 30,
-          )
-        ],
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.white70),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -499,7 +536,7 @@ class _ListEpisodes extends StatefulWidget {
 }
 
 class __ListEpisodesState extends State<_ListEpisodes> {
-  late String selectedSeason = widget.seasons[0]['name'];
+  late int selectedSeason = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -511,10 +548,11 @@ class __ListEpisodesState extends State<_ListEpisodes> {
           value: selectedSeason,
           dropdownColor: const Color.fromARGB(255, 33, 33, 33),
           style: GoogleFonts.montserrat(fontSize: 16),
+          isDense: true,
           items: List.generate(
             widget.seasons.length,
             (index) => DropdownMenuItem(
-              value: widget.seasons[index]['name'] as String,
+              value: index,
               child: Text(
                 widget.seasons[index]['name'],
               ),
@@ -528,7 +566,8 @@ class __ListEpisodesState extends State<_ListEpisodes> {
             }
           },
         ),
-        ...(widget.seasons[0]['episode'] as List<dynamic>).map(
+        const SizedBox(height: 10),
+        ...(widget.seasons[selectedSeason]['episode'] as List<dynamic>).map(
           (e) {
             return _Episode(
               e['still_path'],

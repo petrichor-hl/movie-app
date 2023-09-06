@@ -25,6 +25,8 @@ SE121.011
 
 ### Screenshots
 
+- TV series & Movie
+
 - Onboarding
 <p align="center">
     <img src="demo/intro_page_1.png" width="45%"/>
@@ -37,9 +39,15 @@ SE121.011
     
 </p>
 
+<p align="center">
+    <img src="demo/tv_series_detail.png" width="45%"/>
+    <img src="demo/movie_detail.png" width="45%"/>
+</p>
+
 - NavScreen
 <p align="center">
     <img src="demo/home_screen.png" width="45%"/>
+    <img src="demo/profile_screen.png" width="45%"/>
 </p>
 
 
