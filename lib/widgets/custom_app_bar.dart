@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:movie_app/assets.dart';
 
 class CustomAppBar extends StatelessWidget {
-  final double scrollOffset;
-
   const CustomAppBar({
     super.key,
     this.scrollOffset = 0,
+    required this.scaffoldKey,
   });
+
+  final double scrollOffset;
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,8 @@ class CustomAppBar extends StatelessWidget {
                 children: [
                   _AppBarButton('TV Shows', scrollOffset, () {}),
                   _AppBarButton('Phim', scrollOffset, () {}),
-                  _AppBarButton('Theo thể loại', scrollOffset, () {}),
+                  _AppBarButton('Theo thể loại', scrollOffset,
+                      () => scaffoldKey.currentState!.openEndDrawer()),
                 ],
               ),
             ),

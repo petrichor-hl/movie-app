@@ -406,15 +406,6 @@ class ActorsList extends StatelessWidget {
   }
 }
 
-class TabBar extends StatelessWidget {
-  const TabBar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
-  }
-}
-
 class _SegmentCompose extends StatefulWidget {
   const _SegmentCompose(this.seasons);
 
@@ -435,12 +426,14 @@ class _SegmentComposeState extends State<_SegmentCompose> {
       mainAxisSize: MainAxisSize.min,
       children: [
         CupertinoSlidingSegmentedControl(
-          backgroundColor: Colors.white.withAlpha(100),
+          backgroundColor: Colors.white.withAlpha(36),
           thumbColor: Colors.black,
           groupValue: _segmentIndex,
           children: {
             0: buildSegment('Tập phim'),
             1: buildSegment('Đề xuất'),
+            2: buildSegment('Diễn viên'),
+            3: buildSegment('Tác giả'),
           },
           onValueChanged: (index) {
             setState(() {
@@ -461,8 +454,8 @@ class _SegmentComposeState extends State<_SegmentCompose> {
 }
 
 Widget buildSegment(String text) {
-  return Container(
-    padding: const EdgeInsets.all(10),
+  return Padding(
+    padding: const EdgeInsets.all(10.0),
     child: Text(
       text,
       style: const TextStyle(
@@ -584,7 +577,7 @@ class __ListEpisodesState extends State<_ListEpisodes> {
             }
           },
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         ...(widget.seasons[selectedSeason]['episode'] as List<dynamic>).map(
           (e) {
             return _Episode(
