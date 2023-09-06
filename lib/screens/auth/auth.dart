@@ -8,7 +8,7 @@ import 'package:movie_app/main.dart';
 
 import 'package:movie_app/screens/auth/sign_in.dart';
 import 'package:movie_app/screens/auth/sign_up.dart';
-import 'package:movie_app/screens/bottom_nav.dart';
+import 'package:movie_app/screens/main/bottom_nav.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});

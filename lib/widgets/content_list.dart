@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:movie_app/screens/movie_detail.dart';
+import 'package:movie_app/screens/film_detail.dart';
 import 'package:page_transition/page_transition.dart';
 
 class ContentList extends StatelessWidget {
@@ -42,14 +42,15 @@ class ContentList extends StatelessWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     PageTransition(
-                        child: MovieDeital(filmId: film['id']),
-                        type: PageTransitionType.rightToLeft,
-                        duration: 300.ms,
-                        reverseDuration: 300.ms),
+                      child: FilmDetail(filmId: film['id']),
+                      type: PageTransitionType.rightToLeft,
+                      duration: 300.ms,
+                      reverseDuration: 300.ms,
+                    ),
                   );
                 },
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
                   width: isOriginals ? 240 : 120,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),

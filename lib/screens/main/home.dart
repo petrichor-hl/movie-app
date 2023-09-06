@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/appbar/app_bar_cubit.dart';
 
 import 'package:movie_app/data/poster_data.dart';
-import 'package:movie_app/widgets/export_widgets.dart';
+import 'package:movie_app/widgets/content_header.dart';
+import 'package:movie_app/widgets/content_list.dart';
+import 'package:movie_app/widgets/custom_app_bar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

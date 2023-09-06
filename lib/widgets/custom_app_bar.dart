@@ -26,8 +26,8 @@ class CustomAppBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _AppBarButton('TV Shows', scrollOffset, () {}),
-                  _AppBarButton('Movie', scrollOffset, () {}),
-                  _AppBarButton('Genre', scrollOffset, () {}),
+                  _AppBarButton('Phim', scrollOffset, () {}),
+                  _AppBarButton('Theo thể loại', scrollOffset, () {}),
                 ],
               ),
             ),

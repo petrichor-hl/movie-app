@@ -10,11 +10,13 @@ import 'package:movie_app/assets.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/screens/list_films_by_genre.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:shimmer/shimmer.dart';
 
-class MovieDeital extends StatefulWidget {
-  const MovieDeital({
+class FilmDetail extends StatefulWidget {
+  const FilmDetail({
     super.key,
     required this.filmId,
   });
@@ -22,12 +24,12 @@ class MovieDeital extends StatefulWidget {
   final String filmId;
 
   @override
-  State<MovieDeital> createState() => _MovieDeitalState();
+  State<FilmDetail> createState() => _FilmDetailState();
 }
 
-class _MovieDeitalState extends State<MovieDeital> {
+class _FilmDetailState extends State<FilmDetail> {
   late final Map<String, dynamic>? _movie;
-  late final List<String> genres = [];
+  late final List<dynamic> genres;
   late final _futureMovie = _fetchMovie();
   late final List<dynamic> _seasons;
   late final isMovie = _seasons[0]['name'] == null;
@@ -41,14 +43,10 @@ class _MovieDeitalState extends State<MovieDeital> {
         .eq('id', widget.filmId)
         .single();
 
-    final List<dynamic> genresData = await supabase
+    genres = await supabase
         .from('film_genre')
-        .select('genre(name)')
+        .select('genre(*)')
         .eq('film_id', widget.filmId);
-
-    for (final row in genresData) {
-      genres.add(row['genre']['name']);
-    }
 
     _seasons = await supabase
         .from('season')
@@ -70,8 +68,8 @@ class _MovieDeitalState extends State<MovieDeital> {
           width: 140,
         ),
         centerTitle: true,
+        foregroundColor: Colors.white,
         backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             onPressed: () {},
@@ -234,9 +232,19 @@ class _MovieDeitalState extends State<MovieDeital> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.of(context).pushReplacement(
+                          PageTransition(
+                            child: ListFilmsByGenre(
+                              genreId: genres[0]['genre']['id'],
+                              genreName: genres[0]['genre']['name'],
+                            ),
+                            type: PageTransitionType.fade,
+                          ),
+                        );
+                      },
                       child: Text(
-                        genres[0],
+                        genres[0]['genre']['name'],
                         style: const TextStyle(
                           color: Colors.white,
                         ),
@@ -244,9 +252,19 @@ class _MovieDeitalState extends State<MovieDeital> {
                     ),
                     for (int i = 1; i < genres.length; ++i)
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.of(context).pushReplacement(
+                            PageTransition(
+                              child: ListFilmsByGenre(
+                                genreId: genres[i]['genre']['id'],
+                                genreName: genres[i]['genre']['name'],
+                              ),
+                              type: PageTransitionType.fade,
+                            ),
+                          );
+                        },
                         child: Text(
-                          ', ${genres[i]}',
+                          ', ${genres[i]['genre']['name']}',
                           style: const TextStyle(
                             color: Colors.white,
                           ),

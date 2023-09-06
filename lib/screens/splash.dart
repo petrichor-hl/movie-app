@@ -5,7 +5,7 @@ import 'package:movie_app/data/poster_data.dart';
 import 'package:movie_app/main.dart';
 
 import 'package:movie_app/onboarding/onboarding.dart';
-import 'package:movie_app/screens/bottom_nav.dart';
+import 'package:movie_app/screens/main/bottom_nav.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SplashScreen extends StatefulWidget {
