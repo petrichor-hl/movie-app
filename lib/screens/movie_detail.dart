@@ -11,6 +11,7 @@ import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dar
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
+import 'package:shimmer/shimmer.dart';
 
 class MovieDeital extends StatefulWidget {
   const MovieDeital({
@@ -52,7 +53,8 @@ class _MovieDeitalState extends State<MovieDeital> {
         .from('season')
         .select('name, episode(*)')
         .eq('film_id', widget.filmId)
-        .order('id', ascending: true);
+        .order('id', ascending: true)
+        .order('order', foreignTable: 'episode', ascending: true);
 
     // for (final season in seasons) {
     //   print(season['name']);
@@ -60,10 +62,6 @@ class _MovieDeitalState extends State<MovieDeital> {
   }
 
   bool _isExpandOverview = false;
-
-  int segmentIndex = 0;
-
-  late String selectedSeason = _seasons[0]['name'];
 
   @override
   Widget build(BuildContext context) {
@@ -269,73 +267,8 @@ class _MovieDeitalState extends State<MovieDeital> {
                 const SizedBox(
                   height: 20,
                 ),
-                CupertinoSlidingSegmentedControl(
-                  backgroundColor: Colors.white.withAlpha(100),
-                  thumbColor: Colors.black,
-                  groupValue: segmentIndex,
-                  children: {
-                    0: buildSegment('Tập phim'),
-                    1: buildSegment('Đề xuất'),
-                  },
-                  onValueChanged: (index) {
-                    setState(() {
-                      segmentIndex = index!;
-                    });
-                  },
-                ),
 
-                const SizedBox(
-                  height: 8,
-                ),
-
-                AnimatedSwitcher(
-                  duration: 100.ms,
-                  child: segmentIndex == 0
-                      ? Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DropdownButton(
-                              value: selectedSeason,
-                              dropdownColor:
-                                  const Color.fromARGB(255, 33, 33, 33),
-                              style: GoogleFonts.montserrat(fontSize: 16),
-                              items: List.generate(
-                                _seasons.length,
-                                (index) => DropdownMenuItem(
-                                  value: _seasons[index]['name'] as String,
-                                  child: Text(
-                                    _seasons[index]['name'],
-                                  ),
-                                ),
-                              ),
-                              onChanged: (value) {
-                                if (value != null) {
-                                  setState(() {
-                                    selectedSeason = value;
-                                  });
-                                }
-                              },
-                            ),
-                            ...(_seasons[0]['episode'] as List<dynamic>).map(
-                              (e) {
-                                return _Episode(
-                                  e['still_path'],
-                                  e['title'],
-                                  e['runtime'],
-                                  e['subtitle'],
-                                );
-                              },
-                            ),
-                          ],
-                        )
-                      : const SizedBox(
-                          height: 500,
-                          width: double.infinity,
-                          key: ValueKey(2),
-                          child: ColoredBox(color: Colors.grey),
-                        ),
-                ),
+                _SegmentCompose(_seasons),
               ],
             ).animate().fade().slideY(
                   curve: Curves.easeInOut,
@@ -435,6 +368,51 @@ class TabBar extends StatelessWidget {
   }
 }
 
+class _SegmentCompose extends StatefulWidget {
+  const _SegmentCompose(this.seasons);
+
+  final List<dynamic> seasons;
+
+  @override
+  State<_SegmentCompose> createState() => _SegmentComposeState();
+}
+
+class _SegmentComposeState extends State<_SegmentCompose> {
+  int _segmentIndex = 0;
+  late final listEpisodes = _ListEpisodes(widget.seasons);
+  final gridRecommendedFilm = const _GridRecommededFilm();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CupertinoSlidingSegmentedControl(
+          backgroundColor: Colors.white.withAlpha(100),
+          thumbColor: Colors.black,
+          groupValue: _segmentIndex,
+          children: {
+            0: buildSegment('Tập phim'),
+            1: buildSegment('Đề xuất'),
+          },
+          onValueChanged: (index) {
+            setState(() {
+              _segmentIndex = index!;
+            });
+          },
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        AnimatedSwitcher(
+          duration: 100.ms,
+          child: _segmentIndex == 0 ? listEpisodes : gridRecommendedFilm,
+        ),
+      ],
+    );
+  }
+}
+
 Widget buildSegment(String text) {
   return Container(
     padding: const EdgeInsets.all(10),
@@ -508,5 +486,127 @@ class _Episode extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _ListEpisodes extends StatefulWidget {
+  const _ListEpisodes(this.seasons);
+
+  final List<dynamic> seasons;
+
+  @override
+  State<_ListEpisodes> createState() => __ListEpisodesState();
+}
+
+class __ListEpisodesState extends State<_ListEpisodes> {
+  late String selectedSeason = widget.seasons[0]['name'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButton(
+          value: selectedSeason,
+          dropdownColor: const Color.fromARGB(255, 33, 33, 33),
+          style: GoogleFonts.montserrat(fontSize: 16),
+          items: List.generate(
+            widget.seasons.length,
+            (index) => DropdownMenuItem(
+              value: widget.seasons[index]['name'] as String,
+              child: Text(
+                widget.seasons[index]['name'],
+              ),
+            ),
+          ),
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                selectedSeason = value;
+              });
+            }
+          },
+        ),
+        ...(widget.seasons[0]['episode'] as List<dynamic>).map(
+          (e) {
+            return _Episode(
+              e['still_path'],
+              e['title'],
+              e['runtime'],
+              e['subtitle'],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _GridRecommededFilm extends StatelessWidget {
+  const _GridRecommededFilm();
+
+  @override
+  Widget build(BuildContext context) {
+    // Để tạo một Grid không chiếm toàn bộ khoảng trống => Sử dụng shrinkWrap = true
+    // Làm cho Grid không cuộn được => set physics = NeverScrollableScrollPhysics();
+
+    // Cách 1: Đơn giản
+    return GridView(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 2 / 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      children: List.generate(
+        12,
+        (index) => Shimmer.fromColors(
+          baseColor: Colors.white.withAlpha(100),
+          highlightColor: Colors.grey,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: ColoredBox(
+              color: Colors.white.withAlpha(100),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // or
+    // Cách 2:
+    // return CustomScrollView(
+    //   shrinkWrap: true,
+    //   physics: const NeverScrollableScrollPhysics(), // Disable scrolling
+    //   slivers: [
+    //     SliverGrid(
+    //       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+    //         crossAxisCount: 3, // Number of columns
+    //         mainAxisSpacing: 10,
+    //         crossAxisSpacing: 10,
+    //         childAspectRatio: 2 / 3,
+    //       ),
+    //       delegate: SliverChildBuilderDelegate(
+    //         (ctx, index) {
+    //           // Replace this with your colored boxes or widgets
+    //           return Shimmer.fromColors(
+    //             baseColor: Colors.white.withAlpha(100),
+    //             highlightColor: Colors.grey,
+    //             child: ClipRRect(
+    //               borderRadius: BorderRadius.circular(4),
+    //               child: ColoredBox(
+    //                 color: Colors.white.withAlpha(100),
+    //               ),
+    //             ),
+    //           );
+    //         },
+    //         childCount: 12, // Number of boxes in the grid
+    //       ),
+    //     ),
+    //   ],
+    // );;
   }
 }
