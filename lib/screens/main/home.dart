@@ -6,9 +6,11 @@ import 'package:movie_app/cubits/appbar/app_bar_cubit.dart';
 
 import 'package:movie_app/data/topics_data.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/screens/list_films_by_genre.dart';
 import 'package:movie_app/widgets/content_header.dart';
 import 'package:movie_app/widgets/content_list.dart';
 import 'package:movie_app/widgets/custom_app_bar.dart';
+import 'package:page_transition/page_transition.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -59,81 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
       extendBodyBehindAppBar: true,
       // Thay đổi màu cho phần còn lại của màn hình khi Drawer đang mở
       // drawerScrimColor: Colors.transparent,
-      endDrawer: Stack(
-        children: [
-          const SizedBox.expand(),
-          Positioned(
-            right: 0,
-            top: 0,
-            bottom: 0,
-            child: Container(
-              width: 258,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.horizontal(
-                  left: Radius.circular(20),
-                ),
-                color: Colors.black,
-              ),
-              child: FutureBuilder(
-                future: _futureGenres,
-                builder: (ctx, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
-
-                  if (snapshot.hasError) {
-                    return const Center(
-                      child: Text(
-                        'Truy xuất danh sách Thể loại thất bại',
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  }
-
-                  return SafeArea(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: List.generate(
-                          genres.length,
-                          (index) => ListTile(
-                            title: Text(
-                              genres[index]['name'],
-                              style: const TextStyle(color: Colors.white),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        )
-                            .animate(interval: 50.ms)
-                            .scale(curve: Curves.easeInOut),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          Positioned(
-            right: 228,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: IconButton.filled(
-                onPressed: () => _scaffoldKey.currentState!.closeEndDrawer(),
-                icon: const Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 32,
-                ),
-                style: IconButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.all(14)),
-              ),
-            ),
-          ),
-        ],
-      ),
+      endDrawer: buildEndDrawer(),
       // Tùy chọn: Khoảng cách bên phải để mở drawer khi vuốt từ lề
       drawerEdgeDragWidth: 40,
       body: CustomScrollView(
@@ -167,4 +95,81 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  Widget buildEndDrawer() => Stack(
+        children: [
+          const SizedBox.expand(),
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            child: Drawer(
+              width: 258,
+              backgroundColor: Colors.black,
+              elevation: 0,
+              child: FutureBuilder(
+                future: _futureGenres,
+                builder: (ctx, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return const Center(
+                      child: Text(
+                        'Truy xuất danh sách Thể loại thất bại',
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+
+                  return SafeArea(
+                    child: ListView(
+                      children: List.generate(
+                        genres.length,
+                        (index) => ListTile(
+                          onTap: () =>
+                              Navigator.of(context).push(PageTransition(
+                                  child: ListFilmsByGenre(
+                                    genreId: genres[index]['id'],
+                                    genreName: genres[index]['name'],
+                                  ),
+                                  type: PageTransitionType.fade)),
+                          title: Text(
+                            genres[index]['name'],
+                            style: const TextStyle(
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          Positioned(
+            right: 228,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: IconButton.filled(
+                onPressed: () => _scaffoldKey.currentState!.closeEndDrawer(),
+                icon: const Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 32,
+                ),
+                style: IconButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.all(14)),
+              ),
+            ),
+          ),
+        ],
+      );
 }
