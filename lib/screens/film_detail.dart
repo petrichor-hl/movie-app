@@ -11,6 +11,7 @@ import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dar
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/list_films_by_genre.dart';
+import 'package:movie_app/widgets/grid/grid_actors.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:shimmer/shimmer.dart';
@@ -281,41 +282,7 @@ class _FilmDetailState extends State<FilmDetail> {
                 const SizedBox(
                   height: 20,
                 ),
-                isMovie
-                    ? Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                                border:
-                                    Border.all(width: 2, color: Colors.white),
-                                borderRadius: BorderRadius.circular(4)),
-                            padding: const EdgeInsets.all(8),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Đề xuất',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                SizedBox(
-                                  width: 8,
-                                ),
-                                Icon(
-                                  Icons.recommend_rounded,
-                                  color: Colors.white,
-                                )
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          const _GridRecommededFilm()
-                        ],
-                      )
-                    : _SegmentCompose(_seasons),
+                _SegmentCompose(_seasons, isMovie, widget.filmId),
               ],
             ).animate().fade().slideY(
                   curve: Curves.easeInOut,
@@ -329,96 +296,32 @@ class _FilmDetailState extends State<FilmDetail> {
   }
 }
 
-class ActorsList extends StatelessWidget {
-  const ActorsList({
-    super.key,
-    required this.cast,
-  });
-
-  final List cast;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text(
-          'Diễn viên',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(
-          height: 6,
-        ),
-        SizedBox(
-          height: 170,
-          child: ListView.builder(
-            itemBuilder: (ctx, index) => cast[index]['profile_path'] != null
-                ? Stack(
-                    children: [
-                      Container(
-                        width: 130,
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          image: DecorationImage(
-                              image: NetworkImage(
-                                'https://image.tmdb.org/t/p/original/${cast[index]['profile_path']}',
-                              ),
-                              fit: BoxFit.cover),
-                        ),
-                      ),
-                      Positioned(
-                        left: 10,
-                        right: 18,
-                        bottom: 10,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          child: Text(
-                            cast[index]['original_name'],
-                            style: const TextStyle(
-                              color: Colors.white,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                : null,
-            itemCount: cast.length,
-            scrollDirection: Axis.horizontal,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _SegmentCompose extends StatefulWidget {
-  const _SegmentCompose(this.seasons);
+  const _SegmentCompose(this.seasons, this.isMovie, this.filmId);
 
   final List<dynamic> seasons;
+  final bool isMovie;
+  final String filmId;
 
   @override
   State<_SegmentCompose> createState() => _SegmentComposeState();
 }
 
 class _SegmentComposeState extends State<_SegmentCompose> {
-  int _segmentIndex = 0;
-  late final listEpisodes = _ListEpisodes(widget.seasons);
-  final gridRecommendedFilm = const _GridRecommededFilm();
+  late int _segmentIndex = widget.isMovie ? 1 : 0;
+  late final _listEpisodes = _ListEpisodes(widget.seasons);
+  final _gridShimmer = const _GridShimmer();
+
+  late final List<dynamic> _castData;
+  late final _futureCastData = _fetchcastData();
+
+  Future<void> _fetchcastData() async {
+    _castData = await supabase
+        .from('cast')
+        .select('character, person(id, name, profile_path)')
+        .eq('film_id', widget.filmId)
+        .order('popularity', ascending: true, foreignTable: 'person');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -429,12 +332,18 @@ class _SegmentComposeState extends State<_SegmentCompose> {
           backgroundColor: Colors.white.withAlpha(36),
           thumbColor: Colors.black,
           groupValue: _segmentIndex,
-          children: {
-            0: buildSegment('Tập phim'),
-            1: buildSegment('Đề xuất'),
-            2: buildSegment('Diễn viên'),
-            3: buildSegment('Tác giả'),
-          },
+          children: widget.isMovie
+              ? {
+                  1: buildSegment('Đề xuất'),
+                  2: buildSegment('Diễn viên'),
+                  3: buildSegment('Tác giả'),
+                }
+              : {
+                  0: buildSegment('Tập phim'),
+                  1: buildSegment('Đề xuất'),
+                  2: buildSegment('Diễn viên'),
+                  3: buildSegment('Tác giả'),
+                },
           onValueChanged: (index) {
             setState(() {
               _segmentIndex = index!;
@@ -446,7 +355,27 @@ class _SegmentComposeState extends State<_SegmentCompose> {
         ),
         AnimatedSwitcher(
           duration: 100.ms,
-          child: _segmentIndex == 0 ? listEpisodes : gridRecommendedFilm,
+          child: switch (_segmentIndex) {
+            0 => _listEpisodes,
+            2 => FutureBuilder(
+                future: _futureCastData,
+                builder: (ctx, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _gridShimmer;
+                  }
+
+                  if (snapshot.hasError) {
+                    return const Text(
+                      'Truy xuất thông tin diễn viên thất bại',
+                      textAlign: TextAlign.center,
+                    );
+                  }
+
+                  return GridActors(castData: _castData);
+                },
+              ),
+            _ => null,
+          },
         ),
       ],
     );
@@ -593,8 +522,8 @@ class __ListEpisodesState extends State<_ListEpisodes> {
   }
 }
 
-class _GridRecommededFilm extends StatelessWidget {
-  const _GridRecommededFilm();
+class _GridShimmer extends StatelessWidget {
+  const _GridShimmer();
 
   @override
   Widget build(BuildContext context) {

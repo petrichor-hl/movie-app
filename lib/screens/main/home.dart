@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/appbar/app_bar_cubit.dart';
@@ -130,13 +129,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: List.generate(
                         genres.length,
                         (index) => ListTile(
-                          onTap: () =>
-                              Navigator.of(context).push(PageTransition(
-                                  child: ListFilmsByGenre(
-                                    genreId: genres[index]['id'],
-                                    genreName: genres[index]['name'],
-                                  ),
-                                  type: PageTransitionType.fade)),
+                          onTap: () => Navigator.of(context).push(
+                            PageTransition(
+                              child: ListFilmsByGenre(
+                                genreId: genres[index]['id'],
+                                genreName: genres[index]['name'],
+                              ),
+                              type: PageTransitionType.fade,
+                            ),
+                          ),
                           title: Text(
                             genres[index]['name'],
                             style: const TextStyle(

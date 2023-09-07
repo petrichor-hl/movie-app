@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/main.dart';
-import 'package:movie_app/widgets/grid_films.dart';
+import 'package:movie_app/widgets/grid/grid_films.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ListFilmsByGenre extends StatefulWidget {
