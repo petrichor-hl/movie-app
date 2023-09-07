@@ -10,7 +10,7 @@ import 'package:movie_app/assets.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/main.dart';
-import 'package:movie_app/screens/list_films_by_genre.dart';
+import 'package:movie_app/screens/films_by_genre.dart';
 import 'package:movie_app/widgets/grid/grid_actors.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:page_transition/page_transition.dart';
@@ -328,27 +328,29 @@ class _SegmentComposeState extends State<_SegmentCompose> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CupertinoSlidingSegmentedControl(
-          backgroundColor: Colors.white.withAlpha(36),
-          thumbColor: Colors.black,
-          groupValue: _segmentIndex,
-          children: widget.isMovie
-              ? {
-                  1: buildSegment('Đề xuất'),
-                  2: buildSegment('Diễn viên'),
-                  3: buildSegment('Tác giả'),
-                }
-              : {
-                  0: buildSegment('Tập phim'),
-                  1: buildSegment('Đề xuất'),
-                  2: buildSegment('Diễn viên'),
-                  3: buildSegment('Tác giả'),
-                },
-          onValueChanged: (index) {
-            setState(() {
-              _segmentIndex = index!;
-            });
-          },
+        Center(
+          child: CupertinoSlidingSegmentedControl(
+            backgroundColor: Colors.white.withAlpha(36),
+            thumbColor: Colors.black,
+            groupValue: _segmentIndex,
+            children: widget.isMovie
+                ? {
+                    1: buildSegment('Đề xuất'),
+                    2: buildSegment('Diễn viên'),
+                    3: buildSegment('Tác giả'),
+                  }
+                : {
+                    0: buildSegment('Tập phim'),
+                    1: buildSegment('Đề xuất'),
+                    2: buildSegment('Diễn viên'),
+                    3: buildSegment('Tác giả'),
+                  },
+            onValueChanged: (index) {
+              setState(() {
+                _segmentIndex = index!;
+              });
+            },
+          ),
         ),
         const SizedBox(
           height: 10,

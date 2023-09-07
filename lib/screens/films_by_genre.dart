@@ -82,7 +82,9 @@ class _ListFilmsByGenreState extends State<ListFilmsByGenre> {
           // Thể thoại này có ít phim thể loại kia có nhiều phim nên height của GridFilms là khác nhau
           return SizedBox.expand(
             child: SingleChildScrollView(
-              child: GridFilms(posters: _postersData),
+              child: GridFilms(
+                posters: _postersData,
+              ),
             ),
           ).animate().slideY(
                 begin: 0.3,

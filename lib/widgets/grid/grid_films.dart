@@ -4,9 +4,14 @@ import 'package:movie_app/screens/film_detail.dart';
 import 'package:page_transition/page_transition.dart';
 
 class GridFilms extends StatelessWidget {
-  const GridFilms({super.key, required this.posters});
+  const GridFilms({
+    super.key,
+    required this.posters,
+    this.isPopToBottomNavScreen = false,
+  });
 
   final List<dynamic> posters;
+  final bool isPopToBottomNavScreen;
 
   @override
   Widget build(BuildContext context) {
@@ -23,16 +28,28 @@ class GridFilms extends StatelessWidget {
         posters.length,
         (index) => GestureDetector(
           onTap: () {
-            Navigator.of(context).push(
-              PageTransition(
-                child: FilmDetail(
-                  filmId: posters[index]['film']['id'],
-                ),
-                type: PageTransitionType.rightToLeft,
-                duration: 300.ms,
-                reverseDuration: 300.ms,
-              ),
-            );
+            isPopToBottomNavScreen
+                ? Navigator.of(context).pushAndRemoveUntil(
+                    PageTransition(
+                      child: FilmDetail(
+                        filmId: posters[index]['film']['id'],
+                      ),
+                      type: PageTransitionType.rightToLeft,
+                      duration: 300.ms,
+                      reverseDuration: 300.ms,
+                    ),
+                    (route) => route.settings.name == '/bottom_nav',
+                  )
+                : Navigator.of(context).push(
+                    PageTransition(
+                      child: FilmDetail(
+                        filmId: posters[index]['film']['id'],
+                      ),
+                      type: PageTransitionType.rightToLeft,
+                      duration: 300.ms,
+                      reverseDuration: 300.ms,
+                    ),
+                  );
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),

@@ -5,7 +5,7 @@ import 'package:movie_app/cubits/appbar/app_bar_cubit.dart';
 
 import 'package:movie_app/data/topics_data.dart';
 import 'package:movie_app/main.dart';
-import 'package:movie_app/screens/list_films_by_genre.dart';
+import 'package:movie_app/screens/films_by_genre.dart';
 import 'package:movie_app/widgets/content_header.dart';
 import 'package:movie_app/widgets/content_list.dart';
 import 'package:movie_app/widgets/custom_app_bar.dart';

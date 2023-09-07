@@ -48,6 +48,7 @@ dependencies:
   shimmer: ^3.0.0
   screen_brightness: ^0.2.2+1
   page_transition: ^2.0.9
+  readmore: ^2.2.0
 
 dev_dependencies:
   flutter_test:

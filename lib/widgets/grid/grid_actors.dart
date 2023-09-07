@@ -26,11 +26,11 @@ class GridActors extends StatelessWidget {
             Navigator.of(context).push(
               PageTransition(
                 child: PersonDetail(
-                  personId: castData[index]['person_id'],
+                  personId: castData[index]['person']['id'],
                 ),
                 type: PageTransitionType.rightToLeft,
-                duration: 300.ms,
-                reverseDuration: 300.ms,
+                duration: 240.ms,
+                reverseDuration: 240.ms,
               ),
             );
           },
@@ -45,8 +45,12 @@ class GridActors extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.network(
-                  'https://www.themoviedb.org/t/p/w276_and_h350_face${castData[index]['person']['profile_path']}',
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(7),
+                  child: Image.network(
+                    'https://www.themoviedb.org/t/p/w276_and_h350_face${castData[index]['person']['profile_path']}',
+                    height: 155,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(12),
