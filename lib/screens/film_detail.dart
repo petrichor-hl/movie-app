@@ -11,7 +11,7 @@ import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dar
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/films_by_genre.dart';
-import 'package:movie_app/widgets/grid/grid_actors.dart';
+import 'package:movie_app/widgets/grid/grid_persons.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:shimmer/shimmer.dart';
@@ -61,7 +61,6 @@ class _FilmDetailState extends State<FilmDetail> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Film ID = ${widget.filmId}');
     return Scaffold(
       appBar: AppBar(
         title: Image.asset(
@@ -313,14 +312,29 @@ class _SegmentComposeState extends State<_SegmentCompose> {
   final _gridShimmer = const _GridShimmer();
 
   late final List<dynamic> _castData;
-  late final _futureCastData = _fetchcastData();
+  late final _futureCastData = _fetchCastData();
 
-  Future<void> _fetchcastData() async {
+  late final List<dynamic> _crewData;
+  late final _futureCrewData = _fetchCrewData();
+
+  Future<void> _fetchCastData() async {
     _castData = await supabase
         .from('cast')
-        .select('character, person(id, name, profile_path)')
-        .eq('film_id', widget.filmId)
-        .order('popularity', ascending: true, foreignTable: 'person');
+        .select('role: character, person(id, name, profile_path, popularity)')
+        .eq('film_id', widget.filmId);
+
+    _castData.sort((a, b) =>
+        b['person']['popularity'].compareTo(a['person']['popularity']));
+  }
+
+  Future<void> _fetchCrewData() async {
+    _crewData = await supabase
+        .from('crew')
+        .select('role: job, person(id, name, profile_path, popularity)')
+        .eq('film_id', widget.filmId);
+
+    _crewData.sort((a, b) =>
+        b['person']['popularity'].compareTo(a['person']['popularity']));
   }
 
   @override
@@ -337,13 +351,13 @@ class _SegmentComposeState extends State<_SegmentCompose> {
                 ? {
                     1: buildSegment('Đề xuất'),
                     2: buildSegment('Diễn viên'),
-                    3: buildSegment('Tác giả'),
+                    3: buildSegment('Đội ngũ'),
                   }
                 : {
                     0: buildSegment('Tập phim'),
                     1: buildSegment('Đề xuất'),
                     2: buildSegment('Diễn viên'),
-                    3: buildSegment('Tác giả'),
+                    3: buildSegment('Đội ngũ'),
                   },
             onValueChanged: (index) {
               setState(() {
@@ -368,12 +382,34 @@ class _SegmentComposeState extends State<_SegmentCompose> {
 
                   if (snapshot.hasError) {
                     return const Text(
-                      'Truy xuất thông tin diễn viên thất bại',
+                      'Truy xuất thông tin Diễn viên thất bại',
+                      style: TextStyle(color: Colors.white),
                       textAlign: TextAlign.center,
                     );
                   }
 
-                  return GridActors(castData: _castData);
+                  return GridPersons(personsData: _castData);
+                },
+              ),
+            3 => FutureBuilder(
+                future: _futureCrewData,
+                builder: (ctx, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _gridShimmer;
+                  }
+
+                  if (snapshot.hasError) {
+                    return const Text(
+                      'Truy xuất thông tin Đội ngũ thất bại',
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    );
+                  }
+
+                  return GridPersons(
+                    personsData: _crewData,
+                    isCast: false,
+                  );
                 },
               ),
             _ => null,
@@ -398,19 +434,40 @@ Widget buildSegment(String text) {
 }
 
 class _Episode extends StatelessWidget {
-  const _Episode(this.stillPath, this.title, this.runtime, this.subtitle);
+  const _Episode(this.stillPath, this.title, this.runtime, this.subtitle,
+      this.linkEpisode);
 
   final String stillPath;
   final String title;
   final int runtime;
   final String subtitle;
+  final String linkEpisode;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 30),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (ctx) => MultiBlocProvider(
+                providers: [
+                  BlocProvider(
+                    create: (ctx) => VideoSliderCubit(),
+                  ),
+                  BlocProvider(
+                    create: (ctx) => VideoPlayControlCubit(),
+                  ),
+                ],
+                child: VideoPlayerView(
+                  title: title,
+                  episodeUrl: linkEpisode,
+                ),
+              ),
+            ),
+          );
+        },
         splashColor: const Color.fromARGB(255, 52, 52, 52),
         borderRadius: BorderRadius.circular(4),
         child: Column(
@@ -516,6 +573,7 @@ class __ListEpisodesState extends State<_ListEpisodes> {
               e['title'],
               e['runtime'],
               e['subtitle'],
+              e['link'],
             );
           },
         ),

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/assets.dart';
 import 'package:movie_app/data/topics_data.dart';
 import 'package:movie_app/main.dart';
 
 import 'package:movie_app/onboarding/onboarding.dart';
+import 'package:movie_app/screens/main/bottom_nav.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -26,7 +29,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
     final session = supabase.auth.currentSession;
     if (session != null) {
-      Navigator.of(context).pushReplacementNamed('/bottom_nav');
+      Navigator.of(context).pushReplacement(
+        PageTransition(
+            child: const BottomNavScreen(),
+            type: PageTransitionType.fade,
+            duration: 800.ms,
+            settings: const RouteSettings(name: '/bottom_nav')),
+      );
     } else {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (ctx) => const OnboardingScreen()),

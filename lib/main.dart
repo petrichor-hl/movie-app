@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:movie_app/screens/main/bottom_nav.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:google_fonts/google_fonts.dart';
@@ -31,10 +30,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      routes: {
-        '/': (context) => const SplashScreen(),
-        '/bottom_nav': (context) => const BottomNavScreen(),
-      },
       title: 'Movie App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -47,6 +42,7 @@ class MyApp extends StatelessWidget {
           showValueIndicator: ShowValueIndicator.always,
         ),
       ),
+      home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

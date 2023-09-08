@@ -5,9 +5,10 @@ import 'package:movie_app/widgets/grid/grid_films.dart';
 import 'package:readmore/readmore.dart';
 
 class PersonDetail extends StatefulWidget {
-  const PersonDetail({super.key, required this.personId});
+  const PersonDetail({super.key, required this.personId, required this.isCast});
 
   final String personId;
+  final bool isCast;
 
   @override
   State<PersonDetail> createState() => _PersonDetailState();
@@ -27,7 +28,7 @@ class _PersonDetailState extends State<PersonDetail> {
         .single();
 
     _credits = await supabase
-        .from('cast')
+        .from(widget.isCast ? 'cast' : 'crew')
         .select('film(id, poster_path)')
         .eq('person_id', widget.personId);
   }
@@ -71,7 +72,11 @@ class _PersonDetailState extends State<PersonDetail> {
             );
           }
 
-          final birthday = DateTime.parse(_person['birthday']);
+          DateTime? birthday;
+          if (_person['birthday'] != null) {
+            birthday = DateTime.parse(_person['birthday']);
+          }
+
           return SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Column(
@@ -84,10 +89,19 @@ class _PersonDetailState extends State<PersonDetail> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         clipBehavior: Clip.antiAlias,
-                        child: Image.network(
-                          'https://image.tmdb.org/t/p/w440_and_h660_face${_person['profile_path']}',
-                          width: 160,
-                        ),
+                        child: _person['profile_path'] != null
+                            ? Image.network(
+                                'https://image.tmdb.org/t/p/w440_and_h660_face${_person['profile_path']}',
+                                width: 160,
+                              )
+                            : const SizedBox(
+                                width: 160,
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  color: Colors.white,
+                                  size: 48,
+                                ),
+                              ),
                       ),
                       const SizedBox(
                         width: 24,
@@ -127,7 +141,9 @@ class _PersonDetailState extends State<PersonDetail> {
                                 ),
                               ),
                               Text(
-                                '${DateFormat('dd-MM-yyyy').format(birthday)} (${calculateAgeFrom(birthday)} tuổi)',
+                                birthday == null
+                                    ? '-'
+                                    : '${DateFormat('dd-MM-yyyy').format(birthday)} (${calculateAgeFrom(birthday)} tuổi)',
                                 style: const TextStyle(
                                   color: Colors.white,
                                 ),
@@ -186,22 +202,29 @@ class _PersonDetailState extends State<PersonDetail> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                ReadMoreText(
-                  _person['biography'] + '   ',
-                  trimLines: 10,
-                  trimMode: TrimMode.Line,
-                  trimCollapsedText: 'Show more',
-                  trimExpandedText: 'Show less',
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
-                  moreStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold),
-                  lessStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold),
-                ),
+                _person['biography'] == null
+                    ? const Text(
+                        '-',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      )
+                    : ReadMoreText(
+                        _person['biography'] + '   ',
+                        trimLines: 10,
+                        trimMode: TrimMode.Line,
+                        trimCollapsedText: 'Show more',
+                        trimExpandedText: 'Show less',
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                        moreStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold),
+                        lessStyle: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold),
+                      ),
                 const SizedBox(height: 20),
                 const Text(
                   'Tuyển tập',

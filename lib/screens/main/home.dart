@@ -135,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 genreId: genres[index]['id'],
                                 genreName: genres[index]['name'],
                               ),
-                              type: PageTransitionType.fade,
+                              type: PageTransitionType.rightToLeft,
                             ),
                           ),
                           title: Text(
