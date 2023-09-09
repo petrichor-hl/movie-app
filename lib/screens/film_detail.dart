@@ -330,7 +330,7 @@ class _SegmentComposeState extends State<_SegmentCompose> {
   Future<void> _fetchCrewData() async {
     _crewData = await supabase
         .from('crew')
-        .select('role: job, person(id, name, profile_path, popularity)')
+        .select('role: job, person(id, name, profile_path, popularity, gender)')
         .eq('film_id', widget.filmId);
 
     _crewData.sort((a, b) =>

@@ -55,11 +55,13 @@ class GridPersons extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   profilePath == null
-                      ? const SizedBox(
+                      ? SizedBox(
                           height: 155,
                           child: Center(
                             child: Icon(
-                              Icons.person_rounded,
+                              personsData[index]['person']['gender'] == 0
+                                  ? Icons.person_rounded
+                                  : Icons.person_3_rounded,
                               color: Colors.grey,
                               size: 48,
                             ),

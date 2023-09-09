@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/widgets/grid/grid_films.dart';
+import 'package:movie_app/widgets/skeleton_loading.dart';
 import 'package:readmore/readmore.dart';
 
 class PersonDetail extends StatefulWidget {
@@ -219,13 +220,16 @@ class _PersonDetailState extends State<PersonDetail> {
                           color: Colors.white,
                         ),
                         moreStyle: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold),
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
                         lessStyle: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold),
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.justify,
                       ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 const Text(
                   'Tuyển tập',
                   style: TextStyle(
@@ -248,9 +252,42 @@ class _PersonDetailState extends State<PersonDetail> {
   }
 
   Widget buildSkeletonLoading() {
-    return SizedBox.expand(
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 14),
       child: Column(
-        children: [],
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 240,
+            child: Row(
+              children: [
+                SkeletonLoading(
+                  height: 240,
+                  width: 160,
+                ),
+                SizedBox(
+                  width: 24,
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonLoading(height: 40, width: 100),
+                    SkeletonLoading(height: 40, width: 150),
+                    SkeletonLoading(height: 40, width: 80),
+                    SkeletonLoading(height: 40, width: 110),
+                  ],
+                )
+              ],
+            ),
+          ),
+          SizedBox(height: 20),
+          SkeletonLoading(height: 26, width: 80),
+          SizedBox(
+            height: 4,
+          ),
+          SkeletonLoading(height: 210, width: double.infinity),
+        ],
       ),
     );
   }

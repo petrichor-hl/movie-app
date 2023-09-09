@@ -62,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // drawerScrimColor: Colors.transparent,
       endDrawer: buildEndDrawer(),
       // Tùy chọn: Khoảng cách bên phải để mở drawer khi vuốt từ lề
-      drawerEdgeDragWidth: 40,
+      drawerEdgeDragWidth: 20,
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
-import 'package:shimmer/shimmer.dart';
+import 'package:movie_app/widgets/skeleton_loading.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:movie_app/main.dart';
@@ -343,31 +343,6 @@ class _ProfileSettingItem extends StatelessWidget {
                 color: Colors.white,
               )
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class SkeletonLoading extends StatelessWidget {
-  const SkeletonLoading({super.key, required this.height, required this.width});
-
-  final double height;
-  final double width;
-
-  @override
-  Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: Colors.white.withAlpha(100),
-      highlightColor: Colors.grey,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(4),
-        child: SizedBox(
-          height: height,
-          width: width,
-          child: ColoredBox(
-            color: Colors.white.withAlpha(100),
           ),
         ),
       ),
