@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui' as dart_ui;
 
 import 'package:flutter/cupertino.dart';
@@ -12,6 +11,7 @@ import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dar
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/films_by_genre.dart';
+import 'package:movie_app/widgets/episode.dart';
 import 'package:movie_app/widgets/grid/grid_persons.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:page_transition/page_transition.dart';
@@ -38,6 +38,11 @@ class _FilmDetailState extends State<FilmDetail> {
   late final List<dynamic> _seasons;
   late final isMovie = _seasons[0]['name'] == null;
 
+  late final String _firstEpisodeId;
+  late final String _firstEpisodeLink;
+
+  bool _isExpandOverview = false;
+
   Future<void> _fetchMovie() async {
     _movie = await supabase
         .from('film')
@@ -58,9 +63,10 @@ class _FilmDetailState extends State<FilmDetail> {
         .eq('film_id', widget.filmId)
         .order('id', ascending: true)
         .order('order', foreignTable: 'episode', ascending: true);
-  }
 
-  bool _isExpandOverview = false;
+    _firstEpisodeId = _seasons[0]['episode'][0]['id'];
+    _firstEpisodeLink = _seasons[0]['episode'][0]['link'];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -90,10 +96,10 @@ class _FilmDetailState extends State<FilmDetail> {
           }
 
           if (snapshot.hasError) {
-            return Center(
+            return const Center(
               child: Text(
-                snapshot.error.toString(),
-                style: const TextStyle(color: Colors.white),
+                'Có lỗi xảy ra khi truy vấn thông tin phim',
+                style: TextStyle(color: Colors.white),
               ),
             );
           }
@@ -106,7 +112,6 @@ class _FilmDetailState extends State<FilmDetail> {
             maxLines: 4,
             textDirection: dart_ui.TextDirection.ltr,
           )..layout(minWidth: 0, maxWidth: MediaQuery.sizeOf(context).width);
-
           final isOverflowed = textPainter.didExceedMaxLines;
 
           return SingleChildScrollView(
@@ -154,7 +159,6 @@ class _FilmDetailState extends State<FilmDetail> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                // const SizedBox(height: 12),
                 Text(
                   'Phát hành: ${DateFormat('dd-MM-yyyy').format(
                     DateTime.parse(_movie!['release_date']),
@@ -189,18 +193,13 @@ class _FilmDetailState extends State<FilmDetail> {
                             ],
                             child: VideoPlayerView(
                               title: _movie!['name'],
-                              episodeUrl:
-                                  'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/film/jujutsu_kaisen/season_1/jujutsu_kaisen_trailer.mp4',
+                              episodeUrl: _firstEpisodeLink,
                             ),
                           ),
                         ),
                       );
                     },
                     icon: const Icon(Icons.play_arrow_rounded),
-                    // icon: const Padding(
-                    //   padding: EdgeInsets.symmetric(vertical: 12.0),
-                    //   child: Icon(Icons.play_arrow_rounded),
-                    // ),
                     label: const Text(
                       'Phát',
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -214,46 +213,12 @@ class _FilmDetailState extends State<FilmDetail> {
                     ),
                   ),
                 ),
-                // if (isMovie) const SizedBox(height: 4),
                 if (isMovie)
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () async {
-                        final appDir = await getApplicationDocumentsDirectory();
-                        // print('appDir = $appDir');
-                        Dio().download(
-                          'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/film/jujutsu_kaisen/season_1/jujutsu_kaisen_trailer.mp4',
-                          '${appDir.path}/jujutsu_kaisen_trailer.mp4',
-                          onReceiveProgress: (count, total) {
-                            print('${count / total * 100}%');
-                          },
-                          deleteOnError: true,
-                        ).then(
-                          (value) {
-                            print('Finish');
-                          },
-                        );
-                      },
-                      // icon: const Padding(
-                      //   padding: EdgeInsets.symmetric(vertical: 12.0),
-                      //   child: Icon(Icons.download_rounded),
-                      // ),
-                      icon: const Icon(Icons.download_rounded),
-                      label: const Text('Tải xuống'),
-                      style: FilledButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        backgroundColor:
-                            const Color.fromARGB(36, 255, 255, 255),
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
+                  DownloadButton(
+                    firstEpisodeId: _firstEpisodeId,
+                    firstEpisodeLink: _firstEpisodeLink,
                   ),
-                const SizedBox(
-                  height: 6,
-                ),
+                const SizedBox(height: 6),
                 Text(
                   _movie!['overview'],
                   style: const TextStyle(color: Colors.white),
@@ -273,10 +238,7 @@ class _FilmDetailState extends State<FilmDetail> {
                       ),
                     ),
                   ),
-                const SizedBox(
-                  height: 8,
-                ),
-
+                const SizedBox(height: 8),
                 const Text(
                   'Thể loại:',
                   style: TextStyle(
@@ -328,9 +290,7 @@ class _FilmDetailState extends State<FilmDetail> {
                       ),
                   ],
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 _SegmentCompose(_seasons, isMovie, widget.filmId),
               ],
             ).animate().fade().slideY(
@@ -483,193 +443,6 @@ Widget buildSegment(String text) {
   );
 }
 
-enum DownloadState {
-  ready,
-  downloading,
-  downloaded,
-}
-
-class _Episode extends StatefulWidget {
-  const _Episode(
-    this.episodeId,
-    this.stillPath,
-    this.title,
-    this.runtime,
-    this.subtitle,
-    this.linkEpisode, {
-    super.key,
-  });
-
-  final String episodeId;
-  final String stillPath;
-  final String title;
-  final int runtime;
-  final String subtitle;
-  final String linkEpisode;
-
-  @override
-  State<_Episode> createState() => _EpisodeState();
-}
-
-class _EpisodeState extends State<_Episode> {
-  var downloadState = DownloadState.ready;
-  double progress = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 30),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (ctx) => MultiBlocProvider(
-                providers: [
-                  BlocProvider(
-                    create: (ctx) => VideoSliderCubit(),
-                  ),
-                  BlocProvider(
-                    create: (ctx) => VideoPlayControlCubit(),
-                  ),
-                ],
-                child: VideoPlayerView(
-                  title: widget.title,
-                  episodeUrl: widget.linkEpisode,
-                ),
-              ),
-            ),
-          );
-        },
-        splashColor: const Color.fromARGB(255, 52, 52, 52),
-        borderRadius: BorderRadius.circular(4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  clipBehavior: Clip.antiAlias,
-                  child: Image.network(
-                    'https://www.themoviedb.org/t/p/w454_and_h254_bestv2${widget.stillPath}',
-                    height: 80,
-                    width: 143,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          '${widget.runtime} phút',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (downloadState == DownloadState.ready)
-                  IconButton(
-                    onPressed: () async {
-                      setState(() {
-                        downloadState = DownloadState.downloading;
-                      });
-                      final appDir = await getApplicationDocumentsDirectory();
-                      print('download to: $appDir');
-                      await Dio().download(
-                        widget.linkEpisode,
-                        '${appDir.path}/${widget.episodeId}.mp4',
-                        onReceiveProgress: (count, total) {
-                          setState(() {
-                            progress = count / total;
-                          });
-                        },
-                        deleteOnError: true,
-                      );
-
-                      setState(() {
-                        downloadState = DownloadState.downloaded;
-                      });
-                    },
-                    icon: const Icon(
-                      Icons.download,
-                      size: 28,
-                    ),
-                    style: IconButton.styleFrom(foregroundColor: Colors.white),
-                  ),
-                if (downloadState == DownloadState.downloading)
-                  Container(
-                    height: 48,
-                    width: 48,
-                    padding: const EdgeInsets.all(8),
-                    child: CircularProgressIndicator(
-                      value: progress,
-                      strokeWidth: 4,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.primary.withAlpha(80),
-                    ),
-                  ),
-                if (downloadState == DownloadState.downloaded)
-                  PopupMenuButton(
-                    itemBuilder: (ctx) {
-                      return <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: 'Option 1',
-                          child: Text('Xoá tệp tải xuống'),
-                        ),
-                      ];
-                    },
-                    icon: const Icon(Icons.download_done),
-                    iconSize: 28,
-                    color: Colors.white,
-                    tooltip: '',
-                    onSelected: (_) async {
-                      final appDir = await getApplicationDocumentsDirectory();
-                      final file =
-                          File('${appDir.path}/${widget.episodeId}.mp4');
-                      if (await file.exists()) {
-                        await file.delete();
-                        setState(() {
-                          downloadState = DownloadState.ready;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Đã xoá tập phim tải xuống'),
-                            ),
-                          );
-                        });
-                      }
-                    },
-                  ),
-                const SizedBox(width: 16)
-              ],
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            Text(
-              widget.subtitle,
-              style: const TextStyle(color: Colors.white70),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _ListEpisodes extends StatefulWidget {
   const _ListEpisodes(this.seasons);
 
@@ -713,7 +486,7 @@ class __ListEpisodesState extends State<_ListEpisodes> {
         const SizedBox(height: 12),
         ...(widget.seasons[selectedSeason]['episode'] as List<dynamic>).map(
           (e) {
-            return _Episode(
+            return Episode(
               e['id'],
               e['still_path'],
               e['title'],
@@ -724,6 +497,128 @@ class __ListEpisodesState extends State<_ListEpisodes> {
             );
           },
         ),
+      ],
+    );
+  }
+}
+
+class DownloadButton extends StatefulWidget {
+  const DownloadButton({
+    super.key,
+    required this.firstEpisodeLink,
+    required this.firstEpisodeId,
+  });
+
+  final String firstEpisodeLink;
+  final String firstEpisodeId;
+
+  @override
+  State<DownloadButton> createState() => _DownloadButtonState();
+}
+
+class _DownloadButtonState extends State<DownloadButton> {
+  late final widthButton = MediaQuery.sizeOf(context).width;
+  double progress = 0;
+
+  var downloadState = DownloadState.ready;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton(
+            onPressed: () async {
+              setState(() {
+                downloadState = DownloadState.downloading;
+              });
+
+              final appDir = await getApplicationDocumentsDirectory();
+              // print('appDir = $appDir');
+              await Dio().download(
+                widget.firstEpisodeLink,
+                '${appDir.path}/${widget.firstEpisodeId}.mp4',
+                onReceiveProgress: (count, total) {
+                  setState(() {
+                    progress = count / total;
+                  });
+                },
+                deleteOnError: true,
+              );
+
+              setState(() {
+                downloadState = DownloadState.downloaded;
+              });
+            },
+            style: FilledButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              backgroundColor: const Color.fromARGB(36, 255, 255, 255),
+              foregroundColor: Colors.white,
+            ),
+            child: null,
+          ),
+        ),
+        if (downloadState == DownloadState.downloading)
+          Positioned(
+            top: 4,
+            bottom: 4,
+            left: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Colors.amber,
+              ),
+              width: widthButton * progress,
+            ),
+          ),
+        if (downloadState == DownloadState.ready)
+          const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.download_rounded,
+                color: Colors.white,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Tải xuống',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            ],
+          ),
+        if (downloadState == DownloadState.downloading)
+          Text(
+            'Đang tải ... ${(progress * 100).toInt()}%',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        if (downloadState == DownloadState.downloaded)
+          const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.download_done,
+                color: Colors.white,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Đã tải xuống',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
