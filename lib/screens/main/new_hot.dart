@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/skeleton_loading.dart';

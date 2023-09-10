@@ -36,18 +36,20 @@ SE121.011
 - Video Play
 <p align="center">
     <img src="demo/video_play.png" width="75%"/>
-    
-</p>
-
-<p align="center">
-    <img src="demo/tv_series_detail.png" width="45%"/>
-    <img src="demo/movie_detail.png" width="45%"/>
 </p>
 
 - NavScreen
 <p align="center">
     <img src="demo/home_screen.png" width="45%"/>
+    <img src="demo/new&hot_screen.png" width="45%"/>
+</p>
+
+<p align="center">
     <img src="demo/profile_screen.png" width="45%"/>
 </p>
 
-
+- Film deital
+<p align="center">
+    <img src="demo/film_detail.png" width="45%"/>
+    <img src="demo/person_detail.png" width="45%"/>
+</p>
