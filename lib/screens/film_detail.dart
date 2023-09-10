@@ -110,11 +110,38 @@ class _FilmDetailState extends State<FilmDetail> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.network(
-                  'https://image.tmdb.org/t/p/original/${_movie!['backdrop_path']}',
-                  height: 240,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                Stack(
+                  children: [
+                    Image.network(
+                      'https://image.tmdb.org/t/p/original/${_movie!['backdrop_path']}',
+                      height: 240,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                    Positioned(
+                      bottom: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 6, horizontal: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          color: Colors.black,
+                          border: Border.all(
+                            width: 1,
+                            color: Colors.white,
+                          ),
+                        ),
+                        child: Text(
+                          _movie!['content_rating'],
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
                 ),
                 Text(
                   _movie!['name'],
