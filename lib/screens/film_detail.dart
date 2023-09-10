@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui' as dart_ui;
 
 import 'package:flutter/cupertino.dart';
@@ -14,7 +15,9 @@ import 'package:movie_app/screens/films_by_genre.dart';
 import 'package:movie_app/widgets/grid/grid_persons.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:dio/dio.dart';
 
 class FilmDetail extends StatefulWidget {
   const FilmDetail({
@@ -187,13 +190,17 @@ class _FilmDetailState extends State<FilmDetail> {
                             child: VideoPlayerView(
                               title: _movie!['name'],
                               episodeUrl:
-                                  'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/film/jujutsu_kaisen/season_1/jujutsu_kaisen_trailer.mp4?t=2023-09-01T12%3A34%3A55.249Z',
+                                  'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/film/jujutsu_kaisen/season_1/jujutsu_kaisen_trailer.mp4',
                             ),
                           ),
                         ),
                       );
                     },
                     icon: const Icon(Icons.play_arrow_rounded),
+                    // icon: const Padding(
+                    //   padding: EdgeInsets.symmetric(vertical: 12.0),
+                    //   child: Icon(Icons.play_arrow_rounded),
+                    // ),
                     label: const Text(
                       'Phát',
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -207,21 +214,43 @@ class _FilmDetailState extends State<FilmDetail> {
                     ),
                   ),
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.download_rounded),
-                    label: const Text('Tải xuống'),
-                    style: FilledButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
+                // if (isMovie) const SizedBox(height: 4),
+                if (isMovie)
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () async {
+                        final appDir = await getApplicationDocumentsDirectory();
+                        // print('appDir = $appDir');
+                        Dio().download(
+                          'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/film/jujutsu_kaisen/season_1/jujutsu_kaisen_trailer.mp4',
+                          '${appDir.path}/jujutsu_kaisen_trailer.mp4',
+                          onReceiveProgress: (count, total) {
+                            print('${count / total * 100}%');
+                          },
+                          deleteOnError: true,
+                        ).then(
+                          (value) {
+                            print('Finish');
+                          },
+                        );
+                      },
+                      // icon: const Padding(
+                      //   padding: EdgeInsets.symmetric(vertical: 12.0),
+                      //   child: Icon(Icons.download_rounded),
+                      // ),
+                      icon: const Icon(Icons.download_rounded),
+                      label: const Text('Tải xuống'),
+                      style: FilledButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        backgroundColor:
+                            const Color.fromARGB(36, 255, 255, 255),
+                        foregroundColor: Colors.white,
                       ),
-                      backgroundColor: const Color.fromARGB(36, 255, 255, 255),
-                      foregroundColor: Colors.white,
                     ),
                   ),
-                ),
                 const SizedBox(
                   height: 6,
                 ),
@@ -299,12 +328,6 @@ class _FilmDetailState extends State<FilmDetail> {
                       ),
                   ],
                 ),
-
-                // const SizedBox(
-                //   height: 8,
-                // ),
-                // ActorsList(cast: cast),
-
                 const SizedBox(
                   height: 20,
                 ),
@@ -460,15 +483,37 @@ Widget buildSegment(String text) {
   );
 }
 
-class _Episode extends StatelessWidget {
-  const _Episode(this.stillPath, this.title, this.runtime, this.subtitle,
-      this.linkEpisode);
+enum DownloadState {
+  ready,
+  downloading,
+  downloaded,
+}
 
+class _Episode extends StatefulWidget {
+  const _Episode(
+    this.episodeId,
+    this.stillPath,
+    this.title,
+    this.runtime,
+    this.subtitle,
+    this.linkEpisode, {
+    super.key,
+  });
+
+  final String episodeId;
   final String stillPath;
   final String title;
   final int runtime;
   final String subtitle;
   final String linkEpisode;
+
+  @override
+  State<_Episode> createState() => _EpisodeState();
+}
+
+class _EpisodeState extends State<_Episode> {
+  var downloadState = DownloadState.ready;
+  double progress = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -488,8 +533,8 @@ class _Episode extends StatelessWidget {
                   ),
                 ],
                 child: VideoPlayerView(
-                  title: title,
-                  episodeUrl: linkEpisode,
+                  title: widget.title,
+                  episodeUrl: widget.linkEpisode,
                 ),
               ),
             ),
@@ -506,7 +551,7 @@ class _Episode extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   clipBehavior: Clip.antiAlias,
                   child: Image.network(
-                    'https://www.themoviedb.org/t/p/w454_and_h254_bestv2$stillPath',
+                    'https://www.themoviedb.org/t/p/w454_and_h254_bestv2${widget.stillPath}',
                     height: 80,
                     width: 143,
                     fit: BoxFit.cover,
@@ -520,14 +565,14 @@ class _Episode extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          title,
+                          widget.title,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          '$runtime phút',
+                          '${widget.runtime} phút',
                           style: const TextStyle(
                             color: Colors.grey,
                           ),
@@ -535,14 +580,87 @@ class _Episode extends StatelessWidget {
                       ],
                     ),
                   ),
-                )
+                ),
+                if (downloadState == DownloadState.ready)
+                  IconButton(
+                    onPressed: () async {
+                      setState(() {
+                        downloadState = DownloadState.downloading;
+                      });
+                      final appDir = await getApplicationDocumentsDirectory();
+                      print('download to: $appDir');
+                      await Dio().download(
+                        widget.linkEpisode,
+                        '${appDir.path}/${widget.episodeId}.mp4',
+                        onReceiveProgress: (count, total) {
+                          setState(() {
+                            progress = count / total;
+                          });
+                        },
+                        deleteOnError: true,
+                      );
+
+                      setState(() {
+                        downloadState = DownloadState.downloaded;
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.download,
+                      size: 28,
+                    ),
+                    style: IconButton.styleFrom(foregroundColor: Colors.white),
+                  ),
+                if (downloadState == DownloadState.downloading)
+                  Container(
+                    height: 48,
+                    width: 48,
+                    padding: const EdgeInsets.all(8),
+                    child: CircularProgressIndicator(
+                      value: progress,
+                      strokeWidth: 4,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.primary.withAlpha(80),
+                    ),
+                  ),
+                if (downloadState == DownloadState.downloaded)
+                  PopupMenuButton(
+                    itemBuilder: (ctx) {
+                      return <PopupMenuEntry<String>>[
+                        const PopupMenuItem<String>(
+                          value: 'Option 1',
+                          child: Text('Xoá tệp tải xuống'),
+                        ),
+                      ];
+                    },
+                    icon: const Icon(Icons.download_done),
+                    iconSize: 28,
+                    color: Colors.white,
+                    tooltip: '',
+                    onSelected: (_) async {
+                      final appDir = await getApplicationDocumentsDirectory();
+                      final file =
+                          File('${appDir.path}/${widget.episodeId}.mp4');
+                      if (await file.exists()) {
+                        await file.delete();
+                        setState(() {
+                          downloadState = DownloadState.ready;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Đã xoá tập phim tải xuống'),
+                            ),
+                          );
+                        });
+                      }
+                    },
+                  ),
+                const SizedBox(width: 16)
               ],
             ),
             const SizedBox(
               height: 8,
             ),
             Text(
-              subtitle,
+              widget.subtitle,
               style: const TextStyle(color: Colors.white70),
             ),
           ],
@@ -596,11 +714,13 @@ class __ListEpisodesState extends State<_ListEpisodes> {
         ...(widget.seasons[selectedSeason]['episode'] as List<dynamic>).map(
           (e) {
             return _Episode(
+              e['id'],
               e['still_path'],
               e['title'],
               e['runtime'],
               e['subtitle'],
               e['link'],
+              key: ValueKey(e['id']),
             );
           },
         ),

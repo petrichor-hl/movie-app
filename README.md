@@ -25,8 +25,6 @@ SE121.011
 
 ### Screenshots
 
-- TV series & Movie
-
 - Onboarding
 <p align="center">
     <img src="demo/intro_page_1.png" width="45%"/>

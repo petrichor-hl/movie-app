@@ -49,6 +49,8 @@ dependencies:
   screen_brightness: ^0.2.2+1
   page_transition: ^2.0.9
   readmore: ^2.2.0
+  dio: ^5.3.2
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:
