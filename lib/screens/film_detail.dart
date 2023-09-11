@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui' as dart_ui;
 
 import 'package:flutter/cupertino.dart';
@@ -524,103 +525,163 @@ class _DownloadButtonState extends State<DownloadButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: () async {
-              setState(() {
-                downloadState = DownloadState.downloading;
-              });
-
-              final appDir = await getApplicationDocumentsDirectory();
-              // print('appDir = $appDir');
-              await Dio().download(
-                widget.firstEpisodeLink,
-                '${appDir.path}/${widget.firstEpisodeId}.mp4',
-                onReceiveProgress: (count, total) {
-                  setState(() {
-                    progress = count / total;
-                  });
-                },
-                deleteOnError: true,
-              );
-
-              setState(() {
-                downloadState = DownloadState.downloaded;
-              });
-            },
-            style: FilledButton.styleFrom(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              backgroundColor: const Color.fromARGB(36, 255, 255, 255),
-              foregroundColor: Colors.white,
-            ),
-            child: null,
-          ),
-        ),
-        if (downloadState == DownloadState.downloading)
-          Positioned(
-            top: 4,
-            bottom: 4,
-            left: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: Colors.amber,
-              ),
-              width: widthButton * progress,
-            ),
-          ),
-        if (downloadState == DownloadState.ready)
-          const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.download_rounded,
-                color: Colors.white,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Tải xuống',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              )
-            ],
-          ),
-        if (downloadState == DownloadState.downloading)
-          Text(
-            'Đang tải ... ${(progress * 100).toInt()}%',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        if (downloadState == DownloadState.downloaded)
-          const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.download_done,
-                color: Colors.white,
-              ),
-              SizedBox(width: 8),
-              Text(
+    return downloadState == DownloadState.downloaded
+        ? SizedBox(
+            height: 40,
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (ctx) => SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 24),
+                        MenuItemButton(
+                          trailingIcon: const Icon(Icons.delete),
+                          child: const Text('Xoá tệp tải xuống'),
+                          onPressed: () async {
+                            final appDir =
+                                await getApplicationDocumentsDirectory();
+                            final file = File(
+                                '${appDir.path}/${widget.firstEpisodeId}.mp4');
+                            if (await file.exists()) {
+                              await file.delete();
+                              setState(() {
+                                downloadState = DownloadState.ready;
+                                Navigator.of(context).pop();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Đã xoá tập phim tải xuống'),
+                                  ),
+                                );
+                              });
+                            }
+                          },
+                        ),
+                        MenuItemButton(
+                          trailingIcon: const Icon(Icons.download_for_offline),
+                          child: const Text('Xem Nội dung tải xuống của tôi'),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.download_done),
+              label: const Text(
                 'Đã tải xuống',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              style: FilledButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: const Color.fromARGB(36, 255, 255, 255),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
-            ],
-          ),
-      ],
-    );
+            ),
+          )
+        : InkWell(
+            onTap: downloadState == DownloadState.ready
+                ? () async {
+                    setState(() {
+                      downloadState = DownloadState.downloading;
+                    });
+
+                    final appDir = await getApplicationDocumentsDirectory();
+                    // print('download to: $appDir');
+                    await Dio().download(
+                      widget.firstEpisodeLink,
+                      '${appDir.path}/${widget.firstEpisodeId}.mp4',
+                      onReceiveProgress: (count, total) {
+                        setState(() {
+                          progress = count / total;
+                        });
+                      },
+                      deleteOnError: true,
+                    );
+
+                    setState(() {
+                      downloadState = DownloadState.downloaded;
+                      progress = 0;
+                    });
+                  }
+                : null,
+            borderRadius: BorderRadius.circular(4),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: const Color.fromARGB(36, 255, 255, 255),
+                  ),
+                  width: double.infinity,
+                  height: 40,
+                ),
+                if (downloadState == DownloadState.downloading)
+                  Positioned(
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: Colors.amber,
+                      ),
+                      width: widthButton * progress,
+                    ),
+                  ),
+                if (downloadState == DownloadState.ready)
+                  const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.download_rounded,
+                        color: Colors.white,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        'Tải xuống',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    ],
+                  ),
+                if (downloadState == DownloadState.downloading)
+                  Text(
+                    'Đang tải ... ${(progress * 100).toInt()}%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                // if (downloadState == DownloadState.downloaded)
+                //   const Row(
+                //     mainAxisSize: MainAxisSize.min,
+                //     children: [
+                //       Icon(
+                //         Icons.download_done,
+                //         color: Colors.white,
+                //       ),
+                //       SizedBox(width: 8),
+                //       Text(
+                //         'Đã tải xuống',
+                //         style: TextStyle(
+                //           color: Colors.white,
+                //           fontWeight: FontWeight.bold,
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+              ],
+            ),
+          );
   }
 }
 

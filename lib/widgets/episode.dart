@@ -150,9 +150,8 @@ class _EpisodeState extends State<Episode> {
                 if (downloadState == DownloadState.downloaded)
                   PopupMenuButton(
                     itemBuilder: (ctx) {
-                      return <PopupMenuEntry<String>>[
-                        const PopupMenuItem<String>(
-                          value: 'Option 1',
+                      return [
+                        const PopupMenuItem(
                           child: Text('Xoá tệp tải xuống'),
                         ),
                       ];
