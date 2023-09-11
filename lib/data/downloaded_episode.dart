@@ -1,35 +1,71 @@
-import 'dart:io';
-
+import 'package:movie_app/database/database_utils.dart';
 import 'package:path_provider/path_provider.dart';
 
-final List<String> episodeFileNames = [];
+final List<Map<String, dynamic>> offlineFilms = [];
+late final List<String> episodeIds;
 
-Future<void> getAllBackdrop() async {
+Future<void> getOfflineFilms() async {
+  final databaseUtils = DatabaseUtils();
+  await databaseUtils.connect();
+
+  final films = await databaseUtils.queryFilms();
+  final seasons = await databaseUtils.querySeasons();
+  final episodes = await databaseUtils.queryEpisodes();
+
+  await databaseUtils.close();
+
   final appDir = await getApplicationDocumentsDirectory();
-  final episodeDirectory = Directory('${appDir.path}/episode');
 
-  if (!await episodeDirectory.exists()) {
-    return;
+  episodeIds = List.generate(
+    episodes.length,
+    (index) => episodes[index]['id'],
+  );
+  print('episode_ids = $episodeIds');
+
+  for (final film in films) {
+    final filmData = {
+      'film_name': film['name'],
+      'poster_path': '${appDir.path}/poster_path/${film['poster_path']}',
+    };
+    final filteredSeason = [];
+    for (final season in seasons) {
+      if (season['film_id'] == film['id']) {
+        final seasonData = {
+          'season_name': season['name'],
+          'episodes': episodes
+              .where((episode) => episode['season_id'] == season['id'])
+              .toList(),
+        };
+        filteredSeason.add(seasonData);
+      }
+    }
+    filmData['seasons'] = filteredSeason;
+    offlineFilms.add(filmData);
   }
 
-  final entities = episodeDirectory.listSync();
-
-  // for (var entity in entities) {
-  //   if (entity is File) {
-  //     String fileName = entity.uri.pathSegments.last;
-  //     backdropFileNames.add(fileName);
-  //   }
+  // for (final map in offlineFilms) {
+  //   print(map);
   // }
+}
 
-  // Vì thư mục backdrop_path trong appDir chỉ toàn chứa file .mp4
-  // nên không cần check "entity" là File or Directory
-  episodeFileNames.addAll(
-    List.generate(
-      entities.length,
-      (index) => entities[index].uri.pathSegments.last,
-    ),
-  );
+List<Map<String, dynamic>> getMovies() {
+  final List<Map<String, dynamic>> movies = [];
+  for (var film in offlineFilms) {
+    if (film['seasons'][0]['season_name'] == '') {
+      movies.add(film);
+    }
+  }
 
-  // print('episode directory = ${episodeDirectory.path}');
-  print('File names = $episodeFileNames');
+  return movies;
+}
+
+List<Map<String, dynamic>> getTvSeries() {
+  final List<Map<String, dynamic>> tvSeries = [];
+  for (var film in offlineFilms) {
+    if (film['seasons'][0]['season_name'] != '') {
+      tvSeries.add(film);
+    }
+  }
+
+  return tvSeries;
 }

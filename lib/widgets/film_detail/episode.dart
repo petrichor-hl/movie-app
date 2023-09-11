@@ -27,7 +27,6 @@ class Episode extends StatefulWidget {
     this.subtitle,
     this.linkEpisode, {
     super.key,
-    required this.isDownloaded,
   });
 
   final String episodeId;
@@ -36,15 +35,15 @@ class Episode extends StatefulWidget {
   final int runtime;
   final String subtitle;
   final String linkEpisode;
-  final bool isDownloaded;
 
   @override
   State<Episode> createState() => _EpisodeState();
 }
 
 class _EpisodeState extends State<Episode> {
-  late DownloadState downloadState =
-      widget.isDownloaded ? DownloadState.downloaded : DownloadState.ready;
+  late DownloadState downloadState = episodeIds.contains(widget.episodeId)
+      ? DownloadState.downloaded
+      : DownloadState.ready;
   double progress = 0;
 
   @override
@@ -134,7 +133,7 @@ class _EpisodeState extends State<Episode> {
                         },
                         deleteOnError: true,
                       );
-                      episodeFileNames.add('${widget.episodeId}.mp4');
+                      episodeIds.add(widget.episodeId);
 
                       // 2. download still_path
                       await Dio().download(
@@ -144,13 +143,13 @@ class _EpisodeState extends State<Episode> {
                       );
 
                       // 3. download film's backdrop_path
-                      final backdropLocalPath =
-                          '${appDir.path}/backdrop_path/${offlineData['backdrop_path']}';
-                      final file = File(backdropLocalPath);
+                      final posterLocalPath =
+                          '${appDir.path}/poster_path/${offlineData['poster_path']}';
+                      final file = File(posterLocalPath);
                       if (!await file.exists()) {
                         await Dio().download(
-                          'https://image.tmdb.org/t/p/w1280/${offlineData['backdrop_path']}',
-                          backdropLocalPath,
+                          'https://image.tmdb.org/t/p/w440_and_h660_face/${offlineData['poster_path']}',
+                          posterLocalPath,
                           deleteOnError: true,
                         );
                       }
@@ -158,10 +157,8 @@ class _EpisodeState extends State<Episode> {
                       // Insert data to local database
                       final databaseUtils = DatabaseUtils();
                       await databaseUtils.connect();
-                      await databaseUtils.insertFilm(
-                          offlineData['film_id'],
-                          offlineData['film_name'],
-                          offlineData['backdrop_path']);
+                      await databaseUtils.insertFilm(offlineData['film_id'],
+                          offlineData['film_name'], offlineData['poster_path']);
 
                       await databaseUtils.insertSeason(
                         id: offlineData['season_id'],
@@ -232,15 +229,15 @@ class _EpisodeState extends State<Episode> {
                         id: widget.episodeId,
                         seasonId: offlineData['season_id'],
                         filmId: offlineData['film_id'],
-                        deleteBackdropPath: () async {
+                        deletePosterPath: () async {
                           final backdropPathFile = File(
-                              '${appDir.path}/backdrop_path/${offlineData['backdrop_path']}');
+                              '${appDir.path}/poster_path/${offlineData['poster_path']}');
                           await backdropPathFile.delete();
                         },
                       );
                       await databaseUtils.close();
 
-                      episodeFileNames.remove('${widget.episodeId}.mp4');
+                      episodeIds.remove(widget.episodeId);
 
                       setState(() {
                         downloadState = DownloadState.ready;

@@ -28,10 +28,9 @@ class _DownloadButtonState extends State<DownloadButton> {
   late final widthButton = MediaQuery.sizeOf(context).width;
   double progress = 0;
 
-  late DownloadState downloadState =
-      episodeFileNames.contains('${widget.firstEpisodeId}.mp4')
-          ? DownloadState.downloaded
-          : DownloadState.ready;
+  late DownloadState downloadState = episodeIds.contains(widget.firstEpisodeId)
+      ? DownloadState.downloaded
+      : DownloadState.ready;
 
   @override
   Widget build(BuildContext context) {
@@ -64,16 +63,15 @@ class _DownloadButtonState extends State<DownloadButton> {
                               id: widget.firstEpisodeId,
                               seasonId: offlineData['season_id'],
                               filmId: offlineData['film_id'],
-                              deleteBackdropPath: () async {
+                              deletePosterPath: () async {
                                 final backdropPathFile = File(
-                                    '${appDir.path}/backdrop_path/${offlineData['backdrop_path']}');
+                                    '${appDir.path}/poster_path/${offlineData['poster_path']}');
                                 await backdropPathFile.delete();
                               },
                             );
                             await databaseUtils.close();
 
-                            episodeFileNames
-                                .remove('${widget.firstEpisodeId}.mp4');
+                            episodeIds.remove(widget.firstEpisodeId);
 
                             setState(() {
                               downloadState = DownloadState.ready;
@@ -131,15 +129,15 @@ class _DownloadButtonState extends State<DownloadButton> {
                       },
                       deleteOnError: true,
                     );
-                    episodeFileNames.add('${widget.firstEpisodeId}.mp4');
+                    episodeIds.add(widget.firstEpisodeId);
 
-                    // 2. download film's backdrop_path
+                    // 2. download film's poster_path
                     final backdropLocalPath =
-                        '${appDir.path}/backdrop_path/${offlineData['backdrop_path']}';
+                        '${appDir.path}/poster_path/${offlineData['poster_path']}';
                     final file = File(backdropLocalPath);
                     if (!await file.exists()) {
                       await Dio().download(
-                        'https://image.tmdb.org/t/p/w1280/${offlineData['backdrop_path']}',
+                        'https://image.tmdb.org/t/p/w440_and_h660_face/${offlineData['poster_path']}',
                         backdropLocalPath,
                         deleteOnError: true,
                       );
@@ -151,7 +149,7 @@ class _DownloadButtonState extends State<DownloadButton> {
                     await databaseUtils.insertFilm(
                       offlineData['film_id'],
                       offlineData['film_name'],
-                      offlineData['backdrop_path'],
+                      offlineData['poster_path'],
                     );
 
                     await databaseUtils.insertSeason(

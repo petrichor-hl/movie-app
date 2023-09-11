@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/utils/utils.dart';
 
 class DatabaseUtils {
   late Database _database;
@@ -13,7 +14,7 @@ class DatabaseUtils {
         CREATE TABLE film(
           id TEXT PRIMARY KEY, 
           name TEXT, 
-          backdrop_path TEXT
+          poster_path TEXT
         )''',
         );
         await db.execute(
@@ -42,14 +43,14 @@ class DatabaseUtils {
   Future<void> insertFilm(
     String id,
     String name,
-    String backdropPath,
+    String posterPath,
   ) async {
     await _database.insert(
       'film',
       {
         'id': id,
         'name': name,
-        'backdrop_path': backdropPath,
+        'poster_path': posterPath,
       },
       conflictAlgorithm: ConflictAlgorithm.ignore,
     );
@@ -90,11 +91,23 @@ class DatabaseUtils {
     );
   }
 
+  Future<List<Map<String, dynamic>>> queryFilms() async {
+    return await _database.rawQuery('select * from film');
+  }
+
+  Future<List<Map<String, dynamic>>> querySeasons() async {
+    return await _database.rawQuery('select * from season');
+  }
+
+  Future<List<Map<String, dynamic>>> queryEpisodes() async {
+    return await _database.rawQuery('select * from episode');
+  }
+
   Future<void> deleteEpisode({
     required String id,
     required String seasonId,
     required String filmId,
-    required Future<void> Function() deleteBackdropPath,
+    required Future<void> Function() deletePosterPath,
   }) async {
     await _database.delete(
       'episode',
@@ -102,10 +115,10 @@ class DatabaseUtils {
       whereArgs: [id],
     );
 
-    final episodesOfSeason = (await _database.rawQuery(
+    final episodesOfSeason = firstIntValue(await _database.rawQuery(
       'select count(id) from episode where season_id = ?',
       [seasonId],
-    ))[0]['count(id)'];
+    ));
 
     if (episodesOfSeason != 0) {
       return;
@@ -117,10 +130,10 @@ class DatabaseUtils {
       whereArgs: [seasonId],
     );
 
-    final seasonsOfFilm = (await _database.rawQuery(
+    final seasonsOfFilm = firstIntValue(await _database.rawQuery(
       'select count(id) from season where film_id = ?',
       [filmId],
-    ))[0]['count(id)'];
+    ));
 
     if (seasonsOfFilm != 0) {
       return;
@@ -132,7 +145,7 @@ class DatabaseUtils {
       whereArgs: [filmId],
     );
 
-    await deleteBackdropPath();
+    await deletePosterPath();
   }
 
   Future<void> close() async {

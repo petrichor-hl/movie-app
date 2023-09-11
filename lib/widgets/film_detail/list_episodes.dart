@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:movie_app/data/downloaded_episode.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/film_detail/episode.dart';
 
@@ -59,7 +58,6 @@ class __ListEpisodesState extends State<ListEpisodes> {
               e['subtitle'],
               e['link'],
               key: ValueKey(e['id']),
-              isDownloaded: episodeFileNames.contains(e['id'] + '.mp4'),
             );
           },
         ),

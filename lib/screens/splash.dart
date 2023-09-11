@@ -20,7 +20,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   Future<void> _redirect() async {
     await fetchTopicsData();
-    await getAllBackdrop();
+    await getOfflineFilms();
 
     if (!mounted) {
       return;

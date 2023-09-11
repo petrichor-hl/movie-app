@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui' as dart_ui;
 
 import 'package:flutter/material.dart';
@@ -14,7 +13,6 @@ import 'package:movie_app/widgets/film_detail/download_button.dart';
 import 'package:movie_app/widgets/film_detail/segment_compose.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:path_provider/path_provider.dart';
 
 final Map<String, dynamic> offlineData = {};
 
@@ -37,13 +35,6 @@ class _FilmDetailState extends State<FilmDetail> {
   late final List<dynamic> _seasons;
   late final bool isMovie;
   bool _isExpandOverview = false;
-
-  Future<bool> checkMovieDownload(String backdropPath) async {
-    final appDir = await getApplicationDocumentsDirectory();
-    final episodeFile = File('${appDir.path}/backdrop_path/$backdropPath');
-
-    return await episodeFile.exists();
-  }
 
   Future<void> _fetchMovie() async {
     _film = await supabase
@@ -73,7 +64,7 @@ class _FilmDetailState extends State<FilmDetail> {
     offlineData.addAll({
       'film_id': _film!['id'],
       'film_name': _film!['name'],
-      'backdrop_path': _film!['backdrop_path'],
+      'poster_path': _film!['poster_path'],
       'season_id': _seasons[0]['id'],
       'season_name': _seasons[0]['name'],
     });
