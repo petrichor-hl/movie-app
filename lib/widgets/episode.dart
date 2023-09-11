@@ -5,12 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
+import 'package:movie_app/database/database_utils.dart';
+import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:path_provider/path_provider.dart';
 
 enum DownloadState {
   ready,
   downloading,
+  almostFinished,
   downloaded,
 }
 
@@ -114,15 +117,58 @@ class _EpisodeState extends State<Episode> {
                       });
                       final appDir = await getApplicationDocumentsDirectory();
                       print('download to: $appDir');
+
+                      // 1. download video
                       await Dio().download(
                         widget.linkEpisode,
-                        '${appDir.path}/${widget.episodeId}.mp4',
+                        '${appDir.path}/episode/${widget.episodeId}.mp4',
                         onReceiveProgress: (count, total) {
                           setState(() {
                             progress = count / total;
                           });
                         },
                         deleteOnError: true,
+                      );
+
+                      // 2. download still_path
+                      await Dio().download(
+                        'https://www.themoviedb.org/t/p/w454_and_h254_bestv2${widget.stillPath}',
+                        '${appDir.path}/still_path${widget.stillPath}',
+                        deleteOnError: true,
+                      );
+
+                      // 3. download film's backdrop_path
+                      final backdropLocalPath =
+                          '${appDir.path}/backdrop_path${offlineData['backdrop_path']}';
+                      final file = File(backdropLocalPath);
+                      if (!await file.exists()) {
+                        await Dio().download(
+                          'https://image.tmdb.org/t/p/w1280/${offlineData['backdrop_path']}',
+                          backdropLocalPath,
+                          deleteOnError: true,
+                        );
+                      }
+
+                      // Insert data to local database
+                      final databaseUtils = DatabaseUtils();
+                      await databaseUtils.connect();
+                      await databaseUtils.insertFilm(
+                          offlineData['film_id'],
+                          offlineData['film_name'],
+                          offlineData['backdrop_path']);
+
+                      await databaseUtils.insertSeason(
+                        offlineData['season_id'],
+                        offlineData['season_name'],
+                        offlineData['film_id'],
+                      );
+
+                      await databaseUtils.insertEpisode(
+                        widget.episodeId,
+                        widget.title,
+                        widget.runtime,
+                        widget.stillPath,
+                        offlineData['season_id'],
                       );
 
                       setState(() {

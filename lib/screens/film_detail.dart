@@ -20,6 +20,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:dio/dio.dart';
 
+final Map<String, dynamic> offlineData = {};
+
 class FilmDetail extends StatefulWidget {
   const FilmDetail({
     super.key,
@@ -48,7 +50,7 @@ class _FilmDetailState extends State<FilmDetail> {
     _movie = await supabase
         .from('film')
         .select(
-          'name, release_date, vote_average, vote_count, overview, backdrop_path, poster_path, content_rating, trailer',
+          'id, name, release_date, vote_average, vote_count, overview, backdrop_path, poster_path, content_rating, trailer',
         )
         .eq('id', widget.filmId)
         .single();
@@ -60,13 +62,21 @@ class _FilmDetailState extends State<FilmDetail> {
 
     _seasons = await supabase
         .from('season')
-        .select('name, episode(*)')
+        .select('id, name, episode(*)')
         .eq('film_id', widget.filmId)
         .order('id', ascending: true)
         .order('order', foreignTable: 'episode', ascending: true);
 
     _firstEpisodeId = _seasons[0]['episode'][0]['id'];
     _firstEpisodeLink = _seasons[0]['episode'][0]['link'];
+
+    offlineData.addAll({
+      'film_id': _movie!['id'],
+      'film_name': _movie!['name'],
+      'backdrop_path': _movie!['backdrop_path'],
+      'season_id': _seasons[0]['id'],
+      'season_name': _seasons[0]['name'],
+    });
   }
 
   @override
@@ -454,7 +464,7 @@ class _ListEpisodes extends StatefulWidget {
 }
 
 class __ListEpisodesState extends State<_ListEpisodes> {
-  late int selectedSeason = 0;
+  int selectedSeason = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -477,10 +487,13 @@ class __ListEpisodesState extends State<_ListEpisodes> {
             ),
           ),
           onChanged: (value) {
-            if (value != null) {
+            if (value != null && value != selectedSeason) {
               setState(() {
                 selectedSeason = value;
               });
+              offlineData['season_id'] = widget.seasons[value]['id'];
+              offlineData['season_name'] = widget.seasons[value]['name'];
+              // print('offine_data = $offlineData');
             }
           },
         ),
