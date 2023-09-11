@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui' as dart_ui;
 
 import 'package:flutter/material.dart';
@@ -7,12 +8,14 @@ import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
+import 'package:movie_app/data/downloaded_backdrop_path.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/films_by_genre.dart';
 import 'package:movie_app/widgets/film_detail/download_button.dart';
 import 'package:movie_app/widgets/film_detail/segment_compose.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:path_provider/path_provider.dart';
 
 final Map<String, dynamic> offlineData = {};
 
@@ -29,22 +32,29 @@ class FilmDetail extends StatefulWidget {
 }
 
 class _FilmDetailState extends State<FilmDetail> {
-  late final Map<String, dynamic>? _movie;
+  late final Map<String, dynamic>? _film;
   late final List<dynamic> genres;
   late final _futureMovie = _fetchMovie();
   late final List<dynamic> _seasons;
-  late final isMovie = _seasons[0]['name'] == null;
-
+  late final bool isMovie;
   bool _isExpandOverview = false;
 
+  Future<bool> checkMovieDownload(String backdropPath) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final episodeFile = File('${appDir.path}/backdrop_path/$backdropPath');
+
+    return await episodeFile.exists();
+  }
+
   Future<void> _fetchMovie() async {
-    _movie = await supabase
+    _film = await supabase
         .from('film')
         .select(
           'id, name, release_date, vote_average, vote_count, overview, backdrop_path, poster_path, content_rating, trailer',
         )
         .eq('id', widget.filmId)
         .single();
+    print('backdrop_path = ${_film!['backdrop_path']}');
 
     genres = await supabase
         .from('film_genre')
@@ -58,10 +68,13 @@ class _FilmDetailState extends State<FilmDetail> {
         .order('id', ascending: true)
         .order('order', foreignTable: 'episode', ascending: true);
 
+    // check this film is Movie or TV series
+    isMovie = _seasons[0]['name'] == null;
+
     offlineData.addAll({
-      'film_id': _movie!['id'],
-      'film_name': _movie!['name'],
-      'backdrop_path': _movie!['backdrop_path'],
+      'film_id': _film!['id'],
+      'film_name': _film!['name'],
+      'backdrop_path': _film!['backdrop_path'],
       'season_id': _seasons[0]['id'],
       'season_name': _seasons[0]['name'],
     });
@@ -105,7 +118,7 @@ class _FilmDetailState extends State<FilmDetail> {
 
           final textPainter = TextPainter(
             text: TextSpan(
-              text: _movie!['overview'],
+              text: _film!['overview'],
               style: const TextStyle(color: Colors.white),
             ),
             maxLines: 4,
@@ -120,7 +133,7 @@ class _FilmDetailState extends State<FilmDetail> {
                 Stack(
                   children: [
                     Image.network(
-                      'https://image.tmdb.org/t/p/original/${_movie!['backdrop_path']}',
+                      'https://image.tmdb.org/t/p/original/${_film!['backdrop_path']}',
                       height: 240,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -140,7 +153,7 @@ class _FilmDetailState extends State<FilmDetail> {
                           ),
                         ),
                         child: Text(
-                          _movie!['content_rating'],
+                          _film!['content_rating'],
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -151,7 +164,7 @@ class _FilmDetailState extends State<FilmDetail> {
                   ],
                 ),
                 Text(
-                  _movie!['name'],
+                  _film!['name'],
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
@@ -160,7 +173,7 @@ class _FilmDetailState extends State<FilmDetail> {
                 ),
                 Text(
                   'Phát hành: ${DateFormat('dd-MM-yyyy').format(
-                    DateTime.parse(_movie!['release_date']),
+                    DateTime.parse(_film!['release_date']),
                   )}',
                   style: const TextStyle(
                     color: Colors.white,
@@ -168,7 +181,7 @@ class _FilmDetailState extends State<FilmDetail> {
                   ),
                 ),
                 Text(
-                  'Điểm: ${(_movie!['vote_average'] as double).toStringAsFixed(2)}',
+                  'Điểm: ${(_film!['vote_average'] as double).toStringAsFixed(2)}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -191,7 +204,7 @@ class _FilmDetailState extends State<FilmDetail> {
                               ),
                             ],
                             child: VideoPlayerView(
-                              title: _movie!['name'],
+                              title: _film!['name'],
                               episodeUrl: _seasons[0]['episode'][0]['link'],
                             ),
                           ),
@@ -217,10 +230,12 @@ class _FilmDetailState extends State<FilmDetail> {
                     firstEpisodeId: _seasons[0]['episode'][0]['id'],
                     firstEpisodeLink: _seasons[0]['episode'][0]['link'],
                     runtime: _seasons[0]['episode'][0]['runtime'],
+                    isDownloaded:
+                        backdropFileNames.contains(_film!['backdrop_path']),
                   ),
                 const SizedBox(height: 6),
                 Text(
-                  _movie!['overview'],
+                  _film!['overview'],
                   style: const TextStyle(color: Colors.white),
                   maxLines: _isExpandOverview ? null : 4,
                   textAlign: TextAlign.justify,

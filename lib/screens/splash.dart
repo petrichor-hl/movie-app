@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/assets.dart';
+import 'package:movie_app/data/downloaded_backdrop_path.dart';
 import 'package:movie_app/data/topics_data.dart';
 import 'package:movie_app/main.dart';
 
@@ -19,9 +20,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   Future<void> _redirect() async {
     await fetchTopicsData();
-    await Future.delayed(
-      const Duration(seconds: 1),
-    );
+    await getAllBackdrop();
 
     if (!mounted) {
       return;

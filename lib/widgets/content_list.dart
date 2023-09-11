@@ -57,8 +57,8 @@ class ContentList extends StatelessWidget {
                     image: DecorationImage(
                       image: NetworkImage(
                         isOriginals
-                            ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2${film['poster_path']}'
-                            : 'https://image.tmdb.org/t/p/w440_and_h660_face${film['poster_path']}',
+                            ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${film['poster_path']}'
+                            : 'https://image.tmdb.org/t/p/w440_and_h660_face/${film['poster_path']}',
                       ),
                       fit: BoxFit.cover,
                     ),

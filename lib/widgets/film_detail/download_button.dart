@@ -13,11 +13,13 @@ class DownloadButton extends StatefulWidget {
     required this.firstEpisodeLink,
     required this.firstEpisodeId,
     required this.runtime,
+    required this.isDownloaded,
   });
 
   final String firstEpisodeLink;
   final String firstEpisodeId;
   final int runtime;
+  final bool isDownloaded;
 
   @override
   State<DownloadButton> createState() => _DownloadButtonState();
@@ -27,7 +29,8 @@ class _DownloadButtonState extends State<DownloadButton> {
   late final widthButton = MediaQuery.sizeOf(context).width;
   double progress = 0;
 
-  var downloadState = DownloadState.ready;
+  late DownloadState downloadState =
+      widget.isDownloaded ? DownloadState.downloaded : DownloadState.ready;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +65,7 @@ class _DownloadButtonState extends State<DownloadButton> {
                               filmId: offlineData['film_id'],
                               deleteBackdropPath: () async {
                                 final backdropPathFile = File(
-                                    '${appDir.path}/backdrop_path${offlineData['backdrop_path']}');
+                                    '${appDir.path}/backdrop_path/${offlineData['backdrop_path']}');
                                 await backdropPathFile.delete();
                               },
                             );
@@ -127,7 +130,7 @@ class _DownloadButtonState extends State<DownloadButton> {
 
                     // 2. download film's backdrop_path
                     final backdropLocalPath =
-                        '${appDir.path}/backdrop_path${offlineData['backdrop_path']}';
+                        '${appDir.path}/backdrop_path/${offlineData['backdrop_path']}';
                     final file = File(backdropLocalPath);
                     if (!await file.exists()) {
                       await Dio().download(

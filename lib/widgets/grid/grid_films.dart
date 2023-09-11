@@ -54,7 +54,7 @@ class GridFilms extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
-              'https://image.tmdb.org/t/p/w440_and_h660_face${posters[index]['film']['poster_path']}',
+              'https://image.tmdb.org/t/p/w440_and_h660_face/${posters[index]['film']['poster_path']}',
             ),
           ),
         ),

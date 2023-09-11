@@ -133,14 +133,14 @@ class _EpisodeState extends State<Episode> {
 
                       // 2. download still_path
                       await Dio().download(
-                        'https://www.themoviedb.org/t/p/w454_and_h254_bestv2${widget.stillPath}',
+                        'https://www.themoviedb.org/t/p/w454_and_h254_bestv2/${widget.stillPath}',
                         '${appDir.path}/still_path${widget.stillPath}',
                         deleteOnError: true,
                       );
 
                       // 3. download film's backdrop_path
                       final backdropLocalPath =
-                          '${appDir.path}/backdrop_path${offlineData['backdrop_path']}';
+                          '${appDir.path}/backdrop_path/${offlineData['backdrop_path']}';
                       final file = File(backdropLocalPath);
                       if (!await file.exists()) {
                         await Dio().download(
@@ -218,7 +218,7 @@ class _EpisodeState extends State<Episode> {
                       await episodeFile.delete();
 
                       final stillPathFile =
-                          File('${appDir.path}/still_path${widget.stillPath}');
+                          File('${appDir.path}/still_path/${widget.stillPath}');
                       await stillPathFile.delete();
 
                       final databaseUtils = DatabaseUtils();
@@ -229,7 +229,7 @@ class _EpisodeState extends State<Episode> {
                         filmId: offlineData['film_id'],
                         deleteBackdropPath: () async {
                           final backdropPathFile = File(
-                              '${appDir.path}/backdrop_path${offlineData['backdrop_path']}');
+                              '${appDir.path}/backdrop_path/${offlineData['backdrop_path']}');
                           await backdropPathFile.delete();
                         },
                       );
