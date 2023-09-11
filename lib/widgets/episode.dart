@@ -115,8 +115,9 @@ class _EpisodeState extends State<Episode> {
                       setState(() {
                         downloadState = DownloadState.downloading;
                       });
+
                       final appDir = await getApplicationDocumentsDirectory();
-                      print('download to: $appDir');
+                      // print('download to: $appDir');
 
                       // 1. download video
                       await Dio().download(
@@ -158,18 +159,20 @@ class _EpisodeState extends State<Episode> {
                           offlineData['backdrop_path']);
 
                       await databaseUtils.insertSeason(
-                        offlineData['season_id'],
-                        offlineData['season_name'],
-                        offlineData['film_id'],
+                        id: offlineData['season_id'],
+                        name: offlineData['season_name'],
+                        filmId: offlineData['film_id'],
                       );
 
                       await databaseUtils.insertEpisode(
-                        widget.episodeId,
-                        widget.title,
-                        widget.runtime,
-                        widget.stillPath,
-                        offlineData['season_id'],
+                        id: widget.episodeId,
+                        title: widget.title,
+                        runtime: widget.runtime,
+                        stillPath: widget.stillPath,
+                        seasonId: offlineData['season_id'],
                       );
+
+                      await databaseUtils.close();
 
                       setState(() {
                         downloadState = DownloadState.downloaded;
@@ -198,6 +201,7 @@ class _EpisodeState extends State<Episode> {
                     itemBuilder: (ctx) {
                       return [
                         const PopupMenuItem(
+                          value: 0,
                           child: Text('Xoá tệp tải xuống'),
                         ),
                       ];
@@ -208,19 +212,38 @@ class _EpisodeState extends State<Episode> {
                     tooltip: '',
                     onSelected: (_) async {
                       final appDir = await getApplicationDocumentsDirectory();
-                      final file =
-                          File('${appDir.path}/${widget.episodeId}.mp4');
-                      if (await file.exists()) {
-                        await file.delete();
-                        setState(() {
-                          downloadState = DownloadState.ready;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Đã xoá tập phim tải xuống'),
-                            ),
-                          );
-                        });
-                      }
+
+                      final episodeFile = File(
+                          '${appDir.path}/episode/${widget.episodeId}.mp4');
+                      await episodeFile.delete();
+
+                      final stillPathFile =
+                          File('${appDir.path}/still_path${widget.stillPath}');
+                      await stillPathFile.delete();
+
+                      final databaseUtils = DatabaseUtils();
+                      await databaseUtils.connect();
+                      await databaseUtils.deleteEpisode(
+                        id: widget.episodeId,
+                        seasonId: offlineData['season_id'],
+                        filmId: offlineData['film_id'],
+                        deleteBackdropPath: () async {
+                          final backdropPathFile = File(
+                              '${appDir.path}/backdrop_path${offlineData['backdrop_path']}');
+                          await backdropPathFile.delete();
+                        },
+                      );
+                      await databaseUtils.close();
+
+                      setState(() {
+                        downloadState = DownloadState.ready;
+                        ScaffoldMessenger.of(context).clearSnackBars();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Đã xoá tập phim tải xuống'),
+                          ),
+                        );
+                      });
                     },
                   ),
                 const SizedBox(width: 16)

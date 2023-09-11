@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
+import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/films_by_genre.dart';
 import 'package:movie_app/widgets/episode.dart';
@@ -41,9 +42,6 @@ class _FilmDetailState extends State<FilmDetail> {
   late final List<dynamic> _seasons;
   late final isMovie = _seasons[0]['name'] == null;
 
-  late final String _firstEpisodeId;
-  late final String _firstEpisodeLink;
-
   bool _isExpandOverview = false;
 
   Future<void> _fetchMovie() async {
@@ -66,9 +64,6 @@ class _FilmDetailState extends State<FilmDetail> {
         .eq('film_id', widget.filmId)
         .order('id', ascending: true)
         .order('order', foreignTable: 'episode', ascending: true);
-
-    _firstEpisodeId = _seasons[0]['episode'][0]['id'];
-    _firstEpisodeLink = _seasons[0]['episode'][0]['link'];
 
     offlineData.addAll({
       'film_id': _movie!['id'],
@@ -204,7 +199,7 @@ class _FilmDetailState extends State<FilmDetail> {
                             ],
                             child: VideoPlayerView(
                               title: _movie!['name'],
-                              episodeUrl: _firstEpisodeLink,
+                              episodeUrl: _seasons[0]['episode'][0]['link'],
                             ),
                           ),
                         ),
@@ -226,8 +221,9 @@ class _FilmDetailState extends State<FilmDetail> {
                 ),
                 if (isMovie)
                   DownloadButton(
-                    firstEpisodeId: _firstEpisodeId,
-                    firstEpisodeLink: _firstEpisodeLink,
+                    firstEpisodeId: _seasons[0]['episode'][0]['id'],
+                    firstEpisodeLink: _seasons[0]['episode'][0]['link'],
+                    runtime: _seasons[0]['episode'][0]['runtime'],
                   ),
                 const SizedBox(height: 6),
                 Text(
@@ -521,10 +517,12 @@ class DownloadButton extends StatefulWidget {
     super.key,
     required this.firstEpisodeLink,
     required this.firstEpisodeId,
+    required this.runtime,
   });
 
   final String firstEpisodeLink;
   final String firstEpisodeId;
+  final int runtime;
 
   @override
   State<DownloadButton> createState() => _DownloadButtonState();
@@ -557,20 +555,33 @@ class _DownloadButtonState extends State<DownloadButton> {
                           onPressed: () async {
                             final appDir =
                                 await getApplicationDocumentsDirectory();
-                            final file = File(
-                                '${appDir.path}/${widget.firstEpisodeId}.mp4');
-                            if (await file.exists()) {
-                              await file.delete();
-                              setState(() {
-                                downloadState = DownloadState.ready;
-                                Navigator.of(context).pop();
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Đã xoá tập phim tải xuống'),
-                                  ),
-                                );
-                              });
-                            }
+                            final episodeFile = File(
+                                '${appDir.path}/episode/${widget.firstEpisodeId}.mp4');
+                            await episodeFile.delete();
+
+                            final databaseUtils = DatabaseUtils();
+                            await databaseUtils.connect();
+                            await databaseUtils.deleteEpisode(
+                              id: widget.firstEpisodeId,
+                              seasonId: offlineData['season_id'],
+                              filmId: offlineData['film_id'],
+                              deleteBackdropPath: () async {
+                                final backdropPathFile = File(
+                                    '${appDir.path}/backdrop_path${offlineData['backdrop_path']}');
+                                await backdropPathFile.delete();
+                              },
+                            );
+                            await databaseUtils.close();
+
+                            setState(() {
+                              downloadState = DownloadState.ready;
+                              Navigator.of(context).pop();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Đã xoá tập phim tải xuống'),
+                                ),
+                              );
+                            });
                           },
                         ),
                         MenuItemButton(
@@ -606,9 +617,11 @@ class _DownloadButtonState extends State<DownloadButton> {
 
                     final appDir = await getApplicationDocumentsDirectory();
                     // print('download to: $appDir');
+
+                    // 1. download video
                     await Dio().download(
                       widget.firstEpisodeLink,
-                      '${appDir.path}/${widget.firstEpisodeId}.mp4',
+                      '${appDir.path}/episode/${widget.firstEpisodeId}.mp4',
                       onReceiveProgress: (count, total) {
                         setState(() {
                           progress = count / total;
@@ -616,6 +629,40 @@ class _DownloadButtonState extends State<DownloadButton> {
                       },
                       deleteOnError: true,
                     );
+
+                    // 2. download film's backdrop_path
+                    final backdropLocalPath =
+                        '${appDir.path}/backdrop_path${offlineData['backdrop_path']}';
+                    final file = File(backdropLocalPath);
+                    if (!await file.exists()) {
+                      await Dio().download(
+                        'https://image.tmdb.org/t/p/w1280/${offlineData['backdrop_path']}',
+                        backdropLocalPath,
+                        deleteOnError: true,
+                      );
+                    }
+
+                    // Insert data to local database
+                    final databaseUtils = DatabaseUtils();
+                    await databaseUtils.connect();
+                    await databaseUtils.insertFilm(
+                      offlineData['film_id'],
+                      offlineData['film_name'],
+                      offlineData['backdrop_path'],
+                    );
+
+                    await databaseUtils.insertSeason(
+                      id: offlineData['season_id'],
+                      filmId: offlineData['film_id'],
+                    );
+
+                    await databaseUtils.insertEpisode(
+                      id: widget.firstEpisodeId,
+                      runtime: widget.runtime,
+                      seasonId: offlineData['season_id'],
+                    );
+
+                    await databaseUtils.close();
 
                     setState(() {
                       downloadState = DownloadState.downloaded;
@@ -674,24 +721,6 @@ class _DownloadButtonState extends State<DownloadButton> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                // if (downloadState == DownloadState.downloaded)
-                //   const Row(
-                //     mainAxisSize: MainAxisSize.min,
-                //     children: [
-                //       Icon(
-                //         Icons.download_done,
-                //         color: Colors.white,
-                //       ),
-                //       SizedBox(width: 8),
-                //       Text(
-                //         'Đã tải xuống',
-                //         style: TextStyle(
-                //           color: Colors.white,
-                //           fontWeight: FontWeight.bold,
-                //         ),
-                //       ),
-                //     ],
-                //   ),
               ],
             ),
           );

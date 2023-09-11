@@ -1,14 +1,14 @@
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseUtils {
-  late final Database database;
+  late Database _database;
 
   Future<void> connect() async {
     final databasePath = await getDatabasesPath();
-    database = await openDatabase(
+    _database = await openDatabase(
       '$databasePath/movie.db',
-      onCreate: (database, version) async {
-        await database.execute(
+      onCreate: (db, version) async {
+        await db.execute(
           '''
         CREATE TABLE film(
           id TEXT PRIMARY KEY, 
@@ -16,7 +16,7 @@ class DatabaseUtils {
           backdrop_path TEXT
         )''',
         );
-        await database.execute(
+        await db.execute(
           '''
         CREATE TABLE season(
           id TEXT PRIMARY KEY, 
@@ -24,7 +24,7 @@ class DatabaseUtils {
           film_id TEXT
         )''',
         );
-        await database.execute(
+        await db.execute(
           '''
         CREATE TABLE episode(
           id TEXT PRIMARY KEY, 
@@ -44,7 +44,7 @@ class DatabaseUtils {
     String name,
     String backdropPath,
   ) async {
-    await database.insert(
+    await _database.insert(
       'film',
       {
         'id': id,
@@ -55,12 +55,12 @@ class DatabaseUtils {
     );
   }
 
-  Future<void> insertSeason(
-    String id,
-    String name,
-    String filmId,
-  ) async {
-    await database.insert(
+  Future<void> insertSeason({
+    required String id,
+    String name = '',
+    required String filmId,
+  }) async {
+    await _database.insert(
       'season',
       {
         'id': id,
@@ -71,14 +71,14 @@ class DatabaseUtils {
     );
   }
 
-  Future<void> insertEpisode(
-    String id,
-    String title,
-    int runtime,
-    String stillPath,
-    String seasonId,
-  ) async {
-    await database.insert(
+  Future<void> insertEpisode({
+    required String id,
+    String title = '',
+    required int runtime,
+    String stillPath = '',
+    required String seasonId,
+  }) async {
+    await _database.insert(
       'episode',
       {
         'id': id,
@@ -88,5 +88,54 @@ class DatabaseUtils {
         'season_id': seasonId,
       },
     );
+  }
+
+  Future<void> deleteEpisode({
+    required String id,
+    required String seasonId,
+    required String filmId,
+    required Future<void> Function() deleteBackdropPath,
+  }) async {
+    await _database.delete(
+      'episode',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    final episodesOfSeason = (await _database.rawQuery(
+      'select count(id) from episode where season_id = ?',
+      [seasonId],
+    ))[0]['count(id)'];
+
+    if (episodesOfSeason != 0) {
+      return;
+    }
+
+    await _database.delete(
+      'season',
+      where: 'id = ?',
+      whereArgs: [seasonId],
+    );
+
+    final seasonsOfFilm = (await _database.rawQuery(
+      'select count(id) from season where film_id = ?',
+      [filmId],
+    ))[0]['count(id)'];
+
+    if (seasonsOfFilm != 0) {
+      return;
+    }
+
+    await _database.delete(
+      'film',
+      where: 'id = ?',
+      whereArgs: [filmId],
+    );
+
+    await deleteBackdropPath();
+  }
+
+  Future<void> close() async {
+    await _database.close();
   }
 }
