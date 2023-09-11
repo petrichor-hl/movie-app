@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
+import 'package:movie_app/data/downloaded_episode.dart';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
@@ -26,6 +27,7 @@ class Episode extends StatefulWidget {
     this.subtitle,
     this.linkEpisode, {
     super.key,
+    required this.isDownloaded,
   });
 
   final String episodeId;
@@ -34,13 +36,15 @@ class Episode extends StatefulWidget {
   final int runtime;
   final String subtitle;
   final String linkEpisode;
+  final bool isDownloaded;
 
   @override
   State<Episode> createState() => _EpisodeState();
 }
 
 class _EpisodeState extends State<Episode> {
-  var downloadState = DownloadState.ready;
+  late DownloadState downloadState =
+      widget.isDownloaded ? DownloadState.downloaded : DownloadState.ready;
   double progress = 0;
 
   @override
@@ -130,6 +134,7 @@ class _EpisodeState extends State<Episode> {
                         },
                         deleteOnError: true,
                       );
+                      episodeFileNames.add('${widget.episodeId}.mp4');
 
                       // 2. download still_path
                       await Dio().download(
@@ -234,6 +239,8 @@ class _EpisodeState extends State<Episode> {
                         },
                       );
                       await databaseUtils.close();
+
+                      episodeFileNames.remove('${widget.episodeId}.mp4');
 
                       setState(() {
                         downloadState = DownloadState.ready;

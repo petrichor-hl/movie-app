@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/assets.dart';
-import 'package:movie_app/data/downloaded_backdrop_path.dart';
+import 'package:movie_app/data/downloaded_episode.dart';
 import 'package:movie_app/data/topics_data.dart';
 import 'package:movie_app/main.dart';
 

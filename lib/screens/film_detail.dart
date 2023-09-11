@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
-import 'package:movie_app/data/downloaded_backdrop_path.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/films_by_genre.dart';
 import 'package:movie_app/widgets/film_detail/download_button.dart';
@@ -54,7 +53,7 @@ class _FilmDetailState extends State<FilmDetail> {
         )
         .eq('id', widget.filmId)
         .single();
-    print('backdrop_path = ${_film!['backdrop_path']}');
+    // print('backdrop_path = ${_film!['backdrop_path']}');
 
     genres = await supabase
         .from('film_genre')
@@ -230,8 +229,6 @@ class _FilmDetailState extends State<FilmDetail> {
                     firstEpisodeId: _seasons[0]['episode'][0]['id'],
                     firstEpisodeLink: _seasons[0]['episode'][0]['link'],
                     runtime: _seasons[0]['episode'][0]['runtime'],
-                    isDownloaded:
-                        backdropFileNames.contains(_film!['backdrop_path']),
                   ),
                 const SizedBox(height: 6),
                 Text(

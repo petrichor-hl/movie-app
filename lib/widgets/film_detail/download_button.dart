@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:movie_app/data/downloaded_episode.dart';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/film_detail/episode.dart';
@@ -13,13 +14,11 @@ class DownloadButton extends StatefulWidget {
     required this.firstEpisodeLink,
     required this.firstEpisodeId,
     required this.runtime,
-    required this.isDownloaded,
   });
 
   final String firstEpisodeLink;
   final String firstEpisodeId;
   final int runtime;
-  final bool isDownloaded;
 
   @override
   State<DownloadButton> createState() => _DownloadButtonState();
@@ -30,7 +29,9 @@ class _DownloadButtonState extends State<DownloadButton> {
   double progress = 0;
 
   late DownloadState downloadState =
-      widget.isDownloaded ? DownloadState.downloaded : DownloadState.ready;
+      episodeFileNames.contains('${widget.firstEpisodeId}.mp4')
+          ? DownloadState.downloaded
+          : DownloadState.ready;
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +71,9 @@ class _DownloadButtonState extends State<DownloadButton> {
                               },
                             );
                             await databaseUtils.close();
+
+                            episodeFileNames
+                                .remove('${widget.firstEpisodeId}.mp4');
 
                             setState(() {
                               downloadState = DownloadState.ready;
@@ -127,6 +131,7 @@ class _DownloadButtonState extends State<DownloadButton> {
                       },
                       deleteOnError: true,
                     );
+                    episodeFileNames.add('${widget.firstEpisodeId}.mp4');
 
                     // 2. download film's backdrop_path
                     final backdropLocalPath =
