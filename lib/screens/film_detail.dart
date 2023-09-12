@@ -124,8 +124,8 @@ class _FilmDetailState extends State<FilmDetail> {
                   children: [
                     Image.network(
                       'https://image.tmdb.org/t/p/original/${_film!['backdrop_path']}',
-                      height: 240,
                       width: double.infinity,
+                      height: 9 / 16 * MediaQuery.sizeOf(context).width,
                       fit: BoxFit.cover,
                     ),
                     Positioned(

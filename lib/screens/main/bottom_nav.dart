@@ -25,7 +25,9 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
     HomeScreen(
       key: PageStorageKey('homeScreen'),
     ),
-    NewHotScreen(),
+    NewHotScreen(
+      key: PageStorageKey('newhotScreen'),
+    ),
     DownloadedScreen(),
     ProfileScreen(),
   ];

@@ -87,20 +87,21 @@ class _NewHotScreenState extends State<NewHotScreen> {
           (element) => element['created_at'] == removedItemId,
         );
 
-        // remove animation
+        final deleteItem = NotificationNewFilm(
+          uploadDate: _notificationFilms![index]['created_at'],
+          id: _notificationFilms![index]['film']['id'],
+          name: _notificationFilms![index]['film']['name'],
+          backdropPath: _notificationFilms![index]['film']['backdrop_path'],
+          overview: _notificationFilms![index]['film']['overview'],
+          contentRating: _notificationFilms![index]['film']['content_rating'],
+        );
+
         _notificationListKey.currentState!.removeItem(
           index,
+          // animation
           (ctx, animation) => SizeTransition(
             sizeFactor: animation,
-            child: NotificationNewFilm(
-              uploadDate: _notificationFilms![index]['created_at'],
-              id: _notificationFilms![index]['film']['id'],
-              name: _notificationFilms![index]['film']['name'],
-              backdropPath: _notificationFilms![index]['film']['backdrop_path'],
-              overview: _notificationFilms![index]['film']['overview'],
-              contentRating: _notificationFilms![index]['film']
-                  ['content_rating'],
-            ),
+            child: deleteItem,
           ),
           duration: const Duration(milliseconds: 300),
         );
@@ -237,27 +238,30 @@ class NotificationNewFilm extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                month,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+          SizedBox(
+            width: 60,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  month,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              Text(
-                date,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
+                Text(
+                  date,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -268,7 +272,10 @@ class NotificationNewFilm extends StatelessWidget {
                   child: Stack(
                     children: [
                       Image.network(
-                        'https://image.tmdb.org/t/p/original$backdropPath',
+                        'https://image.tmdb.org/t/p/original/$backdropPath',
+                        // height = 9/16 * width's image
+                        height: 0.5625 *
+                            (MediaQuery.sizeOf(context).width - 20 - 60 - 10),
                       ),
                       Positioned(
                         top: 10,

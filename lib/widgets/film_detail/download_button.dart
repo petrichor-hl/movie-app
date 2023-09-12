@@ -51,8 +51,6 @@ class _DownloadButtonState extends State<DownloadButton> {
                           trailingIcon: const Icon(Icons.delete),
                           child: const Text('Xoá tệp tải xuống'),
                           onPressed: () async {
-                            final appDir =
-                                await getApplicationDocumentsDirectory();
                             final episodeFile = File(
                                 '${appDir.path}/episode/${widget.firstEpisodeId}.mp4');
                             await episodeFile.delete();
@@ -64,9 +62,9 @@ class _DownloadButtonState extends State<DownloadButton> {
                               seasonId: offlineData['season_id'],
                               filmId: offlineData['film_id'],
                               deletePosterPath: () async {
-                                final backdropPathFile = File(
+                                final posterFile = File(
                                     '${appDir.path}/poster_path/${offlineData['poster_path']}');
-                                await backdropPathFile.delete();
+                                await posterFile.delete();
                               },
                             );
                             await databaseUtils.close();
@@ -129,7 +127,6 @@ class _DownloadButtonState extends State<DownloadButton> {
                       },
                       deleteOnError: true,
                     );
-                    episodeIds.add(widget.firstEpisodeId);
 
                     // 2. download film's poster_path
                     final backdropLocalPath =
@@ -164,6 +161,24 @@ class _DownloadButtonState extends State<DownloadButton> {
                     );
 
                     await databaseUtils.close();
+
+                    episodeIds.add(widget.firstEpisodeId);
+                    offlineMovies.add({
+                      'id': offlineData['film_id'],
+                      'film_name': offlineData['film_name'],
+                      'poster_path': offlineData['poster_path'],
+                      'seasons': [
+                        {
+                          'id': offlineData['season_id'],
+                          'episodes': [
+                            {
+                              'id': widget.firstEpisodeId,
+                              'runtime': widget.runtime,
+                            }
+                          ]
+                        }
+                      ]
+                    });
 
                     setState(() {
                       downloadState = DownloadState.downloaded;
