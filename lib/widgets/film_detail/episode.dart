@@ -125,7 +125,7 @@ class _EpisodeState extends State<Episode> {
                       // 1. download video
                       await Dio().download(
                         widget.linkEpisode,
-                        '${appDir.path}/episode/${widget.episodeId}.mp4',
+                        '${appDir.path}/episode/${offlineData['film_id']}/${widget.episodeId}.mp4',
                         onReceiveProgress: (count, total) {
                           setState(() {
                             progress = count / total;
@@ -133,7 +133,8 @@ class _EpisodeState extends State<Episode> {
                         },
                         deleteOnError: true,
                       );
-                      episodeIds.add(widget.episodeId);
+
+                      print('added episode_id = ${widget.episodeId}');
 
                       // 2. download still_path
                       await Dio().download(
@@ -175,6 +176,65 @@ class _EpisodeState extends State<Episode> {
                       );
 
                       await databaseUtils.close();
+                      episodeIds.add(widget.episodeId);
+
+                      final existingIndexTv = offlineTvs.indexWhere(
+                        (tv) => tv['id'] == offlineData['film_id'],
+                      );
+                      if (existingIndexTv == -1) {
+                        offlineTvs.add({
+                          'id': offlineData['film_id'],
+                          'film_name': offlineData['film_name'],
+                          'poster_path': offlineData['poster_path'],
+                          'seasons': [
+                            {
+                              'id': offlineData['season_id'],
+                              'season_name': offlineData['season_name'],
+                              'episodes': [
+                                {
+                                  'id': widget.episodeId,
+                                  'still_path': widget.stillPath,
+                                  'title': widget.title,
+                                  'runtime': widget.runtime,
+                                }
+                              ],
+                            }
+                          ]
+                        });
+                      } else {
+                        final Map<String, dynamic> existingTv =
+                            offlineTvs[existingIndexTv];
+                        final List<Map<String, dynamic>> seasons = existingTv['seasons'];
+                        final existingIndexSeason = seasons.indexWhere(
+                          (season) => season['id'] == offlineData['season_id'],
+                        );
+
+                        if (existingIndexSeason == -1) {
+                          seasons.add({
+                            'id': offlineData['season_id'],
+                            'season_name': offlineData['season_name'],
+                            'episodes': [
+                              {
+                                'id': widget.episodeId,
+                                'still_path': widget.stillPath,
+                                'title': widget.title,
+                                'runtime': widget.runtime,
+                              }
+                            ],
+                          });
+                        } else {
+                          final Map<String, dynamic> existingSeason =
+                              seasons[existingIndexSeason];
+                          final List<Map<String, Object>> episodes =
+                              existingSeason['episodes'];
+                          episodes.add({
+                            'id': widget.episodeId,
+                            'still_path': widget.stillPath,
+                            'title': widget.title,
+                            'runtime': widget.runtime,
+                          });
+                        }
+                      }
 
                       setState(() {
                         downloadState = DownloadState.downloaded;
@@ -216,7 +276,7 @@ class _EpisodeState extends State<Episode> {
                       final appDir = await getApplicationDocumentsDirectory();
 
                       final episodeFile = File(
-                          '${appDir.path}/episode/${widget.episodeId}.mp4');
+                          '${appDir.path}/episode/${offlineData['film_id']}/${widget.episodeId}.mp4');
                       await episodeFile.delete();
 
                       final stillPathFile =
@@ -230,14 +290,39 @@ class _EpisodeState extends State<Episode> {
                         seasonId: offlineData['season_id'],
                         filmId: offlineData['film_id'],
                         deletePosterPath: () async {
-                          final backdropPathFile = File(
+                          final posterFile = File(
                               '${appDir.path}/poster_path/${offlineData['poster_path']}');
-                          await backdropPathFile.delete();
+                          await posterFile.delete();
+
+                          final episodeTvDir = Directory(
+                              '${appDir.path}/episode/${offlineData['film_id']}');
+                          await episodeTvDir.delete();
                         },
                       );
                       await databaseUtils.close();
 
                       episodeIds.remove(widget.episodeId);
+
+                      // remove data in offlineTvs
+                      final tvIndex = offlineTvs
+                          .indexWhere((tv) => tv['id'] == offlineData['film_id']);
+
+                      final List seasons = offlineTvs[tvIndex]['seasons'];
+
+                      final seasonIndex = seasons.indexWhere(
+                          (season) => season['id'] == offlineData['season_id']);
+
+                      final List episodes = seasons[seasonIndex]['episodes'];
+                      episodes.removeWhere(
+                        (episode) => episode['id'] == widget.episodeId,
+                      );
+
+                      if (episodes.isEmpty) {
+                        seasons.removeAt(seasonIndex);
+                        if (seasons.isEmpty) {
+                          offlineTvs.removeAt(tvIndex);
+                        }
+                      }
 
                       setState(() {
                         downloadState = DownloadState.ready;

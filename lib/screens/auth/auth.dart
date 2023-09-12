@@ -83,15 +83,11 @@ class _AuthScreenState extends State<AuthScreen> {
           iconTheme: const IconThemeData(color: Colors.white),
         ),
         backgroundColor: const Color.fromARGB(255, 20, 20, 20),
-        body: Stack(
+        body: PageView(
+          controller: _pageController,
           children: [
-            PageView(
-              controller: _pageController,
-              children: [
-                SignInScreen(pageController: _pageController),
-                const SignUpScreen(),
-              ],
-            )
+            SignInScreen(pageController: _pageController),
+            const SignUpScreen(),
           ],
         ),
       ),

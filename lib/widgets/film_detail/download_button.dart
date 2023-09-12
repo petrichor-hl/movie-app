@@ -70,6 +70,9 @@ class _DownloadButtonState extends State<DownloadButton> {
                             await databaseUtils.close();
 
                             episodeIds.remove(widget.firstEpisodeId);
+                            offlineMovies.removeWhere(
+                              (movie) => movie['id'] == offlineData['film_id'],
+                            );
 
                             setState(() {
                               downloadState = DownloadState.ready;
