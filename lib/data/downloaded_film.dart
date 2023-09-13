@@ -8,7 +8,7 @@ final List<Map<String, dynamic>> offlineTvs = [];
 late final List<String> episodeIds;
 late final Directory appDir;
 
-Future<void> getOfflineFilms() async {
+Future<void> getDownloadedFilms() async {
   final databaseUtils = DatabaseUtils();
   await databaseUtils.connect();
 
@@ -39,9 +39,8 @@ Future<void> getOfflineFilms() async {
         final seasonData = {
           'id': season['id'],
           'season_name': season['name'],
-          'episodes': episodes
-              .where((episode) => episode['season_id'] == season['id'])
-              .toList(),
+          'episodes':
+              episodes.where((episode) => episode['season_id'] == season['id']).toList(),
         };
         filteredSeason.add(seasonData);
       }

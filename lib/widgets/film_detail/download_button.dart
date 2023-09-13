@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:movie_app/data/downloaded_episode.dart';
+import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/film_detail/episode.dart';
@@ -176,6 +176,7 @@ class _DownloadButtonState extends State<DownloadButton> {
                           'episodes': [
                             {
                               'id': widget.firstEpisodeId,
+                              'order': 1,
                               'runtime': widget.runtime,
                             }
                           ]

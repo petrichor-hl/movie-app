@@ -29,6 +29,7 @@ class DatabaseUtils {
           '''
         CREATE TABLE episode(
           id TEXT PRIMARY KEY, 
+          episodeOrder INT,
           title TEXT, 
           runtime INT,
           still_path TEXT,
@@ -74,6 +75,7 @@ class DatabaseUtils {
 
   Future<void> insertEpisode({
     required String id,
+    int order = 1,
     String title = '',
     required int runtime,
     String stillPath = '',
@@ -83,6 +85,7 @@ class DatabaseUtils {
       'episode',
       {
         'id': id,
+        'episodeOrder': order,
         'title': title,
         'runtime': runtime,
         'still_path': stillPath,
@@ -100,7 +103,8 @@ class DatabaseUtils {
   }
 
   Future<List<Map<String, dynamic>>> queryEpisodes() async {
-    return await _database.rawQuery('select * from episode');
+    return await _database.rawQuery(
+        'select id, episodeOrder as \'order\', title, runtime, still_path, season_id from episode');
   }
 
   Future<void> deleteEpisode({

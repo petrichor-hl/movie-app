@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:movie_app/data/downloaded_episode.dart';
+import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/screens/main/downloaded.dart';
 
 class OfflineTv extends StatelessWidget {
@@ -12,24 +12,19 @@ class OfflineTv extends StatelessWidget {
     required this.posterPath,
     required this.episodeCount,
     required this.allEpisodesSize,
-    required this.pageController,
+    required this.onSelectTv,
   });
   final String filmId;
   final String filmName;
   final String posterPath;
   final int episodeCount;
   final int allEpisodesSize;
-  final PageController pageController;
+  final void Function() onSelectTv;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: () {
-        pageController.nextPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      },
+      onTap: onSelectTv,
       title: Row(
         children: [
           ClipRRect(

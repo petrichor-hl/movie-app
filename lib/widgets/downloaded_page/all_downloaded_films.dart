@@ -1,19 +1,24 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:movie_app/data/downloaded_episode.dart';
+import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/widgets/downloaded_page/offline_movie.dart';
 import 'package:movie_app/widgets/downloaded_page/offline_tv.dart';
 
-class ListAllDownloadedFilm extends StatelessWidget {
-  ListAllDownloadedFilm({super.key, required this.pageController});
+class AllDownloadedFilm extends StatelessWidget {
+  AllDownloadedFilm({
+    super.key,
+    required this.onSelectTv,
+  });
+
+  final void Function(Map<String, dynamic>) onSelectTv;
 
   final _movieListKey = GlobalKey<AnimatedListState>();
   final _tvListKey = GlobalKey<AnimatedListState>();
-  final PageController pageController;
 
   @override
   Widget build(BuildContext context) {
+    print('AllDownloadedFilm rebuild');
     return ListView(
       children: [
         const Padding(
@@ -92,7 +97,7 @@ class ListAllDownloadedFilm extends StatelessWidget {
               posterPath: tv['poster_path'],
               episodeCount: entities.length,
               allEpisodesSize: totalSize,
-              pageController: pageController,
+              onSelectTv: () => onSelectTv(tv),
             );
           },
         ),

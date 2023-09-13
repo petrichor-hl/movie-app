@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
-import 'package:movie_app/data/downloaded_episode.dart';
+import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
@@ -21,6 +21,7 @@ enum DownloadState {
 class Episode extends StatefulWidget {
   const Episode(
     this.episodeId,
+    this.order,
     this.stillPath,
     this.title,
     this.runtime,
@@ -30,6 +31,7 @@ class Episode extends StatefulWidget {
   });
 
   final String episodeId;
+  final int order;
   final String stillPath;
   final String title;
   final int runtime;
@@ -134,7 +136,7 @@ class _EpisodeState extends State<Episode> {
                         deleteOnError: true,
                       );
 
-                      print('added episode_id = ${widget.episodeId}');
+                      // print('added episode_id = ${widget.episodeId}');
 
                       // 2. download still_path
                       await Dio().download(
@@ -169,6 +171,7 @@ class _EpisodeState extends State<Episode> {
 
                       await databaseUtils.insertEpisode(
                         id: widget.episodeId,
+                        order: widget.order,
                         title: widget.title,
                         runtime: widget.runtime,
                         stillPath: widget.stillPath,
@@ -193,6 +196,7 @@ class _EpisodeState extends State<Episode> {
                               'episodes': [
                                 {
                                   'id': widget.episodeId,
+                                  'order': widget.order,
                                   'still_path': widget.stillPath,
                                   'title': widget.title,
                                   'runtime': widget.runtime,
@@ -204,7 +208,7 @@ class _EpisodeState extends State<Episode> {
                       } else {
                         final Map<String, dynamic> existingTv =
                             offlineTvs[existingIndexTv];
-                        final List<Map<String, dynamic>> seasons = existingTv['seasons'];
+                        final List<dynamic> seasons = existingTv['seasons'];
                         final existingIndexSeason = seasons.indexWhere(
                           (season) => season['id'] == offlineData['season_id'],
                         );
@@ -216,6 +220,7 @@ class _EpisodeState extends State<Episode> {
                             'episodes': [
                               {
                                 'id': widget.episodeId,
+                                'order': widget.order,
                                 'still_path': widget.stillPath,
                                 'title': widget.title,
                                 'runtime': widget.runtime,
@@ -223,12 +228,11 @@ class _EpisodeState extends State<Episode> {
                             ],
                           });
                         } else {
-                          final Map<String, dynamic> existingSeason =
-                              seasons[existingIndexSeason];
-                          final List<Map<String, Object>> episodes =
-                              existingSeason['episodes'];
+                          final Map existingSeason = seasons[existingIndexSeason];
+                          final List episodes = existingSeason['episodes'];
                           episodes.add({
                             'id': widget.episodeId,
+                            'order': widget.order,
                             'still_path': widget.stillPath,
                             'title': widget.title,
                             'runtime': widget.runtime,
@@ -273,8 +277,6 @@ class _EpisodeState extends State<Episode> {
                     color: Colors.white,
                     tooltip: '',
                     onSelected: (_) async {
-                      final appDir = await getApplicationDocumentsDirectory();
-
                       final episodeFile = File(
                           '${appDir.path}/episode/${offlineData['film_id']}/${widget.episodeId}.mp4');
                       await episodeFile.delete();

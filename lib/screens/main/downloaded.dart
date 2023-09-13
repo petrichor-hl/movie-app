@@ -10,51 +10,49 @@ class DownloadedScreen extends StatefulWidget {
 }
 
 class _DownloadedScreenState extends State<DownloadedScreen> {
-  final _pageController = PageController();
   int currentPage = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController.addListener(() {
-      if (_pageController.page == 0 || _pageController.page == 1) {
-        setState(() {
-          currentPage = _pageController.page!.toInt();
-        });
-      }
-    });
-  }
+  Map<String, dynamic> selectedTv = {};
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          leading: currentPage == 0
-              ? null
-              : IconButton(
-                  onPressed: () {
-                    _pageController.previousPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  },
-                  icon: const Icon(Icons.arrow_back_ios),
-                  padding: const EdgeInsets.all(16),
-                ),
-          leadingWidth: 56,
-          title: const Text('Tệp tải xuống'),
-          centerTitle: true,
-          foregroundColor: Colors.white,
-          backgroundColor: Colors.black,
+      appBar: AppBar(
+        leading: currentPage == 0
+            ? null
+            : IconButton(
+                onPressed: () {
+                  setState(() {
+                    currentPage = 0;
+                  });
+                },
+                icon: const Icon(Icons.arrow_back_ios),
+                padding: const EdgeInsets.all(16),
+              ),
+        leadingWidth: 56,
+        title: Text(
+          currentPage == 0 ? 'Tệp tải xuống' : selectedTv['film_name'],
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        body: PageView(
-          controller: _pageController,
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            ListAllDownloadedFilm(pageController: _pageController),
-            const ListAllEpisode(),
-          ],
-        ));
+        centerTitle: true,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.black,
+      ),
+      body: Stack(
+        children: [
+          AllDownloadedFilm(onSelectTv: (tv) {
+            selectedTv = tv;
+            setState(() {
+              currentPage = 1;
+            });
+          }),
+          AnimatedSlide(
+            offset: currentPage == 0 ? const Offset(1, 0) : const Offset(0, 0),
+            duration: const Duration(milliseconds: 240),
+            child: AllDownloadedEpisode(selectedTv),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -52,6 +52,7 @@ class __ListEpisodesState extends State<ListEpisodes> {
             // print('episode_id = ${e['id']}');
             return Episode(
               e['id'],
+              e['order'],
               e['still_path'],
               e['title'],
               e['runtime'],
