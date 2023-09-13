@@ -48,7 +48,12 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
           AnimatedSlide(
             offset: currentPage == 0 ? const Offset(1, 0) : const Offset(0, 0),
             duration: const Duration(milliseconds: 240),
-            child: AllDownloadedEpisode(selectedTv),
+            child: AllDownloadedEpisode(
+              selectedTv,
+              backToAllDownloadedFilm: () => setState(() {
+                currentPage = 0;
+              }),
+            ),
           ),
         ],
       ),

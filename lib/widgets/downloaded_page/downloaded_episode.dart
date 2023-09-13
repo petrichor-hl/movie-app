@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -17,7 +18,9 @@ class DownloadedEpisode extends StatelessWidget {
     required this.seasonId,
     required this.filmId,
     required this.posterPath,
+    required this.onDeleteSeason,
     required this.episodeListKey,
+    required this.backToAllDownloadedFilm,
   });
 
   final String episodeId;
@@ -29,6 +32,8 @@ class DownloadedEpisode extends StatelessWidget {
   final String seasonId;
   final String filmId;
   final String posterPath;
+  final void Function() onDeleteSeason;
+  final void Function() backToAllDownloadedFilm;
   final GlobalKey<AnimatedListState> episodeListKey;
 
   @override
@@ -152,20 +157,24 @@ class DownloadedEpisode extends StatelessWidget {
                   (episode) => episode['id'] == episodeId,
                 );
 
-                if (episodes.isEmpty) {
-                  seasons.removeAt(seasonIndex);
-                  if (seasons.isEmpty) {
-                    offlineTvs.removeAt(tvIndex);
-                  }
-                }
-
                 episodeListKey.currentState!.removeItem(
                   episodeIndex,
                   (context, animation) => SizeTransition(
                     sizeFactor: animation,
                     child: this,
                   ),
+                  duration: const Duration(milliseconds: 300),
                 );
+
+                if (episodes.isEmpty) {
+                  seasons.removeAt(seasonIndex);
+                  await Future.delayed(const Duration(milliseconds: 300));
+                  onDeleteSeason();
+                  if (seasons.isEmpty) {
+                    offlineTvs.removeAt(tvIndex);
+                    backToAllDownloadedFilm();
+                  }
+                }
               },
             ),
           ],

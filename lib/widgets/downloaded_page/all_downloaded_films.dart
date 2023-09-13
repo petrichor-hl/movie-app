@@ -18,7 +18,6 @@ class AllDownloadedFilm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('AllDownloadedFilm rebuild');
     return ListView(
       children: [
         const Padding(

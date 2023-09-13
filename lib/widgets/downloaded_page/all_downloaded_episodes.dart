@@ -4,21 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/widgets/downloaded_page/downloaded_episode.dart';
 
-class AllDownloadedEpisode extends StatelessWidget {
+class AllDownloadedEpisode extends StatefulWidget {
   const AllDownloadedEpisode(
     this.selectedTv, {
     super.key,
+    required this.backToAllDownloadedFilm,
   });
 
   final Map<String, dynamic> selectedTv;
+  final void Function() backToAllDownloadedFilm;
 
   @override
+  State<AllDownloadedEpisode> createState() => _AllDownloadedEpisodeState();
+}
+
+class _AllDownloadedEpisodeState extends State<AllDownloadedEpisode> {
+  @override
   Widget build(BuildContext context) {
-    final List<dynamic> seasons = selectedTv['seasons'] ?? [];
+    final List<dynamic> seasons = widget.selectedTv['seasons'] ?? [];
 
     return Scaffold(
       body: SizedBox.expand(
-        child: selectedTv.isEmpty
+        child: widget.selectedTv.isEmpty
             ? null
             : ListView(
                 children: List.generate(seasons.length, (index) {
@@ -51,7 +58,7 @@ class AllDownloadedEpisode extends StatelessWidget {
                         initialItemCount: episodes.length,
                         itemBuilder: (ctx, index, animation) {
                           final episodeFile = File(
-                            '${appDir.path}/episode/${selectedTv['id']}/${episodes[index]['id']}.mp4',
+                            '${appDir.path}/episode/${widget.selectedTv['id']}/${episodes[index]['id']}.mp4',
                           );
                           return DownloadedEpisode(
                             episodeId: episodes[index]['id'],
@@ -61,9 +68,11 @@ class AllDownloadedEpisode extends StatelessWidget {
                             runtime: episodes[index]['runtime'],
                             fileSize: episodeFile.lengthSync(),
                             seasonId: season['id'],
-                            filmId: selectedTv['id'],
-                            posterPath: selectedTv['poster_path'],
+                            filmId: widget.selectedTv['id'],
+                            posterPath: widget.selectedTv['poster_path'],
                             episodeListKey: animatedKey,
+                            onDeleteSeason: () => setState(() {}),
+                            backToAllDownloadedFilm: widget.backToAllDownloadedFilm,
                           );
                         },
                       ),
