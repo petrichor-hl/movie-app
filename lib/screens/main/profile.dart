@@ -122,11 +122,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: 70,
             ),
             _ProfileSettingItem(
-              title: 'Thông báo',
-              iconData: Icons.notifications,
-              onTap: () {},
-            ),
-            _ProfileSettingItem(
               title: 'Danh sách',
               iconData: Icons.list,
               onTap: () {},
@@ -164,8 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text(
-                                        'Có lỗi xảy ra, đăng xuất thất bại')),
+                                    content: Text('Có lỗi xảy ra, đăng xuất thất bại')),
                               );
                             }
                           }

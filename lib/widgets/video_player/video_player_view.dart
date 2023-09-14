@@ -21,12 +21,14 @@ class VideoPlayerView extends StatefulWidget {
   const VideoPlayerView({
     super.key,
     required this.title,
-    required this.episodeUrl,
+    required this.videoLink,
+    this.videoLocation = 'network',
     this.startAt = 0,
   });
 
   final String title;
-  final String episodeUrl;
+  final String videoLink;
+  final String videoLocation;
   final int startAt;
 
   @override
@@ -139,20 +141,21 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    _videoPlayerController =
-        VideoPlayerController.networkUrl(Uri.parse(widget.episodeUrl))
-          ..initialize().then((value) {
-            _videoPlayerController.addListener(_onVideoPlayerPositionChanged);
+    _videoPlayerController = widget.videoLocation == 'network'
+        ? VideoPlayerController.networkUrl(Uri.parse(widget.videoLink))
+        : VideoPlayerController.file(File(widget.videoLink))
+      ..initialize().then((value) {
+        _videoPlayerController.addListener(_onVideoPlayerPositionChanged);
 
-            _videoPlayerController.addListener(() {
-              _videoPlayerController.value.isPlaying
-                  ? context.read<VideoPlayControlCubit>().play()
-                  : context.read<VideoPlayControlCubit>().pause();
-            });
+        _videoPlayerController.addListener(() {
+          _videoPlayerController.value.isPlaying
+              ? context.read<VideoPlayControlCubit>().play()
+              : context.read<VideoPlayControlCubit>().pause();
+        });
 
-            setState(() {});
-          })
-          ..play();
+        setState(() {});
+      })
+      ..play();
   }
 
   @override
@@ -227,9 +230,8 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
               right: Platform.isAndroid ? 20 : 0,
               child: AnimatedSlide(
                 duration: const Duration(milliseconds: 250),
-                offset: _controlsOverlayVisible
-                    ? const Offset(0, 0)
-                    : const Offset(0, -1),
+                offset:
+                    _controlsOverlayVisible ? const Offset(0, 0) : const Offset(0, -1),
                 curve: Curves.easeInOut,
                 child: SafeArea(
                   child: Row(
@@ -276,8 +278,8 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                     () => _controlsTimer.cancel(),
                     () => _videoPlayerController
                         .removeListener(_onVideoPlayerPositionChanged),
-                    () => _videoPlayerController
-                        .addListener(_onVideoPlayerPositionChanged),
+                    () =>
+                        _videoPlayerController.addListener(_onVideoPlayerPositionChanged),
                   ),
                   VideoBottomUtils(
                     _controlsOverlayVisible,

@@ -2,9 +2,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
+import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/screens/main/downloaded.dart';
+import 'package:movie_app/widgets/video_player/video_player_view.dart';
 
 class DownloadedEpisode extends StatelessWidget {
   const DownloadedEpisode({
@@ -39,7 +43,27 @@ class DownloadedEpisode extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) => MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (ctx) => VideoSliderCubit(),
+                ),
+                BlocProvider(
+                  create: (ctx) => VideoPlayControlCubit(),
+                ),
+              ],
+              child: VideoPlayerView(
+                title: title,
+                videoLink: '${appDir.path}/episode/$filmId/$episodeId.mp4',
+                videoLocation: 'local',
+              ),
+            ),
+          ),
+        );
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
         child: Row(

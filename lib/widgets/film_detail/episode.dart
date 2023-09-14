@@ -65,10 +65,17 @@ class _EpisodeState extends State<Episode> {
                     create: (ctx) => VideoPlayControlCubit(),
                   ),
                 ],
-                child: VideoPlayerView(
-                  title: widget.title,
-                  episodeUrl: widget.linkEpisode,
-                ),
+                child: downloadState == DownloadState.ready
+                    ? VideoPlayerView(
+                        title: widget.title,
+                        videoLink: widget.linkEpisode,
+                      )
+                    : VideoPlayerView(
+                        title: widget.title,
+                        videoLink:
+                            '${appDir.path}/episode/${offlineData['film_id']}/${widget.episodeId}.mp4',
+                        videoLocation: 'local',
+                      ),
               ),
             ),
           );

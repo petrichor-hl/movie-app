@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
+import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/films_by_genre.dart';
 import 'package:movie_app/widgets/film_detail/download_button.dart';
@@ -46,10 +47,8 @@ class _FilmDetailState extends State<FilmDetail> {
         .single();
     // print('backdrop_path = ${_film!['backdrop_path']}');
 
-    genres = await supabase
-        .from('film_genre')
-        .select('genre(*)')
-        .eq('film_id', widget.filmId);
+    genres =
+        await supabase.from('film_genre').select('genre(*)').eq('film_id', widget.filmId);
 
     _seasons = await supabase
         .from('season')
@@ -132,8 +131,7 @@ class _FilmDetailState extends State<FilmDetail> {
                       bottom: 10,
                       left: 10,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 6, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(4),
                           color: Colors.black,
@@ -182,6 +180,8 @@ class _FilmDetailState extends State<FilmDetail> {
                   width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: () {
+                      final episodeId = _seasons[0]['episode'][0]['id'];
+                      final isDownloaded = episodeIds.contains(episodeId);
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (ctx) => MultiBlocProvider(
@@ -193,10 +193,18 @@ class _FilmDetailState extends State<FilmDetail> {
                                 create: (ctx) => VideoPlayControlCubit(),
                               ),
                             ],
-                            child: VideoPlayerView(
-                              title: _film!['name'],
-                              episodeUrl: _seasons[0]['episode'][0]['link'],
-                            ),
+                            child: isDownloaded
+                                ? VideoPlayerView(
+                                    title: _film!['name'],
+                                    videoLink: isMovie
+                                        ? '${appDir.path}/episode/$episodeId.mp4'
+                                        : '${appDir.path}/episode/${_film!['id']}/$episodeId.mp4',
+                                    videoLocation: 'local',
+                                  )
+                                : VideoPlayerView(
+                                    title: _film!['name'],
+                                    videoLink: _seasons[0]['episode'][0]['link'],
+                                  ),
                           ),
                         ),
                       );

@@ -6,15 +6,23 @@ import 'package:movie_app/widgets/downloaded_page/offline_movie.dart';
 import 'package:movie_app/widgets/downloaded_page/offline_tv.dart';
 
 class AllDownloadedFilm extends StatelessWidget {
-  AllDownloadedFilm({
+  const AllDownloadedFilm({
     super.key,
     required this.onSelectTv,
+    required this.isMultiSelectMode,
+    required this.turnOnMultiSelectMode,
+    required this.movieListKey,
+    required this.tvListKey,
+    required this.onMultiSelect,
+    required this.unMultiSelect,
   });
-
   final void Function(Map<String, dynamic>) onSelectTv;
-
-  final _movieListKey = GlobalKey<AnimatedListState>();
-  final _tvListKey = GlobalKey<AnimatedListState>();
+  final bool isMultiSelectMode;
+  final void Function() turnOnMultiSelectMode;
+  final GlobalKey<AnimatedListState> movieListKey;
+  final GlobalKey<AnimatedListState> tvListKey;
+  final void Function(String filmType, String filmId) onMultiSelect;
+  final void Function(String filmType, String filmId) unMultiSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +43,7 @@ class AllDownloadedFilm extends StatelessWidget {
           height: 4,
         ),
         AnimatedList(
-          key: _movieListKey,
+          key: movieListKey,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           initialItemCount: offlineMovies.length,
@@ -44,6 +52,7 @@ class AllDownloadedFilm extends StatelessWidget {
             final episodeId = movie['seasons'][0]['episodes'][0]['id'];
             final episodeFile = File('${appDir.path}/episode/$episodeId.mp4');
             return OfflineMovie(
+              key: ValueKey(movie['id']),
               episodeId: episodeId,
               seasonId: movie['seasons'][0]['id'],
               filmId: movie['id'],
@@ -51,7 +60,11 @@ class AllDownloadedFilm extends StatelessWidget {
               posterPath: movie['poster_path'],
               runtime: movie['seasons'][0]['episodes'][0]['runtime'],
               fileSize: episodeFile.lengthSync(),
-              movieListKey: _movieListKey,
+              movieListKey: movieListKey,
+              isMultiSelectMode: isMultiSelectMode,
+              turnOnMultiSelectMode: turnOnMultiSelectMode,
+              onMultiSelect: () => onMultiSelect('movie', movie['id']),
+              unMultiSelect: () => unMultiSelect('movie', movie['id']),
             );
           },
         ),
@@ -73,7 +86,7 @@ class AllDownloadedFilm extends StatelessWidget {
           height: 4,
         ),
         AnimatedList(
-          key: _tvListKey,
+          key: tvListKey,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           initialItemCount: offlineTvs.length,
@@ -91,12 +104,18 @@ class AllDownloadedFilm extends StatelessWidget {
             }
 
             return OfflineTv(
+              key: ValueKey(tv['id']),
               filmId: tv['id'],
               filmName: tv['film_name'],
               posterPath: tv['poster_path'],
               episodeCount: entities.length,
               allEpisodesSize: totalSize,
+              tvListKey: tvListKey,
+              isMultiSelectMode: isMultiSelectMode,
+              turnOnMultiSelectMode: turnOnMultiSelectMode,
               onSelectTv: () => onSelectTv(tv),
+              onMultiSelect: () => onMultiSelect('tv', tv['id']),
+              unMultiSelect: () => unMultiSelect('tv', tv['id']),
             );
           },
         ),

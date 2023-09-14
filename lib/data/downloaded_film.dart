@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:path_provider/path_provider.dart';
 
-final List<Map<String, dynamic>> offlineMovies = [];
-final List<Map<String, dynamic>> offlineTvs = [];
+List<Map<String, dynamic>> offlineMovies = [];
+List<Map<String, dynamic>> offlineTvs = [];
 
 late final List<String> episodeIds;
 late final Directory appDir;
@@ -19,7 +19,7 @@ Future<void> getDownloadedFilms() async {
   await databaseUtils.close();
 
   appDir = await getApplicationDocumentsDirectory();
-  // print('app dir: ${appDir.path}');
+  print('app dir: ${appDir.path}');
 
   episodeIds = List.generate(
     episodes.length,
