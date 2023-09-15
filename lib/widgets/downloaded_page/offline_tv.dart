@@ -12,7 +12,6 @@ class OfflineTv extends StatefulWidget {
     required this.posterPath,
     required this.episodeCount,
     required this.allEpisodesSize,
-    required this.tvListKey,
     required this.isMultiSelectMode,
     required this.turnOnMultiSelectMode,
     required this.onSelectTv,
@@ -25,7 +24,6 @@ class OfflineTv extends StatefulWidget {
   final String posterPath;
   final int episodeCount;
   final int allEpisodesSize;
-  final GlobalKey<AnimatedListState> tvListKey;
   final bool isMultiSelectMode;
   final void Function() turnOnMultiSelectMode;
   final void Function() onSelectTv;
@@ -49,12 +47,12 @@ class _OfflineTvState extends State<OfflineTv> {
 
   @override
   Widget build(BuildContext context) {
-    _isChecked ? widget.onMultiSelect() : widget.unMultiSelect();
     return ListTile(
       onTap: widget.isMultiSelectMode
           ? () {
               setState(() {
                 _isChecked = !_isChecked;
+                _isChecked ? widget.onMultiSelect() : widget.unMultiSelect();
               });
             }
           : widget.onSelectTv,
@@ -62,6 +60,7 @@ class _OfflineTvState extends State<OfflineTv> {
         widget.turnOnMultiSelectMode();
         setState(() {
           _isChecked = true;
+          _isChecked ? widget.onMultiSelect() : widget.unMultiSelect();
         });
       },
       title: Row(

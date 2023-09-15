@@ -21,9 +21,9 @@ class OfflineMovie extends StatefulWidget {
     required this.fileSize,
     required this.isMultiSelectMode,
     required this.turnOnMultiSelectMode,
-    required this.movieListKey,
     required this.onMultiSelect,
     required this.unMultiSelect,
+    required this.onIndividualDelete,
   });
 
   final String episodeId;
@@ -35,9 +35,9 @@ class OfflineMovie extends StatefulWidget {
   final int fileSize;
   final bool isMultiSelectMode;
   final void Function() turnOnMultiSelectMode;
-  final GlobalKey<AnimatedListState> movieListKey;
   final void Function() onMultiSelect;
   final void Function() unMultiSelect;
+  final void Function() onIndividualDelete;
 
   @override
   State<OfflineMovie> createState() => _OfflineMovieState();
@@ -56,12 +56,12 @@ class _OfflineMovieState extends State<OfflineMovie> {
 
   @override
   Widget build(BuildContext context) {
-    _isChecked ? widget.onMultiSelect() : widget.unMultiSelect();
     return ListTile(
       onTap: widget.isMultiSelectMode
           ? () {
               setState(() {
                 _isChecked = !_isChecked;
+                _isChecked ? widget.onMultiSelect() : widget.unMultiSelect();
               });
             }
           : () {
@@ -89,6 +89,7 @@ class _OfflineMovieState extends State<OfflineMovie> {
         widget.turnOnMultiSelectMode();
         setState(() {
           _isChecked = true;
+          _isChecked ? widget.onMultiSelect() : widget.unMultiSelect();
         });
       },
       title: Row(
@@ -157,7 +158,6 @@ class _OfflineMovieState extends State<OfflineMovie> {
               tooltip: '',
               onSelected: (_) async {
                 // Delete Movie
-
                 // print('remove film: $filmName');
 
                 final episodeFile =
@@ -179,20 +179,11 @@ class _OfflineMovieState extends State<OfflineMovie> {
                 await databaseUtils.close();
 
                 episodeIds.remove(widget.episodeId);
-                // offlineMovies.removeAt(movieIndex);
 
                 final index =
-                    offlineMovies.indexWhere((element) => element['id'] == widget.filmId);
-
-                widget.movieListKey.currentState!.removeItem(
-                  index,
-                  (context, animation) => SizeTransition(
-                    sizeFactor: animation,
-                    child: widget,
-                  ),
-                );
-
+                    offlineMovies.indexWhere((movie) => movie['id'] == widget.filmId);
                 offlineMovies.removeAt(index);
+                widget.onIndividualDelete();
               },
             ),
     );

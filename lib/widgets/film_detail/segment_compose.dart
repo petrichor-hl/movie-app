@@ -18,7 +18,7 @@ class SegmentCompose extends StatefulWidget {
 
 class _SegmentComposeState extends State<SegmentCompose> {
   late int _segmentIndex = widget.isMovie ? 1 : 0;
-  late final _listEpisodes = ListEpisodes(widget.seasons);
+  late final _listEpisodes = ListEpisodes(widget.filmId, widget.seasons);
   final _gridShimmer = const GridShimmer();
 
   late final List<dynamic> _castData;
@@ -33,8 +33,8 @@ class _SegmentComposeState extends State<SegmentCompose> {
         .select('role: character, person(id, name, profile_path, popularity)')
         .eq('film_id', widget.filmId);
 
-    _castData.sort((a, b) =>
-        b['person']['popularity'].compareTo(a['person']['popularity']));
+    _castData
+        .sort((a, b) => b['person']['popularity'].compareTo(a['person']['popularity']));
   }
 
   Future<void> _fetchCrewData() async {
@@ -43,8 +43,8 @@ class _SegmentComposeState extends State<SegmentCompose> {
         .select('role: job, person(id, name, profile_path, popularity, gender)')
         .eq('film_id', widget.filmId);
 
-    _crewData.sort((a, b) =>
-        b['person']['popularity'].compareTo(a['person']['popularity']));
+    _crewData
+        .sort((a, b) => b['person']['popularity'].compareTo(a['person']['popularity']));
   }
 
   @override

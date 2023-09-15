@@ -4,8 +4,9 @@ import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/film_detail/episode.dart';
 
 class ListEpisodes extends StatefulWidget {
-  const ListEpisodes(this.seasons, {super.key});
+  const ListEpisodes(this.filmId, this.seasons, {super.key});
 
+  final String filmId;
   final List<dynamic> seasons;
 
   @override
@@ -58,6 +59,7 @@ class __ListEpisodesState extends State<ListEpisodes> {
               e['runtime'],
               e['subtitle'],
               e['link'],
+              widget.filmId,
               key: ValueKey(e['id']),
             );
           },

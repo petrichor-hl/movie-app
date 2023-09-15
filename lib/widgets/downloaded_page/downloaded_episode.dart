@@ -75,7 +75,7 @@ class DownloadedEpisode extends StatelessWidget {
                 children: [
                   Image.file(
                     File(
-                      '${appDir.path}/still_path/$stillPath',
+                      '${appDir.path}/still_path/$filmId/$stillPath',
                     ),
                     width: 150,
                   ),
@@ -142,7 +142,8 @@ class DownloadedEpisode extends StatelessWidget {
                 final episodeFile = File('${appDir.path}/episode/$filmId/$episodeId.mp4');
                 await episodeFile.delete();
 
-                final stillPathFile = File('${appDir.path}/still_path/$stillPath');
+                final stillPathFile =
+                    File('${appDir.path}/still_path/$filmId/$stillPath');
                 await stillPathFile.delete();
 
                 final databaseUtils = DatabaseUtils();

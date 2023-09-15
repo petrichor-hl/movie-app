@@ -26,7 +26,8 @@ class Episode extends StatefulWidget {
     this.title,
     this.runtime,
     this.subtitle,
-    this.linkEpisode, {
+    this.linkEpisode,
+    this.filmId, {
     super.key,
   });
 
@@ -37,6 +38,7 @@ class Episode extends StatefulWidget {
   final int runtime;
   final String subtitle;
   final String linkEpisode;
+  final String filmId;
 
   @override
   State<Episode> createState() => _EpisodeState();
@@ -148,7 +150,7 @@ class _EpisodeState extends State<Episode> {
                       // 2. download still_path
                       await Dio().download(
                         'https://www.themoviedb.org/t/p/w454_and_h254_bestv2/${widget.stillPath}',
-                        '${appDir.path}/still_path${widget.stillPath}',
+                        '${appDir.path}/still_path/${widget.filmId}/${widget.stillPath}',
                         deleteOnError: true,
                       );
 
@@ -288,8 +290,8 @@ class _EpisodeState extends State<Episode> {
                           '${appDir.path}/episode/${offlineData['film_id']}/${widget.episodeId}.mp4');
                       await episodeFile.delete();
 
-                      final stillPathFile =
-                          File('${appDir.path}/still_path/${widget.stillPath}');
+                      final stillPathFile = File(
+                          '${appDir.path}/still_path/${widget.filmId}/${widget.stillPath}');
                       await stillPathFile.delete();
 
                       final databaseUtils = DatabaseUtils();
