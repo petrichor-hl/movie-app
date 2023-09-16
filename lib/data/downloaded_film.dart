@@ -19,7 +19,7 @@ Future<void> getDownloadedFilms() async {
   await databaseUtils.close();
 
   appDir = await getApplicationDocumentsDirectory();
-  // print('app dir: ${appDir.path}');
+  print('app dir: ${appDir.path}');
 
   episodeIds = List.generate(
     episodes.length,

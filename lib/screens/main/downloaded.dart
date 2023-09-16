@@ -18,25 +18,39 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
   int currentPage = 0;
   Map<String, dynamic> selectedTv = {};
   bool _isMultiSelectMode = false;
-  final _movieListKey = GlobalKey<AnimatedListState>();
-  final _tvListKey = GlobalKey<AnimatedListState>();
   final _selectedMovieIds = <String>[];
   final _selectedTvIds = <String>[];
+
+  bool _isSelectAll = false;
+  bool _isUnSelectAll = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: _isMultiSelectMode
-            ? IconButton(
-                onPressed: () {
-                  setState(() {
-                    _isMultiSelectMode = false;
-                  });
-                },
-                icon: const Icon(Icons.cancel_outlined),
-                padding: const EdgeInsets.all(16),
-              ).animate().scale()
+            ? Checkbox(
+                value: _isSelectAll,
+                onChanged: (value) => setState(() {
+                  if (value != null) {
+                    _isSelectAll = value;
+
+                    _selectedMovieIds.clear();
+                    _selectedTvIds.clear();
+
+                    if (_isSelectAll) {
+                      _selectedMovieIds.addAll(
+                        [...offlineMovies.map((movie) => movie['id'])],
+                      );
+                      _selectedTvIds.addAll(
+                        [...offlineTvs.map((tv) => tv['id'])],
+                      );
+                    } else {
+                      _isUnSelectAll = true;
+                    }
+                  }
+                }),
+              )
             : currentPage == 0
                 ? null
                 : IconButton(
@@ -54,6 +68,19 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
         ),
         actions: _isMultiSelectMode
             ? [
+                IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isMultiSelectMode = false;
+                      _selectedMovieIds.clear();
+                      _selectedTvIds.clear();
+                      _isSelectAll = false;
+                      _isUnSelectAll = false;
+                    });
+                  },
+                  icon: const Icon(Icons.cancel_outlined),
+                  padding: const EdgeInsets.all(16),
+                ).animate().scale(),
                 IconButton(
                   onPressed: () async {
                     // Xoá movie
@@ -75,7 +102,7 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
                         id: episodeId,
                         seasonId: offlineMovies[index]['seasons'][0]['id'],
                         filmId: offlineMovies[index]['id'],
-                        deletePosterPath: () async {
+                        clean: () async {
                           final posterFile = File(
                             '${appDir.path}/poster_path/${offlineMovies[index]['poster_path']}',
                           );
@@ -95,7 +122,6 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
                       final index = offlineTvs.indexWhere(
                         (tv) => tv['id'] == tvId,
                       );
-                      print('film_name = ${offlineTvs[index]['film_name']}');
                       final filmId = offlineTvs[index]['id'];
 
                       final episodeDirectory =
@@ -114,7 +140,7 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
                             id: episode['id'],
                             seasonId: season['id'],
                             filmId: filmId,
-                            deletePosterPath: () async {
+                            clean: () async {
                               final posterFile = File(
                                 '${appDir.path}/poster_path/${offlineTvs[index]['poster_path']}',
                               );
@@ -153,18 +179,32 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
               });
             },
             isMultiSelectMode: _isMultiSelectMode,
+            isSelectAll: _isSelectAll,
+            unSelectAll: _isUnSelectAll,
             turnOnMultiSelectMode: () => setState(() {
               _isMultiSelectMode = true;
             }),
-            movieListKey: _movieListKey,
-            tvListKey: _tvListKey,
-            onMultiSelect: (type, filmId) => {
-              type == 'movie' ? _selectedMovieIds.add(filmId) : _selectedTvIds.add(filmId)
+            onSelectItemInMultiMode: (type, filmId) => {
+              type == 'movie'
+                  ? _selectedMovieIds.add(filmId)
+                  : _selectedTvIds.add(filmId),
+              if (_selectedMovieIds.length + _selectedTvIds.length ==
+                  offlineMovies.length + offlineTvs.length)
+                {
+                  setState(() {
+                    _isSelectAll = true;
+                  })
+                }
             },
-            unMultiSelect: (type, filmId) => {
+            unSelectItemInMultiMode: (type, filmId) => {
               type == 'movie'
                   ? _selectedMovieIds.remove(filmId)
-                  : _selectedTvIds.remove(filmId)
+                  : _selectedTvIds.remove(filmId),
+              if (_isSelectAll)
+                setState(() {
+                  _isSelectAll = false;
+                  _isUnSelectAll = false;
+                })
             },
           ),
           AnimatedSlide(
@@ -175,6 +215,8 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
               backToAllDownloadedFilm: () => setState(() {
                 currentPage = 0;
               }),
+              isMultiSelectMode: _isMultiSelectMode,
+              isSelectAll: _isSelectAll,
             ),
           ),
         ],

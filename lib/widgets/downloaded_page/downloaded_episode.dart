@@ -23,8 +23,8 @@ class DownloadedEpisode extends StatelessWidget {
     required this.filmId,
     required this.posterPath,
     required this.onDeleteSeason,
-    required this.episodeListKey,
     required this.backToAllDownloadedFilm,
+    required this.onIndividualDelete,
   });
 
   final String episodeId;
@@ -38,7 +38,7 @@ class DownloadedEpisode extends StatelessWidget {
   final String posterPath;
   final void Function() onDeleteSeason;
   final void Function() backToAllDownloadedFilm;
-  final GlobalKey<AnimatedListState> episodeListKey;
+  final void Function() onIndividualDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -152,12 +152,15 @@ class DownloadedEpisode extends StatelessWidget {
                   id: episodeId,
                   seasonId: seasonId,
                   filmId: filmId,
-                  deletePosterPath: () async {
+                  clean: () async {
                     final posterFile = File('${appDir.path}/poster_path/$posterPath');
                     await posterFile.delete();
 
                     final episodeTvDir = Directory('${appDir.path}/episode/$filmId');
                     await episodeTvDir.delete();
+
+                    final stillPathDir = Directory('${appDir.path}/still_path/$filmId');
+                    await stillPathDir.delete();
                   },
                 );
                 await databaseUtils.close();
@@ -175,31 +178,26 @@ class DownloadedEpisode extends StatelessWidget {
                 );
 
                 final List episodes = seasons[seasonIndex]['episodes'];
-                final episodeIndex = episodes.indexWhere(
-                  (episode) => episode['id'] == episodeId,
-                );
+
                 episodes.removeWhere(
                   (episode) => episode['id'] == episodeId,
                 );
 
-                episodeListKey.currentState!.removeItem(
-                  episodeIndex,
-                  (context, animation) => SizeTransition(
-                    sizeFactor: animation,
-                    child: this,
-                  ),
-                  duration: const Duration(milliseconds: 300),
-                );
+                onIndividualDelete();
 
                 if (episodes.isEmpty) {
                   seasons.removeAt(seasonIndex);
-                  await Future.delayed(const Duration(milliseconds: 300));
                   onDeleteSeason();
                   if (seasons.isEmpty) {
                     offlineTvs.removeAt(tvIndex);
                     backToAllDownloadedFilm();
                   }
                 }
+                Timer(Duration.zero, () {
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(const SnackBar(content: Text('Đã xoá tập phim')));
+                });
               },
             ),
           ],

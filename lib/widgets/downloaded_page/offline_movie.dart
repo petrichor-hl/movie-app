@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -20,9 +21,11 @@ class OfflineMovie extends StatefulWidget {
     required this.runtime,
     required this.fileSize,
     required this.isMultiSelectMode,
+    required this.isSelectAll,
+    required this.unSelectAll,
     required this.turnOnMultiSelectMode,
-    required this.onMultiSelect,
-    required this.unMultiSelect,
+    required this.onSelectItemInMultiMode,
+    required this.unSelectItemInMultiMode,
     required this.onIndividualDelete,
   });
 
@@ -34,9 +37,11 @@ class OfflineMovie extends StatefulWidget {
   final int runtime;
   final int fileSize;
   final bool isMultiSelectMode;
+  final bool isSelectAll;
+  final bool unSelectAll;
   final void Function() turnOnMultiSelectMode;
-  final void Function() onMultiSelect;
-  final void Function() unMultiSelect;
+  final void Function() onSelectItemInMultiMode;
+  final void Function() unSelectItemInMultiMode;
   final void Function() onIndividualDelete;
 
   @override
@@ -45,12 +50,21 @@ class OfflineMovie extends StatefulWidget {
 
 class _OfflineMovieState extends State<OfflineMovie> {
   bool _isChecked = false;
+  bool hasTickSelectAll = false;
 
   @override
   void didUpdateWidget(covariant OfflineMovie oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isMultiSelectMode == false) {
       _isChecked = false;
+    } else {
+      if (widget.isSelectAll) {
+        _isChecked = true;
+      } else {
+        if (widget.unSelectAll) {
+          _isChecked = false;
+        }
+      }
     }
   }
 
@@ -61,7 +75,9 @@ class _OfflineMovieState extends State<OfflineMovie> {
           ? () {
               setState(() {
                 _isChecked = !_isChecked;
-                _isChecked ? widget.onMultiSelect() : widget.unMultiSelect();
+                _isChecked
+                    ? widget.onSelectItemInMultiMode()
+                    : widget.unSelectItemInMultiMode();
               });
             }
           : () {
@@ -89,7 +105,9 @@ class _OfflineMovieState extends State<OfflineMovie> {
         widget.turnOnMultiSelectMode();
         setState(() {
           _isChecked = true;
-          _isChecked ? widget.onMultiSelect() : widget.unMultiSelect();
+          _isChecked
+              ? widget.onSelectItemInMultiMode()
+              : widget.unSelectItemInMultiMode();
         });
       },
       title: Row(
@@ -140,6 +158,9 @@ class _OfflineMovieState extends State<OfflineMovie> {
               onChanged: (value) => setState(() {
                 if (value != null) {
                   _isChecked = value;
+                  _isChecked
+                      ? widget.onSelectItemInMultiMode()
+                      : widget.unSelectItemInMultiMode();
                 }
               }),
             )
@@ -170,7 +191,7 @@ class _OfflineMovieState extends State<OfflineMovie> {
                   id: widget.episodeId,
                   seasonId: widget.seasonId,
                   filmId: widget.filmId,
-                  deletePosterPath: () async {
+                  clean: () async {
                     final posterFile =
                         File('${appDir.path}/poster_path/${widget.posterPath}');
                     await posterFile.delete();
@@ -180,10 +201,14 @@ class _OfflineMovieState extends State<OfflineMovie> {
 
                 episodeIds.remove(widget.episodeId);
 
-                final index =
-                    offlineMovies.indexWhere((movie) => movie['id'] == widget.filmId);
-                offlineMovies.removeAt(index);
+                offlineMovies.removeWhere((movie) => movie['id'] == widget.filmId);
                 widget.onIndividualDelete();
+
+                Timer(Duration.zero, () {
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(const SnackBar(content: Text('Đã xoá tập phim')));
+                });
               },
             ),
     );

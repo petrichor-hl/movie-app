@@ -61,7 +61,7 @@ class _DownloadButtonState extends State<DownloadButton> {
                               id: widget.firstEpisodeId,
                               seasonId: offlineData['season_id'],
                               filmId: offlineData['film_id'],
-                              deletePosterPath: () async {
+                              clean: () async {
                                 final posterFile = File(
                                     '${appDir.path}/poster_path/${offlineData['poster_path']}');
                                 await posterFile.delete();

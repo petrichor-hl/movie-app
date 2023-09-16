@@ -150,7 +150,7 @@ class _EpisodeState extends State<Episode> {
                       // 2. download still_path
                       await Dio().download(
                         'https://www.themoviedb.org/t/p/w454_and_h254_bestv2/${widget.stillPath}',
-                        '${appDir.path}/still_path/${widget.filmId}/${widget.stillPath}',
+                        '${appDir.path}/still_path/${offlineData['film_id']}/${widget.stillPath}',
                         deleteOnError: true,
                       );
 
@@ -291,7 +291,7 @@ class _EpisodeState extends State<Episode> {
                       await episodeFile.delete();
 
                       final stillPathFile = File(
-                          '${appDir.path}/still_path/${widget.filmId}/${widget.stillPath}');
+                          '${appDir.path}/still_path/${offlineData['still_path']}/${widget.stillPath}');
                       await stillPathFile.delete();
 
                       final databaseUtils = DatabaseUtils();
@@ -300,7 +300,7 @@ class _EpisodeState extends State<Episode> {
                         id: widget.episodeId,
                         seasonId: offlineData['season_id'],
                         filmId: offlineData['film_id'],
-                        deletePosterPath: () async {
+                        clean: () async {
                           final posterFile = File(
                               '${appDir.path}/poster_path/${offlineData['poster_path']}');
                           await posterFile.delete();
@@ -308,6 +308,10 @@ class _EpisodeState extends State<Episode> {
                           final episodeTvDir = Directory(
                               '${appDir.path}/episode/${offlineData['film_id']}');
                           await episodeTvDir.delete();
+
+                          final stillPathDir = Directory(
+                              '${appDir.path}/still_path/${offlineData['film_id']}');
+                          await stillPathDir.delete();
                         },
                       );
                       await databaseUtils.close();

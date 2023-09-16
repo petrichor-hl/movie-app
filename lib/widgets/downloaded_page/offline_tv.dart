@@ -13,10 +13,12 @@ class OfflineTv extends StatefulWidget {
     required this.episodeCount,
     required this.allEpisodesSize,
     required this.isMultiSelectMode,
+    required this.isSelectAll,
+    required this.unSelectAll,
     required this.turnOnMultiSelectMode,
     required this.onSelectTv,
-    required this.onMultiSelect,
-    required this.unMultiSelect,
+    required this.onSelectItemInMultiMode,
+    required this.unSelectItemInMultiMode,
   });
 
   final String filmId;
@@ -25,10 +27,12 @@ class OfflineTv extends StatefulWidget {
   final int episodeCount;
   final int allEpisodesSize;
   final bool isMultiSelectMode;
+  final bool isSelectAll;
+  final bool unSelectAll;
   final void Function() turnOnMultiSelectMode;
   final void Function() onSelectTv;
-  final void Function() onMultiSelect;
-  final void Function() unMultiSelect;
+  final void Function() onSelectItemInMultiMode;
+  final void Function() unSelectItemInMultiMode;
 
   @override
   State<OfflineTv> createState() => _OfflineTvState();
@@ -36,12 +40,22 @@ class OfflineTv extends StatefulWidget {
 
 class _OfflineTvState extends State<OfflineTv> {
   bool _isChecked = false;
+  bool hasTickSelectAll = false;
 
   @override
   void didUpdateWidget(covariant OfflineTv oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isMultiSelectMode == false) {
       _isChecked = false;
+    } else {
+      if (widget.isSelectAll) {
+        _isChecked = true;
+      } else {
+        if (widget.unSelectAll) {
+          _isChecked = false;
+        }
+        _isChecked = _isChecked || widget.isSelectAll;
+      }
     }
   }
 
@@ -52,7 +66,9 @@ class _OfflineTvState extends State<OfflineTv> {
           ? () {
               setState(() {
                 _isChecked = !_isChecked;
-                _isChecked ? widget.onMultiSelect() : widget.unMultiSelect();
+                _isChecked
+                    ? widget.onSelectItemInMultiMode()
+                    : widget.unSelectItemInMultiMode();
               });
             }
           : widget.onSelectTv,
@@ -60,7 +76,9 @@ class _OfflineTvState extends State<OfflineTv> {
         widget.turnOnMultiSelectMode();
         setState(() {
           _isChecked = true;
-          _isChecked ? widget.onMultiSelect() : widget.unMultiSelect();
+          _isChecked
+              ? widget.onSelectItemInMultiMode()
+              : widget.unSelectItemInMultiMode();
         });
       },
       title: Row(
@@ -111,6 +129,9 @@ class _OfflineTvState extends State<OfflineTv> {
               onChanged: (value) => setState(() {
                 if (value != null) {
                   _isChecked = value;
+                  _isChecked
+                      ? widget.onSelectItemInMultiMode()
+                      : widget.unSelectItemInMultiMode();
                 }
               }),
             )

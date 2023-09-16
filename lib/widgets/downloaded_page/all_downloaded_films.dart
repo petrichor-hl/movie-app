@@ -10,19 +10,19 @@ class AllDownloadedFilm extends StatefulWidget {
     super.key,
     required this.onSelectTv,
     required this.isMultiSelectMode,
+    required this.isSelectAll,
+    required this.unSelectAll,
     required this.turnOnMultiSelectMode,
-    required this.movieListKey,
-    required this.tvListKey,
-    required this.onMultiSelect,
-    required this.unMultiSelect,
+    required this.onSelectItemInMultiMode,
+    required this.unSelectItemInMultiMode,
   });
   final void Function(Map<String, dynamic>) onSelectTv;
   final bool isMultiSelectMode;
+  final bool isSelectAll;
+  final bool unSelectAll;
   final void Function() turnOnMultiSelectMode;
-  final GlobalKey<AnimatedListState> movieListKey;
-  final GlobalKey<AnimatedListState> tvListKey;
-  final void Function(String filmType, String filmId) onMultiSelect;
-  final void Function(String filmType, String filmId) unMultiSelect;
+  final void Function(String filmType, String filmId) onSelectItemInMultiMode;
+  final void Function(String filmType, String filmId) unSelectItemInMultiMode;
 
   @override
   State<AllDownloadedFilm> createState() => _AllDownloadedFilmState();
@@ -49,7 +49,6 @@ class _AllDownloadedFilmState extends State<AllDownloadedFilm> {
           const SizedBox(
             height: 4,
           ),
-
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -68,14 +67,17 @@ class _AllDownloadedFilmState extends State<AllDownloadedFilm> {
                 runtime: movie['seasons'][0]['episodes'][0]['runtime'],
                 fileSize: episodeFile.lengthSync(),
                 isMultiSelectMode: widget.isMultiSelectMode,
+                isSelectAll: widget.isSelectAll,
+                unSelectAll: widget.unSelectAll,
                 turnOnMultiSelectMode: widget.turnOnMultiSelectMode,
-                onMultiSelect: () => widget.onMultiSelect('movie', movie['id']),
-                unMultiSelect: () => widget.unMultiSelect('movie', movie['id']),
+                onSelectItemInMultiMode: () =>
+                    widget.onSelectItemInMultiMode('movie', movie['id']),
+                unSelectItemInMultiMode: () =>
+                    widget.unSelectItemInMultiMode('movie', movie['id']),
                 onIndividualDelete: () => setState(() {}),
               );
             },
           ),
-
           const SizedBox(
             height: 12,
           ),
@@ -118,47 +120,17 @@ class _AllDownloadedFilmState extends State<AllDownloadedFilm> {
                 episodeCount: entities.length,
                 allEpisodesSize: totalSize,
                 isMultiSelectMode: widget.isMultiSelectMode,
+                isSelectAll: widget.isSelectAll,
+                unSelectAll: widget.unSelectAll,
                 turnOnMultiSelectMode: widget.turnOnMultiSelectMode,
                 onSelectTv: () => widget.onSelectTv(tv),
-                onMultiSelect: () => widget.onMultiSelect('tv', tv['id']),
-                unMultiSelect: () => widget.unMultiSelect('tv', tv['id']),
+                onSelectItemInMultiMode: () =>
+                    widget.onSelectItemInMultiMode('tv', tv['id']),
+                unSelectItemInMultiMode: () =>
+                    widget.unSelectItemInMultiMode('tv', tv['id']),
               );
             },
           ),
-          // AnimatedList(
-          //   key: tvListKey,
-          //   shrinkWrap: true,
-          //   physics: const NeverScrollableScrollPhysics(),
-          //   initialItemCount: offlineTvs.length,
-          //   itemBuilder: (ctx, index, animation) {
-          //     final tv = offlineTvs[index];
-
-          //     final episodeFolderOfTv = Directory('${appDir.path}/episode/${tv['id']}');
-
-          //     int totalSize = 0;
-          //     final entities = episodeFolderOfTv.listSync();
-
-          //     for (final entity in entities) {
-          //       final File file = File(entity.path);
-          //       totalSize += file.lengthSync();
-          //     }
-
-          //     return OfflineTv(
-          //       key: ValueKey(tv['id']),
-          //       filmId: tv['id'],
-          //       filmName: tv['film_name'],
-          //       posterPath: tv['poster_path'],
-          //       episodeCount: entities.length,
-          //       allEpisodesSize: totalSize,
-          //       tvListKey: tvListKey,
-          //       isMultiSelectMode: isMultiSelectMode,
-          //       turnOnMultiSelectMode: turnOnMultiSelectMode,
-          //       onSelectTv: () => onSelectTv(tv),
-          //       onMultiSelect: () => onMultiSelect('tv', tv['id']),
-          //       unMultiSelect: () => unMultiSelect('tv', tv['id']),
-          //     );
-          //   },
-          // ),
         ],
       ),
     );

@@ -111,7 +111,7 @@ class DatabaseUtils {
     required String id,
     required String seasonId,
     required String filmId,
-    required Future<void> Function() deletePosterPath,
+    required Future<void> Function() clean,
   }) async {
     await _database.delete(
       'episode',
@@ -149,7 +149,7 @@ class DatabaseUtils {
       whereArgs: [filmId],
     );
 
-    await deletePosterPath();
+    await clean();
   }
 
   Future<void> close() async {

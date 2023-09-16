@@ -9,10 +9,14 @@ class AllDownloadedEpisode extends StatefulWidget {
     this.selectedTv, {
     super.key,
     required this.backToAllDownloadedFilm,
+    required this.isMultiSelectMode,
+    required this.isSelectAll,
   });
 
   final Map<String, dynamic> selectedTv;
   final void Function() backToAllDownloadedFilm;
+  final bool isMultiSelectMode;
+  final bool isSelectAll;
 
   @override
   State<AllDownloadedEpisode> createState() => _AllDownloadedEpisodeState();
@@ -30,7 +34,6 @@ class _AllDownloadedEpisodeState extends State<AllDownloadedEpisode> {
             : ListView(
                 children: List.generate(seasons.length, (index) {
                   final season = seasons[index];
-                  final animatedKey = GlobalKey<AnimatedListState>();
                   final List<Map<String, dynamic>> episodes = season['episodes'];
                   episodes.sort(
                     (a, b) => (a['order'] as int).compareTo(b['order']),
@@ -51,15 +54,15 @@ class _AllDownloadedEpisodeState extends State<AllDownloadedEpisode> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      AnimatedList(
-                        key: animatedKey,
+                      ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        initialItemCount: episodes.length,
-                        itemBuilder: (ctx, index, animation) {
+                        itemCount: episodes.length,
+                        itemBuilder: (ctx, index) {
                           final episodeFile = File(
                             '${appDir.path}/episode/${widget.selectedTv['id']}/${episodes[index]['id']}.mp4',
                           );
+
                           return DownloadedEpisode(
                             episodeId: episodes[index]['id'],
                             title: episodes[index]['title'],
@@ -70,9 +73,9 @@ class _AllDownloadedEpisodeState extends State<AllDownloadedEpisode> {
                             seasonId: season['id'],
                             filmId: widget.selectedTv['id'],
                             posterPath: widget.selectedTv['poster_path'],
-                            episodeListKey: animatedKey,
                             onDeleteSeason: () => setState(() {}),
                             backToAllDownloadedFilm: widget.backToAllDownloadedFilm,
+                            onIndividualDelete: () => setState(() {}),
                           );
                         },
                       ),
