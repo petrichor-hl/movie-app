@@ -93,7 +93,7 @@ class _EpisodeState extends State<Episode> {
                   borderRadius: BorderRadius.circular(4),
                   clipBehavior: Clip.antiAlias,
                   child: Image.network(
-                    'https://www.themoviedb.org/t/p/w454_and_h254_bestv2${widget.stillPath}',
+                    'https://www.themoviedb.org/t/p/w454_and_h254_bestv2/${widget.stillPath}',
                     height: 80,
                     width: 143,
                     fit: BoxFit.cover,
@@ -291,7 +291,7 @@ class _EpisodeState extends State<Episode> {
                       await episodeFile.delete();
 
                       final stillPathFile = File(
-                          '${appDir.path}/still_path/${offlineData['still_path']}/${widget.stillPath}');
+                          '${appDir.path}/still_path/${offlineData['film_id']}/${widget.stillPath}');
                       await stillPathFile.delete();
 
                       final databaseUtils = DatabaseUtils();

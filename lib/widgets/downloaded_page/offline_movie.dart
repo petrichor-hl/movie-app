@@ -50,7 +50,6 @@ class OfflineMovie extends StatefulWidget {
 
 class _OfflineMovieState extends State<OfflineMovie> {
   bool _isChecked = false;
-  bool hasTickSelectAll = false;
 
   @override
   void didUpdateWidget(covariant OfflineMovie oldWidget) {

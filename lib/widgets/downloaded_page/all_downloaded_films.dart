@@ -20,7 +20,7 @@ class AllDownloadedFilm extends StatefulWidget {
   final bool isMultiSelectMode;
   final bool isSelectAll;
   final bool unSelectAll;
-  final void Function() turnOnMultiSelectMode;
+  final void Function({required String fromPage}) turnOnMultiSelectMode;
   final void Function(String filmType, String filmId) onSelectItemInMultiMode;
   final void Function(String filmType, String filmId) unSelectItemInMultiMode;
 
@@ -69,7 +69,8 @@ class _AllDownloadedFilmState extends State<AllDownloadedFilm> {
                 isMultiSelectMode: widget.isMultiSelectMode,
                 isSelectAll: widget.isSelectAll,
                 unSelectAll: widget.unSelectAll,
-                turnOnMultiSelectMode: widget.turnOnMultiSelectMode,
+                turnOnMultiSelectMode: () =>
+                    widget.turnOnMultiSelectMode(fromPage: "all_downloaded_films"),
                 onSelectItemInMultiMode: () =>
                     widget.onSelectItemInMultiMode('movie', movie['id']),
                 unSelectItemInMultiMode: () =>
@@ -122,7 +123,8 @@ class _AllDownloadedFilmState extends State<AllDownloadedFilm> {
                 isMultiSelectMode: widget.isMultiSelectMode,
                 isSelectAll: widget.isSelectAll,
                 unSelectAll: widget.unSelectAll,
-                turnOnMultiSelectMode: widget.turnOnMultiSelectMode,
+                turnOnMultiSelectMode: () =>
+                    widget.turnOnMultiSelectMode(fromPage: "all_downloaded_films"),
                 onSelectTv: () => widget.onSelectTv(tv),
                 onSelectItemInMultiMode: () =>
                     widget.onSelectItemInMultiMode('tv', tv['id']),

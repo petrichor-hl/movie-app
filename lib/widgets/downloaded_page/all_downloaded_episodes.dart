@@ -10,13 +10,17 @@ class AllDownloadedEpisode extends StatefulWidget {
     super.key,
     required this.backToAllDownloadedFilm,
     required this.isMultiSelectMode,
-    required this.isSelectAll,
+    required this.turnOnMultiSelectMode,
+    required this.onSelectItemInMultiMode,
+    required this.unSelectItemInMultiMode,
   });
 
   final Map<String, dynamic> selectedTv;
   final void Function() backToAllDownloadedFilm;
   final bool isMultiSelectMode;
-  final bool isSelectAll;
+  final void Function({required String fromPage}) turnOnMultiSelectMode;
+  final void Function(String filmType, String episodeId) onSelectItemInMultiMode;
+  final void Function(String filmType, String episodeId) unSelectItemInMultiMode;
 
   @override
   State<AllDownloadedEpisode> createState() => _AllDownloadedEpisodeState();
@@ -76,6 +80,14 @@ class _AllDownloadedEpisodeState extends State<AllDownloadedEpisode> {
                             onDeleteSeason: () => setState(() {}),
                             backToAllDownloadedFilm: widget.backToAllDownloadedFilm,
                             onIndividualDelete: () => setState(() {}),
+                            isMultiSelectMode: widget.isMultiSelectMode,
+                            turnOnMultiSelectMode: () => widget.turnOnMultiSelectMode(
+                              fromPage: "all_downloaded_episodes",
+                            ),
+                            onSelectItemInMultiMode: () => widget.onSelectItemInMultiMode(
+                                'episode', season['id'] + '/' + episodes[index]['id']),
+                            unSelectItemInMultiMode: () => widget.unSelectItemInMultiMode(
+                                'episode', season['id'] + '/' + episodes[index]['id']),
                           );
                         },
                       ),

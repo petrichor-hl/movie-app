@@ -40,7 +40,6 @@ class OfflineTv extends StatefulWidget {
 
 class _OfflineTvState extends State<OfflineTv> {
   bool _isChecked = false;
-  bool hasTickSelectAll = false;
 
   @override
   void didUpdateWidget(covariant OfflineTv oldWidget) {
