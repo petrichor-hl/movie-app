@@ -50,6 +50,8 @@ class _EpisodeState extends State<Episode> {
       : DownloadState.ready;
   double progress = 0;
 
+  final filmInfo = Map.from(offlineData);
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -75,7 +77,7 @@ class _EpisodeState extends State<Episode> {
                     : VideoPlayerView(
                         title: widget.title,
                         videoLink:
-                            '${appDir.path}/episode/${offlineData['film_id']}/${widget.episodeId}.mp4',
+                            '${appDir.path}/episode/${filmInfo['film_id']}/${widget.episodeId}.mp4',
                         videoLocation: 'local',
                       ),
               ),
@@ -136,11 +138,13 @@ class _EpisodeState extends State<Episode> {
                       // 1. download video
                       await Dio().download(
                         widget.linkEpisode,
-                        '${appDir.path}/episode/${offlineData['film_id']}/${widget.episodeId}.mp4',
+                        '${appDir.path}/episode/${filmInfo['film_id']}/${widget.episodeId}.mp4',
                         onReceiveProgress: (count, total) {
-                          setState(() {
-                            progress = count / total;
-                          });
+                          if (mounted) {
+                            setState(() {
+                              progress = count / total;
+                            });
+                          }
                         },
                         deleteOnError: true,
                       );
@@ -150,17 +154,17 @@ class _EpisodeState extends State<Episode> {
                       // 2. download still_path
                       await Dio().download(
                         'https://www.themoviedb.org/t/p/w454_and_h254_bestv2/${widget.stillPath}',
-                        '${appDir.path}/still_path/${offlineData['film_id']}/${widget.stillPath}',
+                        '${appDir.path}/still_path/${filmInfo['film_id']}/${widget.stillPath}',
                         deleteOnError: true,
                       );
 
                       // 3. download film's backdrop_path
                       final posterLocalPath =
-                          '${appDir.path}/poster_path/${offlineData['poster_path']}';
+                          '${appDir.path}/poster_path/${filmInfo['poster_path']}';
                       final file = File(posterLocalPath);
                       if (!await file.exists()) {
                         await Dio().download(
-                          'https://image.tmdb.org/t/p/w440_and_h660_face/${offlineData['poster_path']}',
+                          'https://image.tmdb.org/t/p/w440_and_h660_face/${filmInfo['poster_path']}',
                           posterLocalPath,
                           deleteOnError: true,
                         );
@@ -169,13 +173,13 @@ class _EpisodeState extends State<Episode> {
                       // Insert data to local database
                       final databaseUtils = DatabaseUtils();
                       await databaseUtils.connect();
-                      await databaseUtils.insertFilm(offlineData['film_id'],
-                          offlineData['film_name'], offlineData['poster_path']);
+                      await databaseUtils.insertFilm(filmInfo['film_id'],
+                          filmInfo['film_name'], filmInfo['poster_path']);
 
                       await databaseUtils.insertSeason(
-                        id: offlineData['season_id'],
-                        name: offlineData['season_name'],
-                        filmId: offlineData['film_id'],
+                        id: filmInfo['season_id'],
+                        name: filmInfo['season_name'],
+                        filmId: filmInfo['film_id'],
                       );
 
                       await databaseUtils.insertEpisode(
@@ -184,24 +188,24 @@ class _EpisodeState extends State<Episode> {
                         title: widget.title,
                         runtime: widget.runtime,
                         stillPath: widget.stillPath,
-                        seasonId: offlineData['season_id'],
+                        seasonId: filmInfo['season_id'],
                       );
 
                       await databaseUtils.close();
                       episodeIds.add(widget.episodeId);
 
                       final existingIndexTv = offlineTvs.indexWhere(
-                        (tv) => tv['id'] == offlineData['film_id'],
+                        (tv) => tv['id'] == filmInfo['film_id'],
                       );
                       if (existingIndexTv == -1) {
                         offlineTvs.add({
-                          'id': offlineData['film_id'],
-                          'film_name': offlineData['film_name'],
-                          'poster_path': offlineData['poster_path'],
+                          'id': filmInfo['film_id'],
+                          'film_name': filmInfo['film_name'],
+                          'poster_path': filmInfo['poster_path'],
                           'seasons': [
                             {
-                              'id': offlineData['season_id'],
-                              'season_name': offlineData['season_name'],
+                              'id': filmInfo['season_id'],
+                              'season_name': filmInfo['season_name'],
                               'episodes': [
                                 {
                                   'id': widget.episodeId,
@@ -219,13 +223,13 @@ class _EpisodeState extends State<Episode> {
                             offlineTvs[existingIndexTv];
                         final List<dynamic> seasons = existingTv['seasons'];
                         final existingIndexSeason = seasons.indexWhere(
-                          (season) => season['id'] == offlineData['season_id'],
+                          (season) => season['id'] == filmInfo['season_id'],
                         );
 
                         if (existingIndexSeason == -1) {
                           seasons.add({
-                            'id': offlineData['season_id'],
-                            'season_name': offlineData['season_name'],
+                            'id': filmInfo['season_id'],
+                            'season_name': filmInfo['season_name'],
                             'episodes': [
                               {
                                 'id': widget.episodeId,
@@ -249,9 +253,11 @@ class _EpisodeState extends State<Episode> {
                         }
                       }
 
-                      setState(() {
-                        downloadState = DownloadState.downloaded;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          downloadState = DownloadState.downloaded;
+                        });
+                      }
                     },
                     icon: const Icon(
                       Icons.download,
@@ -287,30 +293,30 @@ class _EpisodeState extends State<Episode> {
                     tooltip: '',
                     onSelected: (_) async {
                       final episodeFile = File(
-                          '${appDir.path}/episode/${offlineData['film_id']}/${widget.episodeId}.mp4');
+                          '${appDir.path}/episode/${filmInfo['film_id']}/${widget.episodeId}.mp4');
                       await episodeFile.delete();
 
                       final stillPathFile = File(
-                          '${appDir.path}/still_path/${offlineData['film_id']}/${widget.stillPath}');
+                          '${appDir.path}/still_path/${filmInfo['film_id']}/${widget.stillPath}');
                       await stillPathFile.delete();
 
                       final databaseUtils = DatabaseUtils();
                       await databaseUtils.connect();
                       await databaseUtils.deleteEpisode(
                         id: widget.episodeId,
-                        seasonId: offlineData['season_id'],
-                        filmId: offlineData['film_id'],
+                        seasonId: filmInfo['season_id'],
+                        filmId: filmInfo['film_id'],
                         clean: () async {
                           final posterFile = File(
-                              '${appDir.path}/poster_path/${offlineData['poster_path']}');
+                              '${appDir.path}/poster_path/${filmInfo['poster_path']}');
                           await posterFile.delete();
 
-                          final episodeTvDir = Directory(
-                              '${appDir.path}/episode/${offlineData['film_id']}');
+                          final episodeTvDir =
+                              Directory('${appDir.path}/episode/${filmInfo['film_id']}');
                           await episodeTvDir.delete();
 
                           final stillPathDir = Directory(
-                              '${appDir.path}/still_path/${offlineData['film_id']}');
+                              '${appDir.path}/still_path/${filmInfo['film_id']}');
                           await stillPathDir.delete();
                         },
                       );
@@ -319,13 +325,13 @@ class _EpisodeState extends State<Episode> {
                       episodeIds.remove(widget.episodeId);
 
                       // remove data in offlineTvs
-                      final tvIndex = offlineTvs
-                          .indexWhere((tv) => tv['id'] == offlineData['film_id']);
+                      final tvIndex =
+                          offlineTvs.indexWhere((tv) => tv['id'] == filmInfo['film_id']);
 
                       final List seasons = offlineTvs[tvIndex]['seasons'];
 
-                      final seasonIndex = seasons.indexWhere(
-                          (season) => season['id'] == offlineData['season_id']);
+                      final seasonIndex = seasons
+                          .indexWhere((season) => season['id'] == filmInfo['season_id']);
 
                       final List episodes = seasons[seasonIndex]['episodes'];
                       episodes.removeWhere(

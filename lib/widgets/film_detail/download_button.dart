@@ -32,6 +32,8 @@ class _DownloadButtonState extends State<DownloadButton> {
       ? DownloadState.downloaded
       : DownloadState.ready;
 
+  final filmInfo = Map.from(offlineData);
+
   @override
   Widget build(BuildContext context) {
     return downloadState == DownloadState.downloaded
@@ -59,11 +61,11 @@ class _DownloadButtonState extends State<DownloadButton> {
                             await databaseUtils.connect();
                             await databaseUtils.deleteEpisode(
                               id: widget.firstEpisodeId,
-                              seasonId: offlineData['season_id'],
-                              filmId: offlineData['film_id'],
+                              seasonId: filmInfo['season_id'],
+                              filmId: filmInfo['film_id'],
                               clean: () async {
                                 final posterFile = File(
-                                    '${appDir.path}/poster_path/${offlineData['poster_path']}');
+                                    '${appDir.path}/poster_path/${filmInfo['poster_path']}');
                                 await posterFile.delete();
                               },
                             );
@@ -71,7 +73,7 @@ class _DownloadButtonState extends State<DownloadButton> {
 
                             episodeIds.remove(widget.firstEpisodeId);
                             offlineMovies.removeWhere(
-                              (movie) => movie['id'] == offlineData['film_id'],
+                              (movie) => movie['id'] == filmInfo['film_id'],
                             );
 
                             setState(() {
@@ -124,20 +126,22 @@ class _DownloadButtonState extends State<DownloadButton> {
                       widget.firstEpisodeLink,
                       '${appDir.path}/episode/${widget.firstEpisodeId}.mp4',
                       onReceiveProgress: (count, total) {
-                        setState(() {
-                          progress = count / total;
-                        });
+                        if (mounted) {
+                          setState(() {
+                            progress = count / total;
+                          });
+                        }
                       },
                       deleteOnError: true,
                     );
 
                     // 2. download film's poster_path
                     final backdropLocalPath =
-                        '${appDir.path}/poster_path/${offlineData['poster_path']}';
+                        '${appDir.path}/poster_path/${filmInfo['poster_path']}';
                     final file = File(backdropLocalPath);
                     if (!await file.exists()) {
                       await Dio().download(
-                        'https://image.tmdb.org/t/p/w440_and_h660_face/${offlineData['poster_path']}',
+                        'https://image.tmdb.org/t/p/w440_and_h660_face/${filmInfo['poster_path']}',
                         backdropLocalPath,
                         deleteOnError: true,
                       );
@@ -147,32 +151,32 @@ class _DownloadButtonState extends State<DownloadButton> {
                     final databaseUtils = DatabaseUtils();
                     await databaseUtils.connect();
                     await databaseUtils.insertFilm(
-                      offlineData['film_id'],
-                      offlineData['film_name'],
-                      offlineData['poster_path'],
+                      filmInfo['film_id'],
+                      filmInfo['film_name'],
+                      filmInfo['poster_path'],
                     );
 
                     await databaseUtils.insertSeason(
-                      id: offlineData['season_id'],
-                      filmId: offlineData['film_id'],
+                      id: filmInfo['season_id'],
+                      filmId: filmInfo['film_id'],
                     );
 
                     await databaseUtils.insertEpisode(
                       id: widget.firstEpisodeId,
                       runtime: widget.runtime,
-                      seasonId: offlineData['season_id'],
+                      seasonId: filmInfo['season_id'],
                     );
 
                     await databaseUtils.close();
 
                     episodeIds.add(widget.firstEpisodeId);
                     offlineMovies.add({
-                      'id': offlineData['film_id'],
-                      'film_name': offlineData['film_name'],
-                      'poster_path': offlineData['poster_path'],
+                      'id': filmInfo['film_id'],
+                      'film_name': filmInfo['film_name'],
+                      'poster_path': filmInfo['poster_path'],
                       'seasons': [
                         {
-                          'id': offlineData['season_id'],
+                          'id': filmInfo['season_id'],
                           'episodes': [
                             {
                               'id': widget.firstEpisodeId,
@@ -184,10 +188,12 @@ class _DownloadButtonState extends State<DownloadButton> {
                       ]
                     });
 
-                    setState(() {
-                      downloadState = DownloadState.downloaded;
-                      progress = 0;
-                    });
+                    if (mounted) {
+                      setState(() {
+                        downloadState = DownloadState.downloaded;
+                        progress = 0;
+                      });
+                    }
                   }
                 : null,
             borderRadius: BorderRadius.circular(4),
