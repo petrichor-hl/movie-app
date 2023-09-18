@@ -54,14 +54,59 @@ class ContentList extends StatelessWidget {
                   width: isOriginals ? 240 : 120,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    image: DecorationImage(
-                      image: NetworkImage(
-                        isOriginals
-                            ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${film['poster_path']}'
-                            : 'https://image.tmdb.org/t/p/w440_and_h660_face/${film['poster_path']}',
-                      ),
-                      fit: BoxFit.cover,
+                    // image: DecorationImage(
+                    //   image: NetworkImage(
+                    //     isOriginals
+                    //         ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${film['poster_path']}'
+                    //         : 'https://image.tmdb.org/t/p/w440_and_h660_face/${film['poster_path']}',
+                    //   ),
+                    //   fit: BoxFit.cover,
+                    // ),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image(
+                    image: NetworkImage(
+                      isOriginals
+                          ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${film['poster_path']}'
+                          : 'https://image.tmdb.org/t/p/w440_and_h660_face/${film['poster_path']}',
                     ),
+                    fit: BoxFit.cover,
+                    frameBuilder: (
+                      BuildContext context,
+                      Widget child,
+                      int? frame,
+                      bool wasSynchronouslyLoaded,
+                    ) {
+                      if (wasSynchronouslyLoaded) {
+                        return child;
+                      }
+                      return AnimatedOpacity(
+                        opacity: frame == null ? 0 : 1,
+                        duration: const Duration(
+                            milliseconds: 500), // Adjust the duration as needed
+                        curve: Curves.easeInOut,
+                        child: child, // Adjust the curve as needed
+                      );
+                    },
+                    loadingBuilder: (
+                      BuildContext context,
+                      Widget child,
+                      ImageChunkEvent? loadingProgress,
+                    ) {
+                      if (loadingProgress == null) {
+                        return child;
+                      }
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          // value: loadingProgress.expectedTotalBytes != null
+                          //     ? loadingProgress.cumulativeBytesLoaded /
+                          //         loadingProgress.expectedTotalBytes!
+                          //     : null,
+                          color: Colors.grey,
+                          strokeCap: StrokeCap.round,
+                        ),
+                      );
+                    },
                   ),
                 ),
               );

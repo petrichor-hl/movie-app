@@ -7,8 +7,8 @@ class IntroPage3 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Image.network(
-          'https://i.pinimg.com/564x/4b/fa/02/4bfa028fd6ea908b6c5aa3799b7ad2a1.jpg',
+        Image.asset(
+          'assets/images/intro_page/intro_page_3.jpeg',
           height: double.infinity,
           fit: BoxFit.cover,
         ),

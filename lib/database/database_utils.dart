@@ -104,7 +104,8 @@ class DatabaseUtils {
 
   Future<List<Map<String, dynamic>>> queryEpisodes() async {
     return await _database.rawQuery(
-        'select id, episodeOrder as \'order\', title, runtime, still_path, season_id from episode');
+      'select id, episodeOrder as \'order\', title, runtime, still_path, season_id from episode',
+    );
   }
 
   Future<void> deleteEpisode({

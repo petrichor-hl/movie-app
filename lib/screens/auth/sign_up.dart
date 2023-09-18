@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:movie_app/main.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -13,6 +14,7 @@ class _SignInState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _usernameControllber = TextEditingController();
+  final _dobController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
@@ -29,6 +31,7 @@ class _SignInState extends State<SignUpScreen> {
       _isProcessing = true;
     });
 
+    final enteredUsername = _usernameControllber.text;
     final enteredEmail = _emailController.text;
     final enteredPassword = _passwordController.text;
 
@@ -38,7 +41,7 @@ class _SignInState extends State<SignUpScreen> {
         password: enteredPassword,
         emailRedirectTo: 'io.supabase.movie-app://login-callback/',
         data: {
-          'full_name': 'Tran Le Hoang Lam',
+          'full_name': enteredUsername,
           'avatar_url': 'https://i.imgur.com/zBr1CQ3.png',
         },
       );
@@ -90,7 +93,7 @@ class _SignInState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: const Alignment(0, -0.25),
+      alignment: const Alignment(0, -0.2),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Form(
@@ -98,12 +101,91 @@ class _SignInState extends State<SignUpScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'Chưa hoàn thành',
-                style: TextStyle(color: Colors.white, fontSize: 30),
+              TextFormField(
+                controller: _usernameControllber,
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Color.fromARGB(255, 51, 51, 51),
+                  hintText: 'Tên của bạn',
+                  hintStyle: TextStyle(color: Color(0xFFACACAC)),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+                ),
+                style: const TextStyle(color: Colors.white),
+                autocorrect: false,
+                enableSuggestions: false, // No work+
+                keyboardType: TextInputType.emailAddress, // Trick: disable suggestions
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Bạn chưa nhập Tên';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(
-                height: 30,
+                height: 12,
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _dobController,
+                      decoration: const InputDecoration(
+                        filled: true,
+                        fillColor: Color.fromARGB(255, 51, 51, 51),
+                        hintText: 'Ngày sinh (dd/mm/yyyy)',
+                        hintStyle: TextStyle(color: Color(0xFFACACAC)),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                      autocorrect: false,
+                      enableSuggestions: false, // No work
+                      keyboardType: TextInputType.datetime, // Trick: disable suggestions
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Bạn chưa nhập Ngày sinh';
+                        }
+                        // TODO: check valid input dob;
+
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 12,
+                  ),
+                  IconButton.filled(
+                    onPressed: () async {
+                      final selectedDob = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
+                      if (selectedDob != null) {
+                        _dobController.text =
+                            DateFormat('dd/MM/yyyy').format(selectedDob);
+                      }
+                    },
+                    icon: const Icon(Icons.edit_calendar),
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 51, 51, 51),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      padding: const EdgeInsets.all(16),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 12,
               ),
               TextFormField(
                 controller: _emailController,
@@ -120,8 +202,7 @@ class _SignInState extends State<SignUpScreen> {
                 style: const TextStyle(color: Colors.white),
                 autocorrect: false,
                 enableSuggestions: false, // No work
-                keyboardType:
-                    TextInputType.emailAddress, // Trick: disable suggestions
+                keyboardType: TextInputType.emailAddress, // Trick: disable suggestions
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Bạn chưa nhập Email';

@@ -194,7 +194,11 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                     : 16 / 9,
                 child: _videoPlayerController.value.isInitialized
                     ? VideoPlayer(_videoPlayerController)
-                    : const Center(child: CircularProgressIndicator()),
+                    : const Center(
+                        child: CircularProgressIndicator(
+                          strokeCap: StrokeCap.round,
+                        ),
+                      ),
               ),
             ),
             AnimatedOpacity(
