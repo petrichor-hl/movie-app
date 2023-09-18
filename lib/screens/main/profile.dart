@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:movie_app/main.dart';
 
 String? _fullname;
+String? _dob;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -25,11 +26,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userId = supabase.auth.currentUser!.id;
     final data = await supabase
         .from('profiles')
-        .select('full_name, avatar_url')
+        .select('full_name, dob, avatar_url')
         .eq('id', userId)
         .single();
 
     _fullname = data['full_name'];
+    _dob = data['dob'];
   }
 
   @override
@@ -224,6 +226,13 @@ class Header extends StatelessWidget {
         ),
         Text(
           'Tên: $_fullname',
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          'Ngày sinh: $_dob',
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
