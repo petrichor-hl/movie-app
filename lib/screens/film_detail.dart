@@ -5,12 +5,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
+import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/films_by_genre.dart';
 import 'package:movie_app/widgets/film_detail/download_button.dart';
+import 'package:movie_app/widgets/film_detail/favorite_button.dart';
 import 'package:movie_app/widgets/film_detail/segment_compose.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:page_transition/page_transition.dart';
@@ -81,9 +83,18 @@ class _FilmDetailState extends State<FilmDetail> {
         foregroundColor: Colors.white,
         backgroundColor: Colors.black,
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.add),
+          FutureBuilder(
+            future: _futureMovie,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting ||
+                  snapshot.hasError) {
+                return const IconButton(
+                  onPressed: null,
+                  icon: Icon(Icons.add),
+                );
+              }
+              return FavoriteButton(filmId: _film!['id']);
+            },
           ),
         ],
       ),

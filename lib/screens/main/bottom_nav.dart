@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/appbar/app_bar_cubit.dart';
+import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/screens/main/downloaded.dart';
 import 'package:movie_app/screens/main/home.dart';
 import 'package:movie_app/screens/main/new_hot.dart';
@@ -37,6 +38,10 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // body: BlocProvider(
+      //   create: (ctx) => AppBarCubit(),
+      //   child: _screens[_currentIndex],
+      // ),
       body: BlocProvider(
         create: (ctx) => AppBarCubit(),
         child: _screens[_currentIndex],

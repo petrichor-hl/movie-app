@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/assets.dart';
+import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/data/topics_data.dart';
 import 'package:movie_app/main.dart';
@@ -25,7 +27,11 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) {
       return;
     }
-
+    context.read<MyListCubit>().setList(await fetchMyList());
+    // print('my_list: ${context.read<MyListCubit>().state}');
+    if (!mounted) {
+      return;
+    }
     final session = supabase.auth.currentSession;
     if (session != null) {
       Navigator.of(context).pushReplacement(

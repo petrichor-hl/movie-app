@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
 import 'package:movie_app/screens/my_list_films.dart';
 import 'package:movie_app/widgets/skeleton_loading.dart';
@@ -28,13 +30,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userId = supabase.auth.currentUser!.id;
     final data = await supabase
         .from('profiles')
-        .select('full_name, dob, avatar_url, my_list')
+        .select('full_name, dob, avatar_url')
         .eq('id', userId)
         .single();
 
     _fullname = data['full_name'];
     _dob = data['dob'];
-    MyListFilms.myList = data['my_list'];
+    // MyListFilms.myList = data['my_list'];
     // print("my list: ${MyListFilms.myList}");
   }
 
@@ -102,12 +104,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       }
 
                       if (snapshot.hasError) {
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   const SnackBar(
-                        //     content: Text('Truy xuất thông tin thất bại.'),
-                        //   ),
-                        // );
-
                         return const SizedBox(
                           height: 120,
                           width: 120,
@@ -147,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 Navigator.of(context).push(
                   PageTransition(
-                    child: const MyListFilms(),
+                    child: MyListFilms(),
                     type: PageTransitionType.rightToLeft,
                     duration: 300.ms,
                     reverseDuration: 300.ms,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:google_fonts/google_fonts.dart';
@@ -17,7 +19,12 @@ void main() async {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwYXhqam1lbGJxcGxseGVucHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTMwNDY0OTQsImV4cCI6MjAwODYyMjQ5NH0.MRzIQjr-s1pvy_PL_SM-ahW71ry63H5aNLRUSjMYFiw',
     authFlowType: AuthFlowType.pkce,
   );
-  runApp(const MyApp());
+  runApp(
+    BlocProvider(
+      create: (context) => MyListCubit(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 final supabase = Supabase.instance.client;

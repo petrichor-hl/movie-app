@@ -22,8 +22,7 @@ class _NewHotScreenState extends State<NewHotScreen> {
   Future<void> _fetchNotificationNewFilms() async {
     _notificationFilms = await supabase
         .from('notification')
-        .select(
-            'created_at, film(id, name, backdrop_path, overview, content_rating)')
+        .select('created_at, film(id, name, backdrop_path, overview, content_rating)')
         .order('created_at', ascending: false);
   }
 
@@ -113,6 +112,12 @@ class _NewHotScreenState extends State<NewHotScreen> {
   }
 
   @override
+  void dispose() {
+    supabase.removeAllChannels();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -158,8 +163,7 @@ class _NewHotScreenState extends State<NewHotScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: SkeletonLoading(
-                              height: 29, width: double.infinity),
+                          child: SkeletonLoading(height: 29, width: double.infinity),
                         ),
                         SizedBox(width: 20),
                         SkeletonLoading(height: 29, width: 32),
@@ -189,8 +193,7 @@ class _NewHotScreenState extends State<NewHotScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: SkeletonLoading(
-                              height: 29, width: double.infinity),
+                          child: SkeletonLoading(height: 29, width: double.infinity),
                         ),
                         SizedBox(width: 20),
                         SkeletonLoading(height: 29, width: 32),
@@ -274,8 +277,8 @@ class NotificationNewFilm extends StatelessWidget {
                       Image.network(
                         'https://image.tmdb.org/t/p/original/$backdropPath',
                         // height = 9/16 * width's image
-                        height: 0.5625 *
-                            (MediaQuery.sizeOf(context).width - 20 - 60 - 10),
+                        height:
+                            0.5625 * (MediaQuery.sizeOf(context).width - 20 - 60 - 10),
                       ),
                       Positioned(
                         top: 10,
