@@ -23,8 +23,7 @@ class _PersonDetailState extends State<PersonDetail> {
   Future<void> _fetchPersonInfo() async {
     _person = await supabase
         .from('person')
-        .select(
-            'name, biography, known_for_department, birthday, gender, profile_path')
+        .select('name, biography, known_for_department, birthday, gender, profile_path')
         .eq('id', widget.personId)
         .single();
 
@@ -64,8 +63,7 @@ class _PersonDetailState extends State<PersonDetail> {
                     SizedBox(height: 6),
                     Text(
                       'Truy xuất thông tin diễn viên thất bại',
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -241,7 +239,6 @@ class _PersonDetailState extends State<PersonDetail> {
                 const SizedBox(height: 10),
                 GridFilms(
                   posters: _credits,
-                  isPopToBottomNavScreen: true,
                 ),
               ],
             ),
@@ -298,8 +295,7 @@ class _PersonDetailState extends State<PersonDetail> {
 
     // Adjust the age if the birthdate hasn't occurred yet this year
     if (currentDate.month < birthday.month ||
-        (currentDate.month == birthday.month &&
-            currentDate.day < birthday.day)) {
+        (currentDate.month == birthday.month && currentDate.day < birthday.day)) {
       age--;
     }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:page_transition/page_transition.dart';
 
@@ -46,6 +48,11 @@ class ContentList extends StatelessWidget {
                       type: PageTransitionType.rightToLeft,
                       duration: 300.ms,
                       reverseDuration: 300.ms,
+                      // settings: context.read<RouteStackCubit>().top() != '/film_detail'
+                      //     ? const RouteSettings(name: '/film_detail')
+                      //     : null,
+
+                      settings: RouteSettings(name: '/film_detail@${film['id']}'),
                     ),
                   );
                 },

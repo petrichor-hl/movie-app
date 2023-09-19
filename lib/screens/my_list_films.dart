@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
+import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/widgets/grid/grid_films.dart';
 import 'package:shimmer/shimmer.dart';
@@ -40,14 +41,23 @@ class _MyListFilmsState extends State<MyListFilms> {
   @override
   void initState() {
     super.initState();
-    supabase.channel('update_my_list').on(
-      RealtimeListenTypes.postgresChanges,
-      ChannelFilter(event: 'update', schema: 'public', table: 'profiles'),
-      (payload, [ref]) async {
-        final newMyList = payload['new']['my_list'];
-        print('new_my_list = $newMyList');
-      },
-    ).subscribe();
+    context.read<RouteStackCubit>().push('/my_list_films');
+
+    // TODO: add realtime
+    // supabase.channel('update_my_list').on(
+    //   RealtimeListenTypes.postgresChanges,
+    //   ChannelFilter(event: 'update', schema: 'public', table: 'profiles'),
+    //   (payload, [ref]) async {
+    //     final newMyList = payload['new']['my_list'];
+    //     print('new_my_list = $newMyList');
+    //   },
+    // ).subscribe();
+  }
+
+  @override
+  void dispose() {
+    context.read<RouteStackCubit>().pop();
+    super.dispose();
   }
 
   @override

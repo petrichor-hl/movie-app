@@ -29,7 +29,9 @@ class _FavoriteButtonState extends State<FavoriteButton> {
           // print('user_id: $userId');
           // print('new_list: ${[...currentMyList, widget.filmId]}');
           await supabase.from('profiles').update({
-            'my_list': [...currentMyList, widget.filmId],
+            'my_list': isInMyList
+                ? currentMyList.where((element) => element != widget.filmId).toList()
+                : [...currentMyList, widget.filmId],
           }).eq('id', userId);
         } catch (error) {
           if (mounted) {

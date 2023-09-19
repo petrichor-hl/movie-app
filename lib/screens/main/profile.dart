@@ -143,10 +143,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () {
                 Navigator.of(context).push(
                   PageTransition(
-                    child: MyListFilms(),
+                    child: const MyListFilms(),
                     type: PageTransitionType.rightToLeft,
                     duration: 300.ms,
                     reverseDuration: 300.ms,
+                    settings: const RouteSettings(name: 'my_list_films'),
                   ),
                 );
               },
