@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:page_transition/page_transition.dart';
 

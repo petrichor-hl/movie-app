@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
 import 'package:movie_app/screens/my_list_films.dart';
 import 'package:movie_app/widgets/skeleton_loading.dart';

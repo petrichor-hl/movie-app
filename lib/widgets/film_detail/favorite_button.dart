@@ -68,6 +68,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
                             child: const MyListFilms(),
                             type: PageTransitionType.size,
                             alignment: Alignment.bottomCenter,
+                            settings: const RouteSettings(name: '/my_list_films'),
                           ),
                         );
                       },

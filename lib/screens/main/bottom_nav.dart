@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/appbar/app_bar_cubit.dart';
-import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/screens/main/downloaded.dart';
 import 'package:movie_app/screens/main/home.dart';
 import 'package:movie_app/screens/main/new_hot.dart';
