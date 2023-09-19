@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
+import 'package:movie_app/screens/my_list_films.dart';
 import 'package:movie_app/widgets/skeleton_loading.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:movie_app/main.dart';
@@ -26,12 +28,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final userId = supabase.auth.currentUser!.id;
     final data = await supabase
         .from('profiles')
-        .select('full_name, dob, avatar_url')
+        .select('full_name, dob, avatar_url, my_list')
         .eq('id', userId)
         .single();
 
     _fullname = data['full_name'];
     _dob = data['dob'];
+    MyListFilms.myList = data['my_list'];
+    // print("my list: ${MyListFilms.myList}");
   }
 
   @override
@@ -98,19 +102,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       }
 
                       if (snapshot.hasError) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Truy xuất thông tin thất bại.'),
-                          ),
-                        );
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   const SnackBar(
+                        //     content: Text('Truy xuất thông tin thất bại.'),
+                        //   ),
+                        // );
 
                         return const SizedBox(
                           height: 120,
                           width: 120,
                           child: Center(
-                            child: Icon(
-                              Icons.error,
-                              size: 30,
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.error,
+                                  size: 30,
+                                  color: Colors.amber,
+                                ),
+                                SizedBox(
+                                  height: 4,
+                                ),
+                                Text(
+                                  'Truy xuất thông tin thất bại.',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -126,7 +144,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _ProfileSettingItem(
               title: 'Danh sách',
               iconData: Icons.list,
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  PageTransition(
+                    child: const MyListFilms(),
+                    type: PageTransitionType.rightToLeft,
+                    duration: 300.ms,
+                    reverseDuration: 300.ms,
+                  ),
+                );
+              },
             ),
             _ProfileSettingItem(
               title: 'Cài đặt ứng dụng',
@@ -314,7 +341,7 @@ class _ProfileSettingItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),

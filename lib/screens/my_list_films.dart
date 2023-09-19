@@ -4,30 +4,31 @@ import 'package:movie_app/main.dart';
 import 'package:movie_app/widgets/grid/grid_films.dart';
 import 'package:shimmer/shimmer.dart';
 
-class ListFilmsByGenre extends StatefulWidget {
-  const ListFilmsByGenre({
+class MyListFilms extends StatefulWidget {
+  const MyListFilms({
     super.key,
-    required this.genreId,
-    required this.genreName,
   });
 
-  final String genreId;
-  final String genreName;
+  static late List<dynamic> myList;
 
   @override
-  State<ListFilmsByGenre> createState() => _ListFilmsByGenreState();
+  State<MyListFilms> createState() => _MyListFilmsState();
 }
 
-class _ListFilmsByGenreState extends State<ListFilmsByGenre> {
-  late final List<dynamic> _postersData;
-  late final _futureFilms = _fetchFilmsOnDemand();
+class _MyListFilmsState extends State<MyListFilms> {
+  final List<dynamic> _postersData = [];
+  late final _futureMyListFilms = _fetchMyListFilms();
 
-  Future<void> _fetchFilmsOnDemand() async {
-    _postersData = await supabase
-        .from('film_genre')
-        .select('film(id, poster_path)')
-        .eq('genre_id', widget.genreId);
-    // print(_postersData);
+  Future<void> _fetchMyListFilms() async {
+    for (final filmId in MyListFilms.myList) {
+      final Map<String, dynamic> posterPath =
+          await supabase.from('film').select('poster_path').eq('id', filmId).single();
+
+      posterPath.addAll({'id': filmId});
+      _postersData.add({
+        'film': posterPath,
+      });
+    }
 
     // await Future.delayed(
     //   const Duration(seconds: 1),
@@ -38,9 +39,9 @@ class _ListFilmsByGenreState extends State<ListFilmsByGenre> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          widget.genreName,
-          style: const TextStyle(
+        title: const Text(
+          'Danh sách của tôi',
+          style: TextStyle(
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -49,7 +50,7 @@ class _ListFilmsByGenreState extends State<ListFilmsByGenre> {
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder(
-        future: _futureFilms,
+        future: _futureMyListFilms,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return GridView(
