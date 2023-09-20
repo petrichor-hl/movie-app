@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
+import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
@@ -68,21 +69,16 @@ class _FilmDetailState extends State<FilmDetail> {
       'season_id': _seasons[0]['id'],
       'season_name': _seasons[0]['name'],
     });
-
-    // if (mounted) {
-    //   if (!context.read<RouteStackCubit>().top().contains('/film_detail')) {
-    //     context.read<RouteStackCubit>().push('/film_detail@${_film!['id']}');
-    //   }
-    // }
   }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
+      // Đã test - Không sửa
       onWillPop: () async {
-        // if (context.read<RouteStackCubit>().top().contains(_film!['id'])) {
-        //   context.read<RouteStackCubit>().pop();
-        // }
+        if (context.read<RouteStackCubit>().top().contains(_film!['id'])) {
+          context.read<RouteStackCubit>().pop();
+        }
         return true;
       },
       child: Scaffold(
@@ -286,15 +282,30 @@ class _FilmDetailState extends State<FilmDetail> {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).pushReplacement(
+                          final genreId = genres[0]['genre']['id'];
+                          if (context
+                              .read<RouteStackCubit>()
+                              .top()
+                              .contains('/films_by_genre')) {
+                            context.read<RouteStackCubit>().pop();
+                          }
+
+                          Navigator.of(context).pushAndRemoveUntil(
                             PageTransition(
                               child: FilmsByGenre(
-                                genreId: genres[0]['genre']['id'],
+                                genreId: genreId,
                                 genreName: genres[0]['genre']['name'],
                               ),
                               type: PageTransitionType.fade,
                             ),
+                            (route) {
+                              return route.settings.name ==
+                                  context.read<RouteStackCubit>().top();
+                            },
                           );
+                          context
+                              .read<RouteStackCubit>()
+                              .push('/films_by_genre@$genreId');
                         },
                         child: Text(
                           genres[0]['genre']['name'],
@@ -306,15 +317,29 @@ class _FilmDetailState extends State<FilmDetail> {
                       for (int i = 1; i < genres.length; ++i)
                         GestureDetector(
                           onTap: () {
-                            Navigator.of(context).pushReplacement(
+                            final genreId = genres[i]['genre']['id'];
+                            if (context
+                                .read<RouteStackCubit>()
+                                .top()
+                                .contains('/films_by_genre')) {
+                              context.read<RouteStackCubit>().pop();
+                            }
+                            Navigator.of(context).pushAndRemoveUntil(
                               PageTransition(
                                 child: FilmsByGenre(
-                                  genreId: genres[i]['genre']['id'],
+                                  genreId: genreId,
                                   genreName: genres[i]['genre']['name'],
                                 ),
                                 type: PageTransitionType.fade,
                               ),
+                              (route) {
+                                return route.settings.name ==
+                                    context.read<RouteStackCubit>().top();
+                              },
                             );
+                            context
+                                .read<RouteStackCubit>()
+                                .push('/films_by_genre@$genreId');
                           },
                           child: Text(
                             ', ${genres[i]['genre']['name']}',

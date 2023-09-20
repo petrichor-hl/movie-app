@@ -131,20 +131,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         genres.length,
                         (index) => ListTile(
                           onTap: () {
-                            context.read<RouteStackCubit>().push('/films_by_genre');
-                            Navigator.of(context)
-                                .push(
-                                  PageTransition(
-                                    child: FilmsByGenre(
-                                      genreId: genres[index]['id'],
-                                      genreName: genres[index]['name'],
-                                    ),
-                                    type: PageTransitionType.rightToLeft,
-                                    settings:
-                                        const RouteSettings(name: '/films_by_genre'),
-                                  ),
-                                )
-                                .then((_) => context.read<RouteStackCubit>().pop());
+                            final genreId = genres[index]['id'];
+                            context
+                                .read<RouteStackCubit>()
+                                .push('/films_by_genre@$genreId');
+                            Navigator.of(context).push(
+                              PageTransition(
+                                child: FilmsByGenre(
+                                  genreId: genreId,
+                                  genreName: genres[index]['name'],
+                                ),
+                                type: PageTransitionType.rightToLeft,
+                                settings: RouteSettings(name: '/films_by_genre@$genreId'),
+                              ),
+                            );
                           },
                           title: Text(
                             genres[index]['name'],

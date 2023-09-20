@@ -26,72 +26,91 @@ class GridFilms extends StatelessWidget {
       ),
       children: List.generate(
         posters.length,
-        (index) => GestureDetector(
-          onTap: () {
-            // print('route_stack: ${context.read<RouteStackCubit>().state}');
-            // print('top_stack: ${context.read<RouteStackCubit>().top()}');
+        (index) {
+          final filmId = posters[index]['film']['id'];
+          return GestureDetector(
+            onTap: () {
+              print('current: ${context.read<RouteStackCubit>().state}');
+              // print('top_stack: ${context.read<RouteStackCubit>().top()}');
 
-            // print(
-            //     "FilmID trùng với top_stack: ${'/film_detail@${posters[index]['film']['id']}' == context.read<RouteStackCubit>().top()}");
+              print('film_id: $filmId');
+              // print(
+              //     "FilmID trùng với top_stack: ${'/film_detail@${posters[index]['film']['id']}' == context.read<RouteStackCubit>().top()}");
 
-            if ('/film_detail@${posters[index]['film']['id']}' ==
-                context.read<RouteStackCubit>().top()) {
-              context.read<RouteStackCubit>().pop();
-            }
-            //     Navigator.of(context).pushAndRemoveUntil(
-            //       PageTransition(
-            //         child: FilmDetail(
-            //           filmId: posters[index]['film']['id'],
-            //         ),
-            //         type: PageTransitionType.rightToLeft,
-            //         duration: 300.ms,
-            //         reverseDuration: 300.ms,
-            //         settings:
-            //             RouteSettings(name: '/film_detail@${posters[index]['film']['id']}'),
-            //       ),
-            //       (route) {
-            //         // print('route: ${route.settings.name}');
-            //         return route.settings.name == context.read<RouteStackCubit>().top();
-            //       },
-            //     );
-            //   } else {
-            // Navigator.of(context).pushAndRemoveUntil(
-            //   PageTransition(
-            //     child: FilmDetail(
-            //       filmId: posters[index]['film']['id'],
-            //     ),
-            //     type: PageTransitionType.rightToLeft,
-            //     duration: 300.ms,
-            //     reverseDuration: 300.ms,
-            //   ),
-            //   (route) {
-            //     // print('route: ${route.settings.name}');
-            //     return route.settings.name == context.read<RouteStackCubit>().top();
-            //   },
-            // );
-            //   }
-
-            Navigator.of(context).pushAndRemoveUntil(
-              PageTransition(
-                child: FilmDetail(
-                  filmId: posters[index]['film']['id'],
-                ),
-                type: PageTransitionType.rightToLeft,
-                duration: 300.ms,
-                reverseDuration: 300.ms,
+              if ('/film_detail@$filmId' == context.read<RouteStackCubit>().top()) {
+                // Không fix code chỗ này
+                context.read<RouteStackCubit>().pop();
+                Navigator.of(context).pushAndRemoveUntil(
+                  PageTransition(
+                    child: FilmDetail(
+                      filmId: filmId,
+                    ),
+                    type: PageTransitionType.rightToLeft,
+                    duration: 300.ms,
+                    reverseDuration: 300.ms,
+                    settings: RouteSettings(name: '/film_detail@$filmId'),
+                  ),
+                  (route) {
+                    return route.settings.name == context.read<RouteStackCubit>().top();
+                  },
+                );
+                context.read<RouteStackCubit>().push('/film_detail@$filmId');
+              } else {
+                Navigator.of(context).pushAndRemoveUntil(
+                  PageTransition(
+                    child: FilmDetail(
+                      filmId: filmId,
+                    ),
+                    type: PageTransitionType.rightToLeft,
+                    duration: 300.ms,
+                    reverseDuration: 300.ms,
+                  ),
+                  (route) {
+                    return route.settings.name == context.read<RouteStackCubit>().top();
+                  },
+                );
+              }
+              //     Navigator.of(context).pushAndRemoveUntil(
+              //       PageTransition(
+              //         child: FilmDetail(
+              //           filmId: posters[index]['film']['id'],
+              //         ),
+              //         type: PageTransitionType.rightToLeft,
+              //         duration: 300.ms,
+              //         reverseDuration: 300.ms,
+              //         settings:
+              //             RouteSettings(name: '/film_detail@${posters[index]['film']['id']}'),
+              //       ),
+              //       (route) {
+              //         // print('route: ${route.settings.name}');
+              //         return route.settings.name == context.read<RouteStackCubit>().top();
+              //       },
+              //     );
+              //   } else {
+              // Navigator.of(context).pushAndRemoveUntil(
+              //   PageTransition(
+              //     child: FilmDetail(
+              //       filmId: posters[index]['film']['id'],
+              //     ),
+              //     type: PageTransitionType.rightToLeft,
+              //     duration: 300.ms,
+              //     reverseDuration: 300.ms,
+              //   ),
+              //   (route) {
+              //     // print('route: ${route.settings.name}');
+              //     return route.settings.name == context.read<RouteStackCubit>().top();
+              //   },
+              // );
+              //   }
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                'https://image.tmdb.org/t/p/w440_and_h660_face/${posters[index]['film']['poster_path']}',
               ),
-              (route) {
-                return route.settings.name == context.read<RouteStackCubit>().top();
-              },
-            );
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              'https://image.tmdb.org/t/p/w440_and_h660_face/${posters[index]['film']['poster_path']}',
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

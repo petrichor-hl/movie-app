@@ -43,21 +43,19 @@ class ContentList extends StatelessWidget {
               return GestureDetector(
                 onTap: () {
                   context.read<RouteStackCubit>().push('/film_detail@${film['id']}');
-                  Navigator.of(context)
-                      .push(
-                        PageTransition(
-                          child: FilmDetail(filmId: film['id']),
-                          type: PageTransitionType.rightToLeft,
-                          duration: 300.ms,
-                          reverseDuration: 300.ms,
-                          // settings: context.read<RouteStackCubit>().top() != '/film_detail'
-                          //     ? const RouteSettings(name: '/film_detail')
-                          //     : null,
+                  Navigator.of(context).push(
+                    PageTransition(
+                      child: FilmDetail(filmId: film['id']),
+                      type: PageTransitionType.rightToLeft,
+                      duration: 300.ms,
+                      reverseDuration: 300.ms,
+                      // settings: context.read<RouteStackCubit>().top() != '/film_detail'
+                      //     ? const RouteSettings(name: '/film_detail')
+                      //     : null,
 
-                          settings: RouteSettings(name: '/film_detail@${film['id']}'),
-                        ),
-                      )
-                      .then((_) => context.read<RouteStackCubit>().pop());
+                      settings: RouteSettings(name: '/film_detail@${film['id']}'),
+                    ),
+                  );
                 },
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 4),
