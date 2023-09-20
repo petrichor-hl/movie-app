@@ -297,6 +297,7 @@ class _FilmDetailState extends State<FilmDetail> {
                                 genreName: genres[0]['genre']['name'],
                               ),
                               type: PageTransitionType.fade,
+                              settings: RouteSettings(name: '/films_by_genre@$genreId'),
                             ),
                             (route) {
                               return route.settings.name ==
@@ -331,6 +332,7 @@ class _FilmDetailState extends State<FilmDetail> {
                                   genreName: genres[i]['genre']['name'],
                                 ),
                                 type: PageTransitionType.fade,
+                                settings: RouteSettings(name: '/films_by_genre@$genreId'),
                               ),
                               (route) {
                                 return route.settings.name ==
