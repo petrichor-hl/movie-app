@@ -82,7 +82,7 @@ class _MyListFilmsState extends State<MyListFilms> {
                 mainAxisSpacing: 10,
               ),
               children: List.generate(
-                12,
+                context.watch<MyListCubit>().state.length,
                 (index) => Shimmer.fromColors(
                   baseColor: Colors.white.withAlpha(100),
                   highlightColor: Colors.grey,
@@ -135,9 +135,8 @@ class _MyListFilmsState extends State<MyListFilms> {
                       posters: _postersData,
                     ),
                   ),
-                ).animate().slideY(
-                    begin: 0.3,
-                    end: 0,
+                ).animate().fadeIn(
+                    begin: 0.5,
                     curve: Curves.easeInOut,
                   );
         },

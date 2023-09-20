@@ -129,7 +129,7 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
                         await databaseUtils.close();
 
                         // 3. Xoá movie trong app's memory
-                        episodeIds.remove(episodeId);
+                        downloadedEpisodeId.remove(episodeId);
                         offlineMovies.removeAt(index);
                       }
 
@@ -165,7 +165,7 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
                               },
                             );
                             // 3. Xoá movie trong app's memory
-                            episodeIds.remove(episode['id']);
+                            downloadedEpisodeId.remove(episode['id']);
                           }
                         }
                         await databaseUtils.close();
@@ -229,7 +229,7 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
                         await databaseUtils.close();
 
                         // 3. Xoá movie trong app's memory
-                        episodeIds.remove(episodeId);
+                        downloadedEpisodeId.remove(episodeId);
                         (season['episodes'] as List).removeAt(selectedEpisodeIndex);
                         if ((season['episodes'] as List).isEmpty) {
                           (selectedTv['seasons'] as List).removeAt(seasonIndex);

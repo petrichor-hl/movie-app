@@ -56,6 +56,9 @@ class _SignInState extends State<SignInScreen> {
             behavior: SnackBarBehavior.floating,
           ),
         );
+        setState(() {
+          _isProcessing = false;
+        });
       }
     } catch (error) {
       if (mounted) {
@@ -65,14 +68,14 @@ class _SignInState extends State<SignInScreen> {
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
+        setState(() {
+          _isProcessing = false;
+        });
       }
     }
 
-    if (mounted) {
-      setState(() {
-        _isProcessing = false;
-      });
-    }
+    // Không setState _isProcessing = false; khi loggin thành công vì:
+    // Sau khi loggin, thì phải fetch data cho tài khoản
   }
 
   @override
@@ -108,8 +111,7 @@ class _SignInState extends State<SignInScreen> {
                 style: const TextStyle(color: Colors.white),
                 autocorrect: false,
                 enableSuggestions: false, // No work
-                keyboardType:
-                    TextInputType.emailAddress, // Trick: disable suggestions
+                keyboardType: TextInputType.emailAddress, // Trick: disable suggestions
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Bạn chưa nhập Email';

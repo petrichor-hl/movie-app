@@ -28,7 +28,7 @@ class _DownloadButtonState extends State<DownloadButton> {
   late final widthButton = MediaQuery.sizeOf(context).width;
   double progress = 0;
 
-  late DownloadState downloadState = episodeIds.contains(widget.firstEpisodeId)
+  late DownloadState downloadState = downloadedEpisodeId.contains(widget.firstEpisodeId)
       ? DownloadState.downloaded
       : DownloadState.ready;
 
@@ -71,7 +71,7 @@ class _DownloadButtonState extends State<DownloadButton> {
                             );
                             await databaseUtils.close();
 
-                            episodeIds.remove(widget.firstEpisodeId);
+                            downloadedEpisodeId.remove(widget.firstEpisodeId);
                             offlineMovies.removeWhere(
                               (movie) => movie['id'] == filmInfo['film_id'],
                             );
@@ -169,7 +169,7 @@ class _DownloadButtonState extends State<DownloadButton> {
 
                     await databaseUtils.close();
 
-                    episodeIds.add(widget.firstEpisodeId);
+                    downloadedEpisodeId.add(widget.firstEpisodeId);
                     offlineMovies.add({
                       'id': filmInfo['film_id'],
                       'film_name': filmInfo['film_name'],

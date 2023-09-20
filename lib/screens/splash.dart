@@ -24,16 +24,16 @@ class _SplashScreenState extends State<SplashScreen> {
     await fetchTopicsData();
     await getDownloadedFilms();
 
-    if (!mounted) {
-      return;
-    }
-    context.read<MyListCubit>().setList(await fetchMyList());
     // print('my_list: ${context.read<MyListCubit>().state}');
     if (!mounted) {
       return;
     }
     final session = supabase.auth.currentSession;
     if (session != null) {
+      context.read<MyListCubit>().setList(await fetchMyList());
+      if (!mounted) {
+        return;
+      }
       Navigator.of(context).pushReplacement(
         PageTransition(
             child: const BottomNavScreen(),

@@ -198,7 +198,7 @@ class _OfflineMovieState extends State<OfflineMovie> {
                 );
                 await databaseUtils.close();
 
-                episodeIds.remove(widget.episodeId);
+                downloadedEpisodeId.remove(widget.episodeId);
 
                 offlineMovies.removeWhere((movie) => movie['id'] == widget.filmId);
                 widget.onIndividualDelete();

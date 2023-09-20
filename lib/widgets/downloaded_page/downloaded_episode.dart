@@ -223,7 +223,7 @@ class _DownloadedEpisodeState extends State<DownloadedEpisode> {
                       );
                       await databaseUtils.close();
 
-                      episodeIds.remove(widget.episodeId);
+                      downloadedEpisodeId.remove(widget.episodeId);
 
                       // remove data in offlineTvs
                       final tvIndex = offlineTvs.indexWhere(

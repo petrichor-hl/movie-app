@@ -201,7 +201,7 @@ class _FilmDetailState extends State<FilmDetail> {
                     child: FilledButton.icon(
                       onPressed: () {
                         final episodeId = _seasons[0]['episode'][0]['id'];
-                        final isDownloaded = episodeIds.contains(episodeId);
+                        final isDownloaded = downloadedEpisodeId.contains(episodeId);
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (ctx) => MultiBlocProvider(

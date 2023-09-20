@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
+import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
 import 'package:movie_app/screens/my_list_films.dart';
 import 'package:movie_app/widgets/skeleton_loading.dart';
@@ -40,12 +41,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // print("my list: ${MyListFilms.myList}");
   }
 
+  void _clearGlobalDataOfUser() {
+    _fullname = null;
+    _dob = null;
+    offlineMovies.clear();
+    offlineTvs.clear();
+    downloadedEpisodeId.clear();
+  }
+
   @override
   void initState() {
     super.initState();
     _authSubscription = supabase.auth.onAuthStateChange.listen((event) {
       final session = event.session;
       if (session == null) {
+        _clearGlobalDataOfUser();
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (ctx) => const OnboardingScreen()),
@@ -191,10 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     content: Text('Có lỗi xảy ra, đăng xuất thất bại')),
                               );
                             }
-                            return;
                           }
-                          _fullname = null;
-                          _dob = null;
                         },
                         child: const Text('Có'),
                       ),

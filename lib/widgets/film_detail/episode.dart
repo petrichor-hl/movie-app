@@ -45,7 +45,7 @@ class Episode extends StatefulWidget {
 }
 
 class _EpisodeState extends State<Episode> {
-  late DownloadState downloadState = episodeIds.contains(widget.episodeId)
+  late DownloadState downloadState = downloadedEpisodeId.contains(widget.episodeId)
       ? DownloadState.downloaded
       : DownloadState.ready;
   double progress = 0;
@@ -192,7 +192,7 @@ class _EpisodeState extends State<Episode> {
                       );
 
                       await databaseUtils.close();
-                      episodeIds.add(widget.episodeId);
+                      downloadedEpisodeId.add(widget.episodeId);
 
                       final existingIndexTv = offlineTvs.indexWhere(
                         (tv) => tv['id'] == filmInfo['film_id'],
@@ -322,7 +322,7 @@ class _EpisodeState extends State<Episode> {
                       );
                       await databaseUtils.close();
 
-                      episodeIds.remove(widget.episodeId);
+                      downloadedEpisodeId.remove(widget.episodeId);
 
                       // remove data in offlineTvs
                       final tvIndex =

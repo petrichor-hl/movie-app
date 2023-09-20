@@ -96,14 +96,17 @@ class ContentList extends StatelessWidget {
                       if (loadingProgress == null) {
                         return child;
                       }
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          // value: loadingProgress.expectedTotalBytes != null
-                          //     ? loadingProgress.cumulativeBytesLoaded /
-                          //         loadingProgress.expectedTotalBytes!
-                          //     : null,
-                          color: Colors.grey,
-                          strokeCap: StrokeCap.round,
+                      return Center(
+                        child: SizedBox(
+                          width: isOriginals ? 36 : 48,
+                          child: const CircularProgressIndicator(
+                            // value: loadingProgress.expectedTotalBytes != null
+                            //     ? loadingProgress.cumulativeBytesLoaded /
+                            //         loadingProgress.expectedTotalBytes!
+                            //     : null,
+                            color: Colors.grey,
+                            strokeCap: StrokeCap.round,
+                          ),
                         ),
                       );
                     },

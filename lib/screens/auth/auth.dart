@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
+import 'package:movie_app/data/downloaded_film.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:movie_app/assets.dart';
@@ -22,17 +25,27 @@ class _AuthScreenState extends State<AuthScreen> {
 
   late final StreamSubscription<AuthState> _authSubscription;
 
+  void _redirect() async {
+    await getDownloadedFilms();
+    if (mounted) {
+      context.read<MyListCubit>().setList(await fetchMyList());
+    }
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (ctx) => const BottomNavScreen()),
+        (route) => false,
+      );
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _authSubscription = supabase.auth.onAuthStateChange.listen((event) {
       final session = event.session;
       if (session != null) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (ctx) => const BottomNavScreen()),
-          (route) => false,
-        );
+        _redirect();
       }
     });
   }
