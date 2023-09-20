@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
+import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/my_list_films.dart';
 import 'package:page_transition/page_transition.dart';
@@ -63,6 +64,7 @@ class _FavoriteButtonState extends State<FavoriteButton> {
                   ? SnackBarAction(
                       label: 'Xem',
                       onPressed: () {
+                        context.read<RouteStackCubit>().push('/my_list_films');
                         Navigator.of(context).push(
                           PageTransition(
                             child: const MyListFilms(),

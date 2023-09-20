@@ -4,8 +4,8 @@ import 'package:movie_app/main.dart';
 import 'package:movie_app/widgets/grid/grid_films.dart';
 import 'package:shimmer/shimmer.dart';
 
-class ListFilmsByGenre extends StatefulWidget {
-  const ListFilmsByGenre({
+class FilmsByGenre extends StatefulWidget {
+  const FilmsByGenre({
     super.key,
     required this.genreId,
     required this.genreName,
@@ -15,10 +15,10 @@ class ListFilmsByGenre extends StatefulWidget {
   final String genreName;
 
   @override
-  State<ListFilmsByGenre> createState() => _ListFilmsByGenreState();
+  State<FilmsByGenre> createState() => _FilmsByGenreState();
 }
 
-class _ListFilmsByGenreState extends State<ListFilmsByGenre> {
+class _FilmsByGenreState extends State<FilmsByGenre> {
   late final List<dynamic> _postersData;
   late final _futureFilms = _fetchFilmsOnDemand();
 

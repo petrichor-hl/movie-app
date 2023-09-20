@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
 import 'package:movie_app/screens/my_list_films.dart';
 import 'package:movie_app/widgets/skeleton_loading.dart';
@@ -139,15 +141,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: 'Danh sách',
               iconData: Icons.list,
               onTap: () {
-                Navigator.of(context).push(
-                  PageTransition(
-                    child: const MyListFilms(),
-                    type: PageTransitionType.rightToLeft,
-                    duration: 300.ms,
-                    reverseDuration: 300.ms,
-                    settings: const RouteSettings(name: 'my_list_films'),
-                  ),
-                );
+                context.read<RouteStackCubit>().push('/my_list_films');
+                Navigator.of(context)
+                    .push(
+                      PageTransition(
+                        child: const MyListFilms(),
+                        type: PageTransitionType.rightToLeft,
+                        duration: 300.ms,
+                        reverseDuration: 300.ms,
+                        settings: const RouteSettings(name: '/my_list_films'),
+                      ),
+                    )
+                    .then((_) => context.read<RouteStackCubit>().pop());
               },
             ),
             _ProfileSettingItem(

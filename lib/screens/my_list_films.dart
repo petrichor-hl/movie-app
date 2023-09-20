@@ -40,7 +40,7 @@ class _MyListFilmsState extends State<MyListFilms> {
   @override
   void initState() {
     super.initState();
-    context.read<RouteStackCubit>().push('/my_list_films');
+    // context.read<RouteStackCubit>().push('/my_list_films');
 
     // TODO: add realtime
     // supabase.channel('update_my_list').on(
@@ -57,7 +57,7 @@ class _MyListFilmsState extends State<MyListFilms> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        context.read<RouteStackCubit>().pop();
+        // context.read<RouteStackCubit>().pop();
         return true;
       },
       child: Scaffold(

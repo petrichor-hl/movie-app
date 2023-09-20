@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/appbar/app_bar_cubit.dart';
+import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 
 import 'package:movie_app/data/topics_data.dart';
 import 'package:movie_app/main.dart';
@@ -129,15 +130,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: List.generate(
                         genres.length,
                         (index) => ListTile(
-                          onTap: () => Navigator.of(context).push(
-                            PageTransition(
-                              child: ListFilmsByGenre(
-                                genreId: genres[index]['id'],
-                                genreName: genres[index]['name'],
-                              ),
-                              type: PageTransitionType.rightToLeft,
-                            ),
-                          ),
+                          onTap: () {
+                            context.read<RouteStackCubit>().push('/films_by_genre');
+                            Navigator.of(context)
+                                .push(
+                                  PageTransition(
+                                    child: FilmsByGenre(
+                                      genreId: genres[index]['id'],
+                                      genreName: genres[index]['name'],
+                                    ),
+                                    type: PageTransitionType.rightToLeft,
+                                    settings:
+                                        const RouteSettings(name: '/films_by_genre'),
+                                  ),
+                                )
+                                .then((_) => context.read<RouteStackCubit>().pop());
+                          },
                           title: Text(
                             genres[index]['name'],
                             style: const TextStyle(

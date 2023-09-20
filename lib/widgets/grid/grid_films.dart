@@ -37,38 +37,53 @@ class GridFilms extends StatelessWidget {
             if ('/film_detail@${posters[index]['film']['id']}' ==
                 context.read<RouteStackCubit>().top()) {
               context.read<RouteStackCubit>().pop();
-              Navigator.of(context).pushAndRemoveUntil(
-                PageTransition(
-                  child: FilmDetail(
-                    filmId: posters[index]['film']['id'],
-                  ),
-                  type: PageTransitionType.rightToLeft,
-                  duration: 300.ms,
-                  reverseDuration: 300.ms,
-                  settings:
-                      RouteSettings(name: '/film_detail@${posters[index]['film']['id']}'),
-                ),
-                (route) {
-                  // print('route: ${route.settings.name}');
-                  return route.settings.name == context.read<RouteStackCubit>().top();
-                },
-              );
-            } else {
-              Navigator.of(context).pushAndRemoveUntil(
-                PageTransition(
-                  child: FilmDetail(
-                    filmId: posters[index]['film']['id'],
-                  ),
-                  type: PageTransitionType.rightToLeft,
-                  duration: 300.ms,
-                  reverseDuration: 300.ms,
-                ),
-                (route) {
-                  // print('route: ${route.settings.name}');
-                  return route.settings.name == context.read<RouteStackCubit>().top();
-                },
-              );
             }
+            //     Navigator.of(context).pushAndRemoveUntil(
+            //       PageTransition(
+            //         child: FilmDetail(
+            //           filmId: posters[index]['film']['id'],
+            //         ),
+            //         type: PageTransitionType.rightToLeft,
+            //         duration: 300.ms,
+            //         reverseDuration: 300.ms,
+            //         settings:
+            //             RouteSettings(name: '/film_detail@${posters[index]['film']['id']}'),
+            //       ),
+            //       (route) {
+            //         // print('route: ${route.settings.name}');
+            //         return route.settings.name == context.read<RouteStackCubit>().top();
+            //       },
+            //     );
+            //   } else {
+            // Navigator.of(context).pushAndRemoveUntil(
+            //   PageTransition(
+            //     child: FilmDetail(
+            //       filmId: posters[index]['film']['id'],
+            //     ),
+            //     type: PageTransitionType.rightToLeft,
+            //     duration: 300.ms,
+            //     reverseDuration: 300.ms,
+            //   ),
+            //   (route) {
+            //     // print('route: ${route.settings.name}');
+            //     return route.settings.name == context.read<RouteStackCubit>().top();
+            //   },
+            // );
+            //   }
+
+            Navigator.of(context).pushAndRemoveUntil(
+              PageTransition(
+                child: FilmDetail(
+                  filmId: posters[index]['film']['id'],
+                ),
+                type: PageTransitionType.rightToLeft,
+                duration: 300.ms,
+                reverseDuration: 300.ms,
+              ),
+              (route) {
+                return route.settings.name == context.read<RouteStackCubit>().top();
+              },
+            );
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
