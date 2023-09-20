@@ -191,7 +191,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     content: Text('Có lỗi xảy ra, đăng xuất thất bại')),
                               );
                             }
+                            return;
                           }
+                          _fullname = null;
+                          _dob = null;
                         },
                         child: const Text('Có'),
                       ),

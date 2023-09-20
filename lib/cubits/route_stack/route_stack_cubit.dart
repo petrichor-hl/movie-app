@@ -5,12 +5,12 @@ class RouteStackCubit extends Cubit<List<String>> {
 
   void push(String route) {
     state.add(route);
-    print('route_stack: $state');
+    // print('route_stack: $state');
   }
 
   void pop() {
     state.removeLast();
-    print('route_stack: $state');
+    // print('route_stack: $state');
   }
 
   String top() => state.last;

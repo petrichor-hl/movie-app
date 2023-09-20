@@ -296,7 +296,9 @@ class _FilmDetailState extends State<FilmDetail> {
                                 genreId: genreId,
                                 genreName: genres[0]['genre']['name'],
                               ),
-                              type: PageTransitionType.fade,
+                              type: PageTransitionType.rightToLeft,
+                              duration: 300.ms,
+                              reverseDuration: 300.ms,
                               settings: RouteSettings(name: '/films_by_genre@$genreId'),
                             ),
                             (route) {
@@ -331,7 +333,9 @@ class _FilmDetailState extends State<FilmDetail> {
                                   genreId: genreId,
                                   genreName: genres[i]['genre']['name'],
                                 ),
-                                type: PageTransitionType.fade,
+                                type: PageTransitionType.rightToLeft,
+                                duration: 300.ms,
+                                reverseDuration: 300.ms,
                                 settings: RouteSettings(name: '/films_by_genre@$genreId'),
                               ),
                               (route) {
