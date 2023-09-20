@@ -30,10 +30,10 @@ class GridFilms extends StatelessWidget {
           final filmId = posters[index]['film']['id'];
           return GestureDetector(
             onTap: () {
-              print('current: ${context.read<RouteStackCubit>().state}');
+              // print('current: ${context.read<RouteStackCubit>().state}');
               // print('top_stack: ${context.read<RouteStackCubit>().top()}');
 
-              print('film_id: $filmId');
+              // print('film_id: $filmId');
               // print(
               //     "FilmID trùng với top_stack: ${'/film_detail@${posters[index]['film']['id']}' == context.read<RouteStackCubit>().top()}");
 
@@ -66,10 +66,6 @@ class GridFilms extends StatelessWidget {
                     reverseDuration: 300.ms,
                   ),
                   (route) {
-                    if (context.read<RouteStackCubit>().top() ==
-                        '/films_by_genre@325cc2e4-ef5c-4443-86a3-80c1155f23ff') {
-                      print('route_name = ${route.settings.name}');
-                    }
                     return route.settings.name == context.read<RouteStackCubit>().top();
                   },
                 );

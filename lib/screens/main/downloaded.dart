@@ -25,14 +25,14 @@ class _DownloadedScreenState extends State<DownloadedScreen> {
   bool _isSelectAll = false;
   bool _isUnSelectAll = false;
 
-  String multiModePage = "allDownloadedFilms";
+  String multiModePage = "all_downloaded_films";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: _isMultiSelectMode
-            ? multiModePage == "allDownloadedFilms"
+            ? multiModePage == "all_downloaded_films"
                 ? Checkbox(
                     value: _isSelectAll,
                     onChanged: (value) => setState(() {
