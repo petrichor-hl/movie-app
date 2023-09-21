@@ -198,7 +198,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text('Có lỗi xảy ra, đăng xuất thất bại')),
+                                    content: Text(
+                                        'Có lỗi xảy ra, đăng xuất thất bại')),
                               );
                             }
                           }
@@ -221,7 +222,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               child: const Text(
-                'Đăng xuất',
+                'ĐĂNG XUẤT',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
