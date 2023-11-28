@@ -96,11 +96,12 @@ class _FilmsByGenreState extends State<FilmsByGenre> {
                   posters: _postersData,
                 ),
               ),
-            ).animate().slideY(
-                  begin: 0.3,
-                  end: 0,
-                  curve: Curves.easeInOut,
-                );
+            );
+            // ).animate().slideY(
+            //       begin: 0.3,
+            //       end: 0,
+            //       curve: Curves.easeInOut,
+            //     );
           },
         ),
       ),

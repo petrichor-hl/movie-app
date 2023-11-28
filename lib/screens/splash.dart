@@ -63,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen> {
         baseColor: Theme.of(context).colorScheme.primary,
         highlightColor: Colors.amber,
         child: Image.asset(
-          Assets.netflixLogo,
+          Assets.viovidLogo,
           width: 240,
         ),
       ),

@@ -21,7 +21,7 @@ class CustomAppBar extends StatelessWidget {
       child: SafeArea(
         child: Row(
           children: [
-            Image.asset(Assets.netflixSymbol),
+            Image.asset(Assets.viovidSymbol),
             Expanded(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,

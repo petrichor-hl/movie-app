@@ -47,8 +47,7 @@ class GridPersons extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 color: Colors.black,
-                border:
-                    Border.all(color: const Color.fromARGB(40, 255, 255, 255)),
+                border: Border.all(color: const Color.fromARGB(40, 255, 255, 255)),
               ),
               clipBehavior: Clip.antiAlias,
               child: Column(
@@ -71,7 +70,9 @@ class GridPersons extends StatelessWidget {
                           borderRadius: BorderRadius.circular(7),
                           child: Image.network(
                             'https://www.themoviedb.org/t/p/w276_and_h350_face${personsData[index]['person']['profile_path']}',
+                            width: double.infinity, // minus border's width = 1
                             height: 155,
+                            fit: BoxFit.cover,
                           ),
                         ),
                   Padding(

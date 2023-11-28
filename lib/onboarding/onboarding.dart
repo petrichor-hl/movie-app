@@ -42,7 +42,7 @@ class _OnboardingState extends State<OnboardingScreen> {
                   Hero(
                     tag: 'NetflixLogo',
                     child: Image.asset(
-                      Assets.netflixLogo,
+                      Assets.viovidLogo,
                       width: 120,
                       fit: BoxFit.cover,
                     ),

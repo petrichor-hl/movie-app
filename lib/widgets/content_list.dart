@@ -98,7 +98,8 @@ class ContentList extends StatelessWidget {
                       }
                       return Center(
                         child: SizedBox(
-                          width: isOriginals ? 36 : 48,
+                          width: isOriginals ? 48 : 36,
+                          height: isOriginals ? 48 : 36,
                           child: const CircularProgressIndicator(
                             // value: loadingProgress.expectedTotalBytes != null
                             //     ? loadingProgress.cumulativeBytesLoaded /

@@ -2,8 +2,8 @@ class Assets {
   // IMAGES
   static const String _images = 'assets/images/';
 
-  static const String netflixSymbol = '${_images}netflix_symbol_rgb.png';
-  static const String netflixLogo = '${_images}netflix_logo_rgb.png';
+  static const String viovidSymbol = '${_images}viovid_symbol_rgb.png';
+  static const String viovidLogo = '${_images}viovid_logo_rgb.png';
 
   static const String sintel = '${_images}sintel.jpg';
   static const String sintelTitle = '${_images}sintel_title.png';
@@ -19,8 +19,7 @@ class Assets {
   static const String breakingBad = '${_images}breaking_bad.jpg';
 
   static const String caroleAndTuesday = '${_images}carole_and_tuesday.jpg';
-  static const String caroleAndTuesdayTitle =
-      '${_images}carole_and_tuesday_title.png';
+  static const String caroleAndTuesdayTitle = '${_images}carole_and_tuesday_title.png';
 
   static const String crown = '${_images}crown.jpg';
   static const String crownTitle = '${_images}crown_title.png';
@@ -35,8 +34,7 @@ class Assets {
   static const String tigerKing = '${_images}tiger_king.jpg';
 
   static const String umbrellaAcademy = '${_images}umbrella_academy.jpg';
-  static const String umbrellaAcademyTitle =
-      '${_images}umbrella_academy_title.png';
+  static const String umbrellaAcademyTitle = '${_images}umbrella_academy_title.png';
 
   static const String violetEvergarden = '${_images}violet_evergarden.jpg';
   static const String witcher = '${_images}witcher.jpg';

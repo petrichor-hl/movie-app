@@ -21,7 +21,7 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  final _pageController = PageController();
+  final _pageController = PageController(initialPage: 0);
 
   late final StreamSubscription<AuthState> _authSubscription;
 
@@ -75,7 +75,7 @@ class _AuthScreenState extends State<AuthScreen> {
           title: Hero(
             tag: 'NetflixLogo',
             child: Image.asset(
-              Assets.netflixLogo,
+              Assets.viovidLogo,
               width: 140,
             ),
           ),
