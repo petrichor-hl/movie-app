@@ -85,7 +85,7 @@ class _FilmDetailState extends State<FilmDetail> {
         appBar: AppBar(
           title: Image.asset(
             Assets.viovidLogo,
-            width: 140,
+            width: 120,
           ),
           centerTitle: true,
           foregroundColor: Colors.white,

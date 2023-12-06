@@ -1,9 +1,16 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/film_detail/grid_shimmer.dart';
 import 'package:movie_app/widgets/film_detail/list_episodes.dart';
+import 'package:movie_app/widgets/grid/grid_films.dart';
 import 'package:movie_app/widgets/grid/grid_persons.dart';
+
+import 'package:http/http.dart' as http;
 
 class SegmentCompose extends StatefulWidget {
   const SegmentCompose(this.seasons, this.isMovie, this.filmId, {super.key});
@@ -21,11 +28,51 @@ class _SegmentComposeState extends State<SegmentCompose> {
   late final _listEpisodes = ListEpisodes(widget.filmId, widget.seasons);
   final _gridShimmer = const GridShimmer();
 
+  final List<dynamic> _recommendFilms = [];
+  late final _futureRecommendFilms = _fetchRecommendFilms();
+
   late final List<dynamic> _castData;
   late final _futureCastData = _fetchCastData();
 
   late final List<dynamic> _crewData;
   late final _futureCrewData = _fetchCrewData();
+
+  Future<void> _fetchRecommendFilms() async {
+    String type = widget.isMovie ? 'movie' : 'tv';
+    String url =
+        "https://api.themoviedb.org/3/${type}/${offlineData['film_id']}/recommendations?api_key=a29284b32c092cc59805c9f5513d3811";
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      // Parse the response JSON
+      // print('Response: ${response.body}');
+      Map<String, dynamic> data = json.decode(response.body);
+
+      List<dynamic> results = data['results'];
+
+      for (var i = 0; i < min(20, results.length); ++i) {
+        // print(
+        //   [
+        //     {
+        //       'film': {
+        //         'id': filmData['id'],
+        //         'poster_path': filmData['poster_path'],
+        //       },
+        //     },
+        //   ],
+        // );
+        _recommendFilms.add(
+          {
+            'film': {
+              'id': results[i]['id'],
+              'poster_path': results[i]['poster_path'],
+            },
+          },
+        );
+      }
+    } else {
+      print('Error: ${response.statusCode}');
+    }
+  }
 
   Future<void> _fetchCastData() async {
     _castData = await supabase
@@ -83,6 +130,27 @@ class _SegmentComposeState extends State<SegmentCompose> {
           duration: const Duration(milliseconds: 100),
           child: switch (_segmentIndex) {
             0 => _listEpisodes,
+            1 => FutureBuilder(
+                future: _futureRecommendFilms,
+                builder: (ctx, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _gridShimmer;
+                  }
+
+                  if (snapshot.hasError) {
+                    return const Text(
+                      'Truy xuất thông tin Đề xuất thất bại',
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    );
+                  }
+
+                  return GridFilms(
+                    posters: _recommendFilms,
+                    canClick: false,
+                  );
+                },
+              ),
             2 => FutureBuilder(
                 future: _futureCastData,
                 builder: (ctx, snapshot) {
