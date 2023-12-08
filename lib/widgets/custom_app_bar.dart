@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gap/gap.dart';
 import 'package:movie_app/assets.dart';
+import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
+import 'package:movie_app/screens/main/search_film.dart';
+import 'package:page_transition/page_transition.dart';
 
 class CustomAppBar extends StatelessWidget {
   const CustomAppBar({
@@ -22,15 +28,34 @@ class CustomAppBar extends StatelessWidget {
         child: Row(
           children: [
             Image.asset(Assets.viovidSymbol),
+            const Gap(8),
             Expanded(
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   _AppBarButton('TV Shows', scrollOffset, () {}),
                   _AppBarButton('Phim', scrollOffset, () {}),
-                  _AppBarButton('Theo thể loại', scrollOffset,
+                  _AppBarButton('Thể loại', scrollOffset,
                       () => scaffoldKey.currentState!.openEndDrawer()),
+                  IconButton(
+                    onPressed: () {
+                      context.read<RouteStackCubit>().push('/search_film_screen');
+                      Navigator.of(context).push(
+                        PageTransition(
+                          child: const SearchFilmScreen(),
+                          type: PageTransitionType.rightToLeft,
+                          duration: 300.ms,
+                          reverseDuration: 300.ms,
+                          settings: const RouteSettings(name: '/search_film_screen'),
+                        ),
+                      );
+                    },
+                    style: IconButton.styleFrom(foregroundColor: Colors.white),
+                    icon: const Icon(
+                      Icons.search_rounded,
+                    ),
+                  )
                 ],
               ),
             ),

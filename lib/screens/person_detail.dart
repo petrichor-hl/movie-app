@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/models/poster.dart';
 import 'package:movie_app/widgets/grid/grid_films.dart';
 import 'package:movie_app/widgets/skeleton_loading.dart';
 import 'package:readmore/readmore.dart';
@@ -17,7 +18,7 @@ class PersonDetail extends StatefulWidget {
 
 class _PersonDetailState extends State<PersonDetail> {
   late final Map<String, dynamic> _person;
-  late final List<dynamic> _credits;
+  final List<Poster> _credits = [];
   late final _futurePerson = _fetchPersonInfo();
 
   Future<void> _fetchPersonInfo() async {
@@ -27,10 +28,17 @@ class _PersonDetailState extends State<PersonDetail> {
         .eq('id', widget.personId)
         .single();
 
-    _credits = await supabase
+    // _credits theo tmdb là những bộ phim có sự tham gia của người đó
+    final List<dynamic> creditsData = await supabase
         .from(widget.isCast ? 'cast' : 'crew')
         .select('film(id, poster_path)')
         .eq('person_id', widget.personId);
+
+    for (var element in creditsData) {
+      _credits.add(
+        Poster(filmId: element['film']['id'], posterPath: element['film']['poster_path']),
+      );
+    }
   }
 
   @override

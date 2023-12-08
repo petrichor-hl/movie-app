@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/models/poster.dart';
 import 'package:movie_app/widgets/grid/grid_films.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -21,19 +21,23 @@ class FilmsByGenre extends StatefulWidget {
 }
 
 class _FilmsByGenreState extends State<FilmsByGenre> {
-  late final List<dynamic> _postersData;
+  final List<Poster> _posters = [];
   late final _futureFilms = _fetchFilmsOnDemand();
 
   Future<void> _fetchFilmsOnDemand() async {
-    _postersData = await supabase
+    final List<dynamic> postersData = await supabase
         .from('film_genre')
         .select('film(id, poster_path)')
         .eq('genre_id', widget.genreId);
-    // print(_postersData);
 
-    // await Future.delayed(
-    //   const Duration(seconds: 1),
-    // );
+    for (var element in postersData) {
+      _posters.add(
+        Poster(
+          filmId: element['film']['id'],
+          posterPath: element['film']['poster_path'],
+        ),
+      );
+    }
   }
 
   @override
@@ -93,7 +97,7 @@ class _FilmsByGenreState extends State<FilmsByGenre> {
             return SizedBox.expand(
               child: SingleChildScrollView(
                 child: GridFilms(
-                  posters: _postersData,
+                  posters: _posters,
                 ),
               ),
             );

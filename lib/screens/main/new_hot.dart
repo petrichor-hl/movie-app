@@ -236,6 +236,8 @@ class NotificationNewFilm extends StatelessWidget {
     String date = uploadDateTime.day.toString().padLeft(2, '0');
     String month = 'THG ${uploadDateTime.month}';
 
+    double screenWidth = MediaQuery.sizeOf(context).width;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -269,16 +271,59 @@ class NotificationNewFilm extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  height: 0.5625 * (screenWidth - 20 - 60 - 10),
+                  width: double.infinity,
                   clipBehavior: Clip.antiAlias,
                   child: Stack(
                     children: [
                       Image.network(
                         'https://image.tmdb.org/t/p/original/$backdropPath',
-                        // height = 9/16 * width's image
-                        height:
-                            0.5625 * (MediaQuery.sizeOf(context).width - 20 - 60 - 10),
+                        fit: BoxFit.cover,
+                        frameBuilder: (
+                          BuildContext context,
+                          Widget child,
+                          int? frame,
+                          bool wasSynchronouslyLoaded,
+                        ) {
+                          if (wasSynchronouslyLoaded) {
+                            return child;
+                          }
+                          return AnimatedOpacity(
+                            opacity: frame == null ? 0 : 1,
+                            duration: const Duration(
+                                milliseconds: 500), // Adjust the duration as needed
+                            curve: Curves.easeInOut,
+                            child: child, // Adjust the curve as needed
+                          );
+                        },
+                        // https://api.flutter.dev/flutter/widgets/Image/loadingBuilder.html
+                        loadingBuilder: (
+                          BuildContext context,
+                          Widget child,
+                          ImageChunkEvent? loadingProgress,
+                        ) {
+                          if (loadingProgress == null) {
+                            return child;
+                          }
+                          return Center(
+                            child: SizedBox(
+                              width: 32,
+                              height: 32,
+                              child: CircularProgressIndicator(
+                                // value: loadingProgress.expectedTotalBytes != null
+                                //     ? loadingProgress.cumulativeBytesLoaded /
+                                //         loadingProgress.expectedTotalBytes!
+                                //     : null,
+                                color: Theme.of(context).colorScheme.primary,
+                                strokeCap: StrokeCap.round,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       Positioned(
                         top: 10,
