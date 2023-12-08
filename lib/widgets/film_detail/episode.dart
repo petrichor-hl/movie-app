@@ -287,9 +287,11 @@ class _EpisodeState extends State<Episode> {
                         ),
                       ];
                     },
-                    icon: const Icon(Icons.download_done),
+                    icon: const Icon(
+                      Icons.download_done,
+                      color: Colors.white,
+                    ),
                     iconSize: 28,
-                    color: Colors.white,
                     tooltip: '',
                     onSelected: (_) async {
                       final episodeFile = File(

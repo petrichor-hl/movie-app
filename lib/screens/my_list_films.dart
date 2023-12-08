@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/models/poster.dart';
 import 'package:movie_app/widgets/grid/grid_films.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -16,20 +17,23 @@ class MyListFilms extends StatefulWidget {
 }
 
 class _MyListFilmsState extends State<MyListFilms> {
-  final List<dynamic> _postersData = [];
+  final List<Poster> _postersData = [];
 
   Future<void> _fetchMyListFilms() async {
     _postersData.clear();
 
     final filmIds = context.watch<MyListCubit>().state;
+
     for (final filmId in filmIds) {
-      final Map<String, dynamic> posterPath =
+      final Map<String, dynamic> posterData =
           await supabase.from('film').select('poster_path').eq('id', filmId).single();
 
-      posterPath.addAll({'id': filmId});
-      _postersData.add({
-        'film': posterPath,
-      });
+      _postersData.add(
+        Poster(
+          filmId: filmId,
+          posterPath: posterData['poster_path'],
+        ),
+      );
     }
 
     // await Future.delayed(

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/models/poster.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/film_detail/grid_shimmer.dart';
 import 'package:movie_app/widgets/film_detail/list_episodes.dart';
@@ -28,7 +29,7 @@ class _SegmentComposeState extends State<SegmentCompose> {
   late final _listEpisodes = ListEpisodes(widget.filmId, widget.seasons);
   final _gridShimmer = const GridShimmer();
 
-  final List<dynamic> _recommendFilms = [];
+  final List<Poster> _recommendFilms = [];
   late final _futureRecommendFilms = _fetchRecommendFilms();
 
   late final List<dynamic> _castData;
@@ -40,7 +41,7 @@ class _SegmentComposeState extends State<SegmentCompose> {
   Future<void> _fetchRecommendFilms() async {
     String type = widget.isMovie ? 'movie' : 'tv';
     String url =
-        "https://api.themoviedb.org/3/${type}/${offlineData['film_id']}/recommendations?api_key=a29284b32c092cc59805c9f5513d3811";
+        "https://api.themoviedb.org/3/$type/${offlineData['film_id']}/recommendations?api_key=a29284b32c092cc59805c9f5513d3811";
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       // Parse the response JSON
@@ -49,24 +50,15 @@ class _SegmentComposeState extends State<SegmentCompose> {
 
       List<dynamic> results = data['results'];
 
-      for (var i = 0; i < min(20, results.length); ++i) {
-        // print(
-        //   [
-        //     {
-        //       'film': {
-        //         'id': filmData['id'],
-        //         'poster_path': filmData['poster_path'],
-        //       },
-        //     },
-        //   ],
-        // );
+      for (var i = 0; i < results.length; ++i) {
+        if (results[i]['poster_path'] == null) {
+          continue;
+        }
         _recommendFilms.add(
-          {
-            'film': {
-              'id': results[i]['id'],
-              'poster_path': results[i]['poster_path'],
-            },
-          },
+          Poster(
+            filmId: results[i]['id'].toString(),
+            posterPath: results[i]['poster_path'],
+          ),
         );
       }
     } else {
@@ -82,6 +74,13 @@ class _SegmentComposeState extends State<SegmentCompose> {
 
     _castData
         .sort((a, b) => b['person']['popularity'].compareTo(a['person']['popularity']));
+
+    // String casts = '';
+    // for (var element in _castData) {
+    //   casts += element['person']['name'] + ', ';
+    // }
+
+    // print('casts = ' + casts);
   }
 
   Future<void> _fetchCrewData() async {
@@ -92,6 +91,13 @@ class _SegmentComposeState extends State<SegmentCompose> {
 
     _crewData
         .sort((a, b) => b['person']['popularity'].compareTo(a['person']['popularity']));
+
+    // String crews = '';
+    // for (var element in _crewData) {
+    //   crews += element['person']['name'] + ', ';
+    // }
+
+    // print('crews = ' + crews);
   }
 
   @override

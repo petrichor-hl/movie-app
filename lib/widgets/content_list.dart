@@ -71,6 +71,7 @@ class ContentList extends StatelessWidget {
                           : 'https://image.tmdb.org/t/p/w440_and_h660_face/${film['poster_path']}',
                     ),
                     fit: BoxFit.cover,
+                    // https://api.flutter.dev/flutter/widgets/Image/frameBuilder.html
                     frameBuilder: (
                       BuildContext context,
                       Widget child,
@@ -83,11 +84,13 @@ class ContentList extends StatelessWidget {
                       return AnimatedOpacity(
                         opacity: frame == null ? 0 : 1,
                         duration: const Duration(
-                            milliseconds: 500), // Adjust the duration as needed
+                          milliseconds: 500,
+                        ), // Adjust the duration as needed
                         curve: Curves.easeInOut,
                         child: child, // Adjust the curve as needed
                       );
                     },
+                    // https://api.flutter.dev/flutter/widgets/Image/loadingBuilder.html
                     loadingBuilder: (
                       BuildContext context,
                       Widget child,

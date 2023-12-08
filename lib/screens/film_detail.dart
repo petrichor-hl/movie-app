@@ -126,6 +126,8 @@ class _FilmDetailState extends State<FilmDetail> {
                 );
               }
 
+              // print('film_id = ' + offlineData['film_id']);
+
               final textPainter = TextPainter(
                 text: TextSpan(
                   text: _film!['overview'],

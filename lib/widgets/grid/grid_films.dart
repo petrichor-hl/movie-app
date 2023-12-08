@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
+import 'package:movie_app/models/poster.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:page_transition/page_transition.dart';
 
@@ -12,7 +13,7 @@ class GridFilms extends StatelessWidget {
     this.canClick = true,
   });
 
-  final List<dynamic> posters;
+  final List<Poster> posters;
   final bool canClick;
 
   @override
@@ -29,7 +30,7 @@ class GridFilms extends StatelessWidget {
       children: List.generate(
         posters.length,
         (index) {
-          final filmId = posters[index]['film']['id'];
+          final filmId = posters[index].filmId;
           return GestureDetector(
             onTap: canClick
                 ? () {
@@ -112,7 +113,7 @@ class GridFilms extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                'https://image.tmdb.org/t/p/w440_and_h660_face/${posters[index]['film']['poster_path']}',
+                'https://image.tmdb.org/t/p/w440_and_h660_face/${posters[index].posterPath}',
               ),
             ),
           );

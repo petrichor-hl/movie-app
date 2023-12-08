@@ -20,32 +20,34 @@ class __ListEpisodesState extends State<ListEpisodes> {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        DropdownButton(
-          value: selectedSeason,
-          dropdownColor: const Color.fromARGB(255, 33, 33, 33),
-          style: GoogleFonts.montserrat(fontSize: 16),
-          isDense: true,
-          items: List.generate(
-            widget.seasons.length,
-            (index) => DropdownMenuItem(
-              value: index,
-              child: Text(
-                widget.seasons[index]['name'],
+        Align(
+          alignment: Alignment.centerLeft,
+          child: DropdownButton(
+            value: selectedSeason,
+            dropdownColor: const Color.fromARGB(255, 33, 33, 33),
+            style: GoogleFonts.montserrat(fontSize: 16),
+            isDense: true,
+            items: List.generate(
+              widget.seasons.length,
+              (index) => DropdownMenuItem(
+                value: index,
+                child: Text(
+                  widget.seasons[index]['name'],
+                ),
               ),
             ),
+            onChanged: (value) {
+              if (value != null && value != selectedSeason) {
+                setState(() {
+                  selectedSeason = value;
+                });
+                offlineData['season_id'] = widget.seasons[value]['id'];
+                offlineData['season_name'] = widget.seasons[value]['name'];
+                // print('offine_data = $offlineData');
+              }
+            },
           ),
-          onChanged: (value) {
-            if (value != null && value != selectedSeason) {
-              setState(() {
-                selectedSeason = value;
-              });
-              offlineData['season_id'] = widget.seasons[value]['id'];
-              offlineData['season_name'] = widget.seasons[value]['name'];
-              // print('offine_data = $offlineData');
-            }
-          },
         ),
         const SizedBox(height: 12),
         ...(widget.seasons[selectedSeason]['episode'] as List<dynamic>).map(
