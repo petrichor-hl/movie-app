@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
+import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
@@ -91,17 +92,12 @@ class _FilmDetailState extends State<FilmDetail> {
           foregroundColor: Colors.white,
           backgroundColor: Colors.black,
           actions: [
-            FutureBuilder(
-              future: _futureMovie,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting ||
-                    snapshot.hasError) {
-                  return const IconButton(
-                    onPressed: null,
-                    icon: Icon(Icons.add),
-                  );
-                }
-                return FavoriteButton(filmId: _film!['id']);
+            BlocBuilder<MyListCubit, List<String>>(
+              builder: (context, state) {
+                return FavoriteButton(
+                  filmId: widget.filmId,
+                  isInMyList: state.contains(widget.filmId),
+                );
               },
             ),
           ],
@@ -192,12 +188,45 @@ class _FilmDetailState extends State<FilmDetail> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      'Điểm: ${(_film!['vote_average'] as double).toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          'Điểm: ${(_film!['vote_average'] as double).toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Spacer(),
+                        InkWell(
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (ctx) => buildReviewBottomSheet(),
+                              /*
+                              Gỡ bỏ giới hạn của chiều cao của BottomSheet
+                              */
+                              isScrollControlled: true,
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.white30,
+                            ),
+                            child: const Text(
+                              'Xem chi tiết',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -373,6 +402,39 @@ class _FilmDetailState extends State<FilmDetail> {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget buildReviewBottomSheet() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(17, 5, 5, 0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              const Text(
+                "Đánh giá",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                icon: const Icon(Icons.close_rounded),
+              )
+            ],
+          ),
+          SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.5,
+          ),
+        ],
       ),
     );
   }
