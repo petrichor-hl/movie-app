@@ -11,9 +11,12 @@ import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dar
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/dtos/review_film.dart';
 import 'package:movie_app/screens/films_by_genre.dart';
+import 'package:movie_app/utils/common_variables.dart';
 import 'package:movie_app/widgets/film_detail/download_button.dart';
 import 'package:movie_app/widgets/film_detail/favorite_button.dart';
+import 'package:movie_app/widgets/film_detail/reviews_bottom_sheet.dart';
 import 'package:movie_app/widgets/film_detail/segment_compose.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:page_transition/page_transition.dart';
@@ -35,10 +38,13 @@ class FilmDetail extends StatefulWidget {
 class _FilmDetailState extends State<FilmDetail> {
   late final Map<String, dynamic>? _film;
   late final List<dynamic> genres;
-  late final _futureMovie = _fetchMovie();
   late final List<dynamic> _seasons;
+  final List<ReviewFilm> _reviews = [];
+
   late final bool isMovie;
   bool _isExpandOverview = false;
+
+  late final _futureMovie = _fetchMovie();
 
   Future<void> _fetchMovie() async {
     _film = await supabase
@@ -60,7 +66,27 @@ class _FilmDetailState extends State<FilmDetail> {
         .order('id', ascending: true)
         .order('order', foreignTable: 'episode', ascending: true);
 
-    // check this film is Movie or TV series
+    final List<dynamic> reviewsData = await supabase
+        .from('review')
+        .select('user_id, star, created_at, profile(full_name, avatar_url)')
+        .eq('film_id', widget.filmId);
+
+    // print(reviewsData);
+
+    for (var element in reviewsData) {
+      _reviews.add(
+        ReviewFilm(
+          userId: element['user_id'],
+          hoTen: element['profile']['full_name'],
+          avatarUrl: element['profile']['avatar_url'],
+          star: element['star'],
+          createAt: vnDateFormat.parse(element['created_at']),
+        ),
+      );
+    }
+
+    _reviews.sort((a, b) => b.createAt.compareTo(a.createAt));
+
     isMovie = _seasons[0]['name'] == null;
 
     offlineData.addAll({
@@ -202,7 +228,9 @@ class _FilmDetailState extends State<FilmDetail> {
                           onTap: () {
                             showModalBottomSheet(
                               context: context,
-                              builder: (ctx) => buildReviewBottomSheet(),
+                              builder: (ctx) => ReviewsBottomSheet(
+                                reviews: _reviews,
+                              ),
                               /*
                               Gỡ bỏ giới hạn của chiều cao của BottomSheet
                               */
@@ -402,39 +430,6 @@ class _FilmDetailState extends State<FilmDetail> {
             },
           ),
         ),
-      ),
-    );
-  }
-
-  Widget buildReviewBottomSheet() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(17, 5, 5, 0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const Text(
-                "Đánh giá",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                icon: const Icon(Icons.close_rounded),
-              )
-            ],
-          ),
-          SizedBox(
-            height: MediaQuery.sizeOf(context).height * 0.5,
-          ),
-        ],
       ),
     );
   }

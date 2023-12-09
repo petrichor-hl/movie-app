@@ -22,7 +22,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late final StreamSubscription<AuthState> _authSubscription;
-  late final Future<void> _futureUserInfo;
 
   void _clearGlobalDataOfUser() {
     profileData.clear();
