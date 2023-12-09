@@ -5,16 +5,13 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
+import 'package:movie_app/data/profile_data.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
 import 'package:movie_app/screens/my_list_films.dart';
-import 'package:movie_app/widgets/skeleton_loading.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:movie_app/main.dart';
-
-String? _fullname;
-String? _dob;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -25,25 +22,9 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late final StreamSubscription<AuthState> _authSubscription;
-  late final Future<void> _futureUserInfo;
-
-  Future<void> _fetchUserInfo() async {
-    final userId = supabase.auth.currentUser!.id;
-    final data = await supabase
-        .from('profiles')
-        .select('full_name, dob, avatar_url')
-        .eq('id', userId)
-        .single();
-
-    _fullname = data['full_name'];
-    _dob = data['dob'];
-    // MyListFilms.myList = data['my_list'];
-    // print("my list: ${MyListFilms.myList}");
-  }
 
   void _clearGlobalDataOfUser() {
-    _fullname = null;
-    _dob = null;
+    profileData.clear();
     offlineMovies.clear();
     offlineTvs.clear();
     downloadedEpisodeId.clear();
@@ -63,10 +44,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
     });
-
-    if (_fullname == null) {
-      _futureUserInfo = _fetchUserInfo();
-    }
   }
 
   @override
@@ -84,66 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _fullname == null
-                ? FutureBuilder(
-                    future: _futureUserInfo,
-                    builder: (ctx, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SkeletonLoading(height: 26, width: 90),
-                            SizedBox(
-                              height: 7,
-                            ),
-                            SkeletonLoading(height: 40, width: 220),
-                            SizedBox(
-                              height: 7,
-                            ),
-                            Row(
-                              children: [
-                                SkeletonLoading(height: 40, width: 40),
-                                SizedBox(
-                                  width: 12,
-                                ),
-                                SkeletonLoading(height: 40, width: 106),
-                              ],
-                            )
-                          ],
-                        );
-                      }
-
-                      if (snapshot.hasError) {
-                        return const SizedBox(
-                          height: 120,
-                          width: 120,
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.error,
-                                  size: 30,
-                                  color: Colors.amber,
-                                ),
-                                SizedBox(
-                                  height: 4,
-                                ),
-                                Text(
-                                  'Truy xuất thông tin thất bại.',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-
-                      return const Header();
-                    },
-                  )
-                : const Header(),
+            const Header(),
             const SizedBox(
               height: 70,
             ),
@@ -198,8 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text(
-                                        'Có lỗi xảy ra, đăng xuất thất bại')),
+                                    content: Text('Có lỗi xảy ra, đăng xuất thất bại')),
                               );
                             }
                           }
@@ -263,14 +180,14 @@ class Header extends StatelessWidget {
           ),
         ),
         Text(
-          'Tên: $_fullname',
+          'Tên: ${profileData['full_name']}',
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,
           ),
         ),
         Text(
-          'Ngày sinh: $_dob',
+          'Ngày sinh: ${profileData['dob']}',
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Colors.white,

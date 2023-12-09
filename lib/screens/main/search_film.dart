@@ -192,14 +192,24 @@ class _SearchFilmScreenState extends State<SearchFilmScreen> {
   Widget buildSearchResult() {
     // print(_searchBarStatus);
     if (_searchBarStatus == "empty" || _resultStatus == "none") {
-      return Center(
-        child: Text(
-          'Tìm bộ phim yêu thích của bạn',
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
-            fontSize: 16,
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Image.asset(
+            'assets/images/decor_image.png',
+            width: MediaQuery.sizeOf(context).width * 0.6,
           ),
-        ),
+          const Gap(16),
+          Text(
+            'Tìm bộ phim yêu thích của bạn',
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.75),
+              fontSize: 16,
+            ),
+          ),
+          const Gap(40),
+        ],
       );
     }
     if (_resultStatus == "hasResult" && _searchResults.isEmpty) {

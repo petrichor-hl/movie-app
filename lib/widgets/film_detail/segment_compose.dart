@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -41,7 +40,7 @@ class _SegmentComposeState extends State<SegmentCompose> {
   Future<void> _fetchRecommendFilms() async {
     String type = widget.isMovie ? 'movie' : 'tv';
     String url =
-        "https://api.themoviedb.org/3/$type/${offlineData['film_id']}/recommendations?api_key=a29284b32c092cc59805c9f5513d3811";
+        "https://api.themoviedb.org/3/$type/${offlineData['film_id']}/recommendations?api_key=$tmdbApiKey";
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       // Parse the response JSON
