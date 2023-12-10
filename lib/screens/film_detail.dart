@@ -150,6 +150,15 @@ class _FilmDetailState extends State<FilmDetail> {
 
               // print('film_id = ' + offlineData['film_id']);
 
+              double voteAverage = 0;
+              if (_reviews.isNotEmpty) {
+                voteAverage = _reviews.fold(
+                        0, (previousValue, review) => previousValue + review.star) /
+                    _reviews.length;
+
+                // print(voteAverage);
+              }
+
               final textPainter = TextPainter(
                 text: TextSpan(
                   text: _film!['overview'],
@@ -214,48 +223,61 @@ class _FilmDetailState extends State<FilmDetail> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Row(
-                      children: [
-                        Text(
-                          'Điểm: ${(_film!['vote_average'] as double).toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                        InkWell(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (ctx) => ReviewsBottomSheet(
-                                reviews: _reviews,
-                              ),
-                              /*
-                              Gỡ bỏ giới hạn của chiều cao của BottomSheet
-                              */
-                              isScrollControlled: true,
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
-                              color: Colors.white30,
-                            ),
-                            child: const Text(
-                              'Xem chi tiết',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                    StatefulBuilder(builder: (ctx, setStateVoteAverage) {
+                      return Row(
+                        children: [
+                          Text(
+                            voteAverage == 0
+                                ? 'Chưa có đánh giá'
+                                : 'Điểm: ${(voteAverage * 2).toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                          const Spacer(),
+                          InkWell(
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (ctx) => ReviewsBottomSheet(
+                                  reviews: _reviews,
+                                  onReviewHasChanged: () {
+                                    setStateVoteAverage(() {
+                                      voteAverage = _reviews.fold(
+                                              0,
+                                              (previousValue, review) =>
+                                                  previousValue + review.star) /
+                                          _reviews.length;
+                                    });
+                                  },
+                                ),
+                                /*
+                                  Gỡ bỏ giới hạn của chiều cao của BottomSheet
+                                  */
+                                isScrollControlled: true,
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.white30,
+                              ),
+                              child: const Text(
+                                'Xem chi tiết',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,

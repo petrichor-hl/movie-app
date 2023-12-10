@@ -49,5 +49,11 @@ SE121.011
 - Film deital
 <p align="center">
     <img src="demo/film_detail.png" width="45%"/>
+    <img src="demo/review_film.png" width="45%"/>
+</p>
+
+- Person deital
+
+<p align="center">
     <img src="demo/person_detail.png" width="45%"/>
 </p>
