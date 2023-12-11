@@ -52,6 +52,12 @@ SE121.011
     <img src="demo/review_film.png" width="45%"/>
 </p>
 
+- Search Film
+<p align="center">
+    <img src="demo/search_film_by_genre.png" width="45%"/>
+    <img src="demo/search_film_by_keyword.png" width="45%"/>
+</p>
+
 - Person deital
 
 <p align="center">

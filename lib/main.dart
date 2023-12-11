@@ -16,8 +16,7 @@ void main() async {
   ]);
   await Supabase.initialize(
     url: 'https://kpaxjjmelbqpllxenpxz.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwYXhqam1lbGJxcGxseGVucHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTMwNDY0OTQsImV4cCI6MjAwODYyMjQ5NH0.MRzIQjr-s1pvy_PL_SM-ahW71ry63H5aNLRUSjMYFiw',
+    anonKey: 'service_role_key',
     authFlowType: AuthFlowType.pkce,
   );
   runApp(MultiBlocProvider(
