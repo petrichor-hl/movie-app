@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:movie_app/data/profile_data.dart';
@@ -199,7 +201,8 @@ class _ReviewsBottomSheetState extends State<ReviewsBottomSheet> {
                 ),
                 const Gap(12),
               ],
-            )
+            ),
+            if (Platform.isAndroid) const Gap(14)
           ],
         ),
       ),

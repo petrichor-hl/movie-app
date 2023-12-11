@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gap/gap.dart';
 import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/data/profile_data.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
+import 'package:movie_app/screens/change_password.dart';
 import 'package:movie_app/screens/my_list_films.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -37,9 +39,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final session = event.session;
       if (session == null) {
         _clearGlobalDataOfUser();
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (ctx) => const OnboardingScreen()),
+        Navigator.of(context).pushAndRemoveUntil(
+          PageTransition(
+            child: const OnboardingScreen(),
+            type: PageTransitionType.fade,
+            duration: 800.ms,
+            settings: const RouteSettings(name: '/onboarding'),
+          ),
           (route) => false,
         );
       }
@@ -62,8 +68,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Header(),
-            const SizedBox(
-              height: 70,
+            _ProfileSettingItem(
+              title: 'Đổi mật khẩu',
+              iconData: Icons.password_rounded,
+              onTap: () {
+                context.read<RouteStackCubit>().push('/change_password');
+                Navigator.of(context)
+                    .push(
+                      PageTransition(
+                        child: const ChangePasswordScreen(),
+                        type: PageTransitionType.rightToLeft,
+                        duration: 300.ms,
+                        reverseDuration: 300.ms,
+                        settings: const RouteSettings(name: '/change_password'),
+                      ),
+                    )
+                    .then((_) => context.read<RouteStackCubit>().pop());
+              },
             ),
             _ProfileSettingItem(
               title: 'Danh sách',
@@ -153,11 +174,115 @@ class _ProfileScreenState extends State<ProfileScreen> {
 class Header extends StatelessWidget {
   const Header({super.key});
 
+  void _deleteUser(BuildContext context) async {
+    bool isProcessingDeleteUser = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(builder: (ctx, setStateDialog) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Xác nhận',
+                  style: TextStyle(fontSize: 20),
+                ),
+                const Gap(14),
+                SizedBox(
+                  height: 50,
+                  child: isProcessingDeleteUser
+                      ? const Align(
+                          child: SizedBox(
+                            height: 28,
+                            width: 28,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              strokeCap: StrokeCap.round,
+                            ),
+                          ),
+                        )
+                      : const Text(
+                          'Bạn có chắc muốn xoá vĩnh viễn tài khoản này không?',
+                        ),
+                ),
+                const Gap(10),
+                Row(
+                  children: [
+                    const Spacer(),
+                    TextButton(
+                      onPressed: isProcessingDeleteUser
+                          ? null
+                          : () async {
+                              setStateDialog(() {
+                                isProcessingDeleteUser = true;
+                              });
+
+                              try {
+                                // await supabase.rpc(
+                                //   'delete_user',
+                                //   params: {
+                                //     'user_id': supabase.auth.currentUser!.id,
+                                //   },
+                                // );
+                                await supabase.auth.admin
+                                    .deleteUser(supabase.auth.currentUser!.id);
+
+                                // ignore: use_build_context_synchronously
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Hẹn gặp lại bạn.'),
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+
+                                await supabase.auth.signOut();
+                              } on AuthException catch (error) {
+                                print("error: ${error.message}");
+                                // ignore: use_build_context_synchronously
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('Có lỗi xảy ra, vui lòng thử lại')),
+                                );
+                              }
+
+                              setStateDialog(() {
+                                isProcessingDeleteUser = true;
+                              });
+                            },
+                      child: const Text('Có'),
+                    ),
+                    TextButton(
+                      onPressed: isProcessingDeleteUser
+                          ? null
+                          : () {
+                              Navigator.of(context).pop();
+                            },
+                      child: const Text('Huỷ'),
+                    )
+                  ],
+                )
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUser = supabase.auth.currentUser;
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
@@ -165,36 +290,62 @@ class Header extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 18,
+            fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
+          textAlign: TextAlign.center,
+        ),
+        const Gap(8),
+        Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 80,
+                height: 80,
+                child: Image.network(
+                  profileData['avatar_url'],
+                ),
+              ),
+            ),
+            const Gap(20),
+            SizedBox(
+              height: 80,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Email: ${currentUser!.email!}',
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    'Tên: ${profileData['full_name']}',
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    'Ngày sinh: ${profileData['dob']}',
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
         ),
         const SizedBox(
-          height: 4,
-        ),
-        Text(
-          'Email: ${currentUser!.email!}',
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        Text(
-          'Tên: ${profileData['full_name']}',
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        Text(
-          'Ngày sinh: ${profileData['dob']}',
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(
-          height: 10,
+          height: 16,
         ),
         Row(
           children: [
@@ -202,11 +353,11 @@ class Header extends StatelessWidget {
               onTap: () {},
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: Colors.white.withAlpha(27),
+                  color: Colors.white.withAlpha(50),
                 ),
                 child: const Icon(
                   Icons.edit,
@@ -218,36 +369,36 @@ class Header extends StatelessWidget {
               width: 12,
             ),
             InkWell(
-              onTap: () {},
+              onTap: () => _deleteUser(context),
               borderRadius: BorderRadius.circular(8),
               child: Container(
-                height: 40,
+                height: 44,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: Colors.white.withAlpha(27),
+                  color: Colors.white.withAlpha(50),
                 ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.delete,
-                        color: Colors.white,
-                      ),
-                      SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        'Delete',
-                        style: TextStyle(color: Colors.white),
-                      )
-                    ],
-                  ),
+                child: const Row(
+                  children: [
+                    Gap(12),
+                    Icon(
+                      Icons.delete,
+                      color: Colors.white,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      'Xoá tài khoản',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Gap(12),
+                  ],
                 ),
               ),
             ),
           ],
-        )
+        ),
+        const Gap(40),
       ],
     );
   }
@@ -275,7 +426,7 @@ class _ProfileSettingItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
-            color: Colors.white.withAlpha(27),
+            color: Colors.white.withAlpha(50),
           ),
           child: Row(
             children: [

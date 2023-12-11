@@ -6,7 +6,7 @@ Future<void> fetchProfileData() async {
   final userId = supabase.auth.currentUser!.id;
   final data = await supabase
       .from('profile')
-      .select('full_name, dob, avatar_url, my_list')
+      .select('password, full_name, dob, avatar_url, my_list')
       .eq('id', userId)
       .single();
 
@@ -15,6 +15,7 @@ Future<void> fetchProfileData() async {
 
   profileData.addAll(
     {
+      'password': data['password'],
       'full_name': data['full_name'],
       'dob': data['dob'],
       'avatar_url': data['avatar_url'],
