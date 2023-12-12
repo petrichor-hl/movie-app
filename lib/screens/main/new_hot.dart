@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/film_detail.dart';
@@ -280,50 +281,16 @@ class NotificationNewFilm extends StatelessWidget {
                   clipBehavior: Clip.antiAlias,
                   child: Stack(
                     children: [
-                      Image.network(
-                        'https://image.tmdb.org/t/p/original/$backdropPath',
+                      CachedNetworkImage(
+                        imageUrl: 'https://image.tmdb.org/t/p/original/$backdropPath',
                         fit: BoxFit.cover,
-                        frameBuilder: (
-                          BuildContext context,
-                          Widget child,
-                          int? frame,
-                          bool wasSynchronouslyLoaded,
-                        ) {
-                          if (wasSynchronouslyLoaded) {
-                            return child;
-                          }
-                          return AnimatedOpacity(
-                            opacity: frame == null ? 0 : 1,
-                            duration: const Duration(
-                                milliseconds: 500), // Adjust the duration as needed
-                            curve: Curves.easeInOut,
-                            child: child, // Adjust the curve as needed
-                          );
-                        },
-                        // https://api.flutter.dev/flutter/widgets/Image/loadingBuilder.html
-                        loadingBuilder: (
-                          BuildContext context,
-                          Widget child,
-                          ImageChunkEvent? loadingProgress,
-                        ) {
-                          if (loadingProgress == null) {
-                            return child;
-                          }
-                          return Center(
-                            child: SizedBox(
-                              width: 32,
-                              height: 32,
-                              child: CircularProgressIndicator(
-                                // value: loadingProgress.expectedTotalBytes != null
-                                //     ? loadingProgress.cumulativeBytesLoaded /
-                                //         loadingProgress.expectedTotalBytes!
-                                //     : null,
-                                color: Theme.of(context).colorScheme.primary,
-                                strokeCap: StrokeCap.round,
-                              ),
-                            ),
-                          );
-                        },
+                        // fadeInDuration: là thời gian xuất hiện của Image khi đã load xong
+                        fadeInDuration: const Duration(milliseconds: 500),
+                        // fadeOutDuration: là thời gian biến mất của placeholder khi Image khi đã load xong
+                        fadeOutDuration: const Duration(milliseconds: 1000),
+                        placeholder: (context, url) => const Center(
+                          child: CircularProgressIndicator(),
+                        ),
                       ),
                       Positioned(
                         top: 10,
