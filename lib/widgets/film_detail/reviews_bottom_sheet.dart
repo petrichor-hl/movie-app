@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:movie_app/data/profile_data.dart';
@@ -158,8 +159,21 @@ class _ReviewsBottomSheetState extends State<ReviewsBottomSheet> {
                   borderRadius: BorderRadius.circular(10),
                   child: SizedBox(
                     width: 47,
-                    child: Image.network(
-                      profileData['avatar_url'],
+                    height: 47,
+                    child: CachedNetworkImage(
+                      imageUrl: '$baseAvatarUrl${profileData['avatar_url']}',
+                      fit: BoxFit.cover,
+                      // fadeInDuration: là thời gian xuất hiện của Image khi đã load xong
+                      fadeInDuration: const Duration(milliseconds: 400),
+                      // fadeOutDuration: là thời gian biến mất của placeholder khi Image khi đã load xong
+                      fadeOutDuration: const Duration(milliseconds: 800),
+                      placeholder: (context, url) => const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: CircularProgressIndicator(
+                          strokeCap: StrokeCap.round,
+                          strokeWidth: 3,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -217,8 +231,21 @@ class _ReviewsBottomSheetState extends State<ReviewsBottomSheet> {
           borderRadius: BorderRadius.circular(10),
           child: SizedBox(
             width: 44,
-            child: Image.network(
-              widget.reviews[index].avatarUrl,
+            height: 44,
+            child: CachedNetworkImage(
+              imageUrl: '$baseAvatarUrl${widget.reviews[index].avatarUrl}',
+              fit: BoxFit.cover,
+              // fadeInDuration: là thời gian xuất hiện của Image khi đã load xong
+              fadeInDuration: const Duration(milliseconds: 400),
+              // fadeOutDuration: là thời gian biến mất của placeholder khi Image khi đã load xong
+              fadeOutDuration: const Duration(milliseconds: 800),
+              placeholder: (context, url) => const Padding(
+                padding: EdgeInsets.all(12),
+                child: CircularProgressIndicator(
+                  strokeCap: StrokeCap.round,
+                  strokeWidth: 3,
+                ),
+              ),
             ),
           ),
         ),

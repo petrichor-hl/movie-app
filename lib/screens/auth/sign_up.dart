@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:gap/gap.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/utils/common_variables.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -36,15 +37,18 @@ class _SignInState extends State<SignUpScreen> {
     final enteredEmail = _emailController.text;
     final enteredPassword = _passwordController.text;
 
+    // print(_dobController.text);
+
     try {
       await supabase.auth.signUp(
         email: enteredEmail,
         password: enteredPassword,
         emailRedirectTo: 'io.supabase.movie-app://login-callback/',
         data: {
+          'password': enteredPassword,
           'full_name': enteredUsername,
           'dob': enteredDob,
-          'avatar_url': 'https://i.imgur.com/zBr1CQ3.png',
+          'avatar_url': 'default_avt.png',
         },
       );
 
@@ -84,6 +88,18 @@ class _SignInState extends State<SignUpScreen> {
     }
   }
 
+  Future<void> _openDatePicker(BuildContext context) async {
+    DateTime? chosenDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (chosenDate != null) {
+      _dobController.text = vnDateFormat.format(chosenDate);
+    }
+  }
+
   @override
   void dispose() {
     _usernameControllber.dispose();
@@ -95,8 +111,9 @@ class _SignInState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: const Alignment(0, -0.2),
+    final screenSize = MediaQuery.sizeOf(context);
+
+    return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Form(
@@ -104,6 +121,116 @@ class _SignInState extends State<SignUpScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Gap(screenSize.height * 0.1),
+              Container(
+                height: 150,
+                width: 150,
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 51, 51, 51),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    Image.network(
+                      'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/avatar/default_avt.png',
+                      height: 150,
+                      width: 150,
+                      fit: BoxFit.cover,
+                      frameBuilder: (
+                        BuildContext context,
+                        Widget child,
+                        int? frame,
+                        bool wasSynchronouslyLoaded,
+                      ) {
+                        if (wasSynchronouslyLoaded) {
+                          return child;
+                        }
+                        return AnimatedOpacity(
+                          opacity: frame == null ? 0 : 1,
+                          duration: const Duration(
+                              milliseconds: 500), // Adjust the duration as needed
+                          curve: Curves.easeInOut,
+                          child: child, // Adjust the curve as needed
+                        );
+                      },
+                      // https://api.flutter.dev/flutter/widgets/Image/loadingBuilder.html
+                      loadingBuilder: (
+                        BuildContext context,
+                        Widget child,
+                        ImageChunkEvent? loadingProgress,
+                      ) {
+                        if (loadingProgress == null) {
+                          return child;
+                        }
+                        // print("loadingProgress: $loadingProgress");
+                        return Center(
+                          child: SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: CircularProgressIndicator(
+                              // value: loadingProgress.expectedTotalBytes != null
+                              //     ? loadingProgress.cumulativeBytesLoaded /
+                              //         loadingProgress.expectedTotalBytes!
+                              //     : null,
+                              color: Theme.of(context).colorScheme.primary,
+                              strokeCap: StrokeCap.round,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    Container(
+                      height: 48,
+                      width: 48,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          bottomRight: Radius.circular(10),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.image_rounded,
+                        color: Colors.white,
+                      ),
+                    )
+                    // IconButton(
+                    //   onPressed: _pickAvatar,
+                    //   style: IconButton.styleFrom(
+                    //     backgroundColor: Theme.of(context).colorScheme.primary,
+                    //     foregroundColor: Colors.white,
+                    //     padding: const EdgeInsets.all(12),
+                    //     shape: const RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.only(
+                    //         topLeft: Radius.circular(10),
+                    //         bottomRight: Radius.circular(10),
+                    //       ),
+                    //     ),
+                    //   ),
+                    //   icon: const Icon(Icons.image_rounded),
+                    // )
+                  ],
+                ),
+              ),
+              const Gap(8),
+              const Text(
+                'Sau khi đăng nhập ',
+                style: TextStyle(
+                  color: Color(0xFFACACAC),
+                  fontSize: 15,
+                ),
+              ),
+              const Text(
+                'Bạn có thể thay đổi Ảnh đại diện.',
+                style: TextStyle(
+                  color: Color(0xFFACACAC),
+                  fontSize: 15,
+                ),
+              ),
+              const Gap(24),
               TextFormField(
                 controller: _usernameControllber,
                 decoration: const InputDecoration(
@@ -115,6 +242,7 @@ class _SignInState extends State<SignUpScreen> {
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+                  errorStyle: TextStyle(fontSize: 14),
                 ),
                 style: const TextStyle(color: Colors.white),
                 autocorrect: false,
@@ -130,10 +258,43 @@ class _SignInState extends State<SignUpScreen> {
               const SizedBox(
                 height: 12,
               ),
-              _DobTextFormField(dobController: _dobController),
+              GestureDetector(
+                onTap: () => _openDatePicker(context),
+                child: TextFormField(
+                  controller: _dobController,
+                  enabled: false,
+                  mouseCursor: SystemMouseCursors.click,
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Color.fromARGB(255, 51, 51, 51),
+                    hintText: 'dd/MM/yyyy',
+                    hintStyle: TextStyle(color: Color(0xFFACACAC)),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+                    suffixIcon: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 14),
+                      child: Icon(
+                        Icons.edit_calendar,
+                        color: Color(0xFFACACAC),
+                      ),
+                    ),
+                    errorStyle: TextStyle(fontSize: 14),
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Bạn chưa nhập Ngày sinh'; // 68 44
+                    }
+                    return null;
+                  },
+                ),
+              ),
               const SizedBox(
                 height: 12,
               ),
+              // _DobTextFormField(dobController: _dobController),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(
@@ -145,6 +306,7 @@ class _SignInState extends State<SignUpScreen> {
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+                  errorStyle: TextStyle(fontSize: 14),
                 ),
                 style: const TextStyle(color: Colors.white),
                 autocorrect: false,
@@ -161,9 +323,7 @@ class _SignInState extends State<SignUpScreen> {
                 height: 12,
               ),
               _PasswordTextFormField(passwordController: _passwordController),
-              const SizedBox(
-                height: 20,
-              ),
+              const Gap(50),
               _isProcessing
                   ? const Padding(
                       padding: EdgeInsets.symmetric(vertical: 14),
@@ -194,111 +354,6 @@ class _SignInState extends State<SignUpScreen> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _DobTextFormField extends StatefulWidget {
-  const _DobTextFormField({required this.dobController});
-  final TextEditingController dobController;
-
-  @override
-  State<_DobTextFormField> createState() => _DobTextFormFieldState();
-}
-
-class _DobTextFormFieldState extends State<_DobTextFormField> {
-  final _dobFocusNode = FocusNode();
-  bool isHighlightDatePickerButton = false;
-
-  void _onFocusChange() {
-    setState(() {
-      isHighlightDatePickerButton = _dobFocusNode.hasFocus;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _dobFocusNode.addListener(_onFocusChange);
-  }
-
-  @override
-  void dispose() {
-    _dobFocusNode.removeListener(_onFocusChange);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: TextFormField(
-            controller: widget.dobController,
-            focusNode: _dobFocusNode,
-            decoration: const InputDecoration(
-              filled: true,
-              fillColor: Color.fromARGB(255, 51, 51, 51),
-              hintText: 'Ngày sinh (dd/mm/yyyy)',
-              hintStyle: TextStyle(color: Color(0xFFACACAC)),
-              border: OutlineInputBorder(
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
-            ),
-            style: const TextStyle(color: Colors.white),
-            autocorrect: false,
-            enableSuggestions: false, // No work
-            keyboardType: TextInputType.datetime, // Trick: disable suggestions
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Bạn chưa nhập Ngày sinh';
-              }
-              // Validate input day of birth
-              // print(value);
-              List<String> dateParts = value.split('/');
-              String formattedDate =
-                  '${dateParts[2]}-${dateParts[1].padLeft(2, '0')}-${dateParts[0].padLeft(2, '0')}';
-              final parsedDate = DateTime.tryParse(formattedDate);
-              // print('formattedDate = $formattedDate');
-              // print('parsedDate = $parsedDate');
-              if (parsedDate == null) {
-                return 'Không khớp định dạng dd/mm/yyyy';
-              }
-              return null;
-            },
-          ),
-        ),
-        const SizedBox(
-          width: 12,
-        ),
-        IconButton.filled(
-          onPressed: () async {
-            final selectedDob = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime(1900),
-              lastDate: DateTime.now(),
-            );
-            if (selectedDob != null) {
-              widget.dobController.text = DateFormat('dd/MM/yyyy').format(selectedDob);
-            }
-          },
-          icon: const Icon(Icons.edit_calendar),
-          style: IconButton.styleFrom(
-            backgroundColor: isHighlightDatePickerButton
-                ? Theme.of(context).colorScheme.primary
-                : const Color.fromARGB(255, 51, 51, 51),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-            padding: const EdgeInsets.all(16),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -336,6 +391,7 @@ class _PasswordTextFormFieldState extends State<_PasswordTextFormField> {
                     : const Icon(Icons.visibility),
               ),
         suffixIconColor: const Color(0xFFACACAC),
+        errorStyle: const TextStyle(fontSize: 14),
         border: const OutlineInputBorder(
           borderSide: BorderSide.none,
         ),

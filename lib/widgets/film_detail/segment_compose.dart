@@ -81,12 +81,12 @@ class _SegmentComposeState extends State<SegmentCompose> {
 
     // print('casts = ' + casts);
 
-    String characters = '';
-    for (var element in _castData) {
-      characters += element['role'] + ', ';
-    }
+    // String characters = '';
+    // for (var element in _castData) {
+    //   characters += element['role'] + ', ';
+    // }
 
-    print('characters = ' + characters);
+    // print('characters = $characters');
   }
 
   Future<void> _fetchCrewData() async {

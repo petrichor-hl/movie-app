@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 
@@ -16,7 +17,8 @@ void main() async {
   ]);
   await Supabase.initialize(
     url: 'https://kpaxjjmelbqpllxenpxz.supabase.co',
-    anonKey: 'service_role_key',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwYXhqam1lbGJxcGxseGVucHh6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5MzA0NjQ5NCwiZXhwIjoyMDA4NjIyNDk0fQ.hGeExPN7h7gYiOILzPU57vSob9LC1UB-W2o6Z7WGLZs',
     authFlowType: AuthFlowType.pkce,
   );
   runApp(MultiBlocProvider(
@@ -34,6 +36,8 @@ void main() async {
 
 final supabase = Supabase.instance.client;
 const tmdbApiKey = 'a29284b32c092cc59805c9f5513d3811';
+const baseAvatarUrl =
+    'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/avatar/';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -56,6 +60,15 @@ class MyApp extends StatelessWidget {
       ),
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('vi'),
+      ],
+      locale: const Locale('vi'),
     );
   }
 }

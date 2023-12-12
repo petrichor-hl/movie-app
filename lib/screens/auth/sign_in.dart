@@ -90,7 +90,7 @@ class _SignInState extends State<SignInScreen> {
     return Align(
       alignment: const Alignment(0, -0.15),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Form(
           key: _formKey,
           child: Column(
