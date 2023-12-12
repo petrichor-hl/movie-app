@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,7 @@ import 'package:movie_app/data/profile_data.dart';
 import 'package:movie_app/onboarding/onboarding.dart';
 import 'package:movie_app/screens/change_password.dart';
 import 'package:movie_app/screens/my_list_films.dart';
+import 'package:movie_app/screens/update_user_info.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -171,8 +173,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-class Header extends StatelessWidget {
+class Header extends StatefulWidget {
   const Header({super.key});
+
+  @override
+  State<Header> createState() => _HeaderState();
+}
+
+class _HeaderState extends State<Header> {
+  void _updateUserInfo() {
+    context.read<RouteStackCubit>().push('/update_user_info');
+    Navigator.of(context)
+        .push(
+      PageTransition(
+        child: const UpdateUserInfo(),
+        type: PageTransitionType.rightToLeft,
+        duration: 300.ms,
+        reverseDuration: 300.ms,
+        settings: const RouteSettings(name: '/update_user_info'),
+      ),
+    )
+        .then(
+      (hasChanged) {
+        context.read<RouteStackCubit>().pop();
+        // Nếu có nhấn nút "Cập nhật" thì khi quay lại trang Profile sẽ setState để update thông tin
+        if (hasChanged == true) {
+          setState(() {});
+        }
+      },
+    );
+  }
 
   void _deleteUser(BuildContext context) async {
     bool isProcessingDeleteUser = false;
@@ -303,43 +333,58 @@ class Header extends StatelessWidget {
               child: SizedBox(
                 width: 80,
                 height: 80,
-                child: Image.network(
-                  profileData['avatar_url'],
+                child: CachedNetworkImage(
+                  imageUrl:
+                      '$baseAvatarUrl${profileData['avatar_url']}?t=${DateTime.now()}',
+                  fit: BoxFit.cover,
+                  // fadeInDuration: là thời gian xuất hiện của Image khi đã load xong
+                  fadeInDuration: const Duration(milliseconds: 400),
+                  // fadeOutDuration: là thời gian biến mất của placeholder khi Image khi đã load xong
+                  fadeOutDuration: const Duration(milliseconds: 800),
+                  placeholder: (context, url) => const Padding(
+                    padding: EdgeInsets.all(26),
+                    child: CircularProgressIndicator(
+                      strokeCap: StrokeCap.round,
+                      strokeWidth: 3,
+                    ),
+                  ),
                 ),
               ),
             ),
             const Gap(20),
-            SizedBox(
-              height: 80,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Email: ${currentUser!.email!}',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+            Expanded(
+              child: SizedBox(
+                height: 80,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Email: ${currentUser!.email!}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Tên: ${profileData['full_name']}',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+                    Text(
+                      'Tên: ${profileData['full_name']}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Ngày sinh: ${profileData['dob']}',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+                    Text(
+                      'Ngày sinh: ${profileData['dob']}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             )
           ],
@@ -350,7 +395,7 @@ class Header extends StatelessWidget {
         Row(
           children: [
             InkWell(
-              onTap: () {},
+              onTap: _updateUserInfo,
               borderRadius: BorderRadius.circular(8),
               child: Container(
                 width: 44,

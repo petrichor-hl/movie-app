@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 
@@ -33,7 +34,9 @@ void main() async {
 }
 
 final supabase = Supabase.instance.client;
-const tmdbApiKey = 'a29284b32c092cc59805c9f5513d3811';
+const tmdbApiKey = 'tmdbApiKey';
+const baseAvatarUrl =
+    'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/avatar/';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -56,6 +59,15 @@ class MyApp extends StatelessWidget {
       ),
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('vi'),
+      ],
+      locale: const Locale('vi'),
     );
   }
 }

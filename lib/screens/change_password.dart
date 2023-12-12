@@ -175,31 +175,32 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 },
               ),
               const Gap(40),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _changePassword,
-                  style: FilledButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  child: _isProcessing
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 3,
-                            strokeCap: StrokeCap.round,
+              _isProcessing
+                  ? const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: _changePassword,
+                        style: FilledButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                        )
-                      : const Text(
+                        ),
+                        child: const Text(
                           'ĐỔI MẬT KHẨU',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                ),
-              ),
+                      ),
+                    ),
               Gap(MediaQuery.sizeOf(context).height * 0.15),
             ],
           ),
