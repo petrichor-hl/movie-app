@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/utils/common_variables.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -106,6 +107,9 @@ class _SignInState extends State<SignInScreen> {
                   border: OutlineInputBorder(
                     borderSide: BorderSide.none,
                   ),
+                  errorStyle: TextStyle(
+                    fontSize: 14,
+                  ),
                   contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
                 ),
                 style: const TextStyle(color: Colors.white),
@@ -113,6 +117,7 @@ class _SignInState extends State<SignInScreen> {
                 enableSuggestions: false, // No work
                 keyboardType: TextInputType.emailAddress, // Trick: disable suggestions
                 validator: (value) {
+                  print('Value = $value');
                   if (value == null || value.isEmpty) {
                     return 'Bạn chưa nhập Email';
                   }
@@ -189,7 +194,7 @@ class _SignInState extends State<SignInScreen> {
                     child: Text(
                       'Đăng ký',
                       style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: primaryColor(context),
                           fontWeight: FontWeight.bold,
                           fontSize: 16),
                     ),
@@ -224,6 +229,9 @@ class _PasswordTextFieldState extends State<_PasswordTextField> {
         fillColor: const Color.fromARGB(255, 51, 51, 51),
         hintText: 'Mật khẩu',
         hintStyle: const TextStyle(color: Color(0xFFACACAC)),
+        errorStyle: const TextStyle(
+          fontSize: 14,
+        ),
         suffixIcon: widget.passwordController.text.isEmpty
             ? null
             : IconButton(

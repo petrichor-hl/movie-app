@@ -3,7 +3,6 @@ import 'dart:ui' as dart_ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:movie_app/assets.dart';
 import 'package:movie_app/cubits/my_list/my_list_cubit.dart';
 import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
@@ -12,8 +11,13 @@ import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/dtos/review_film.dart';
+import 'package:movie_app/models/episode.dart';
+import 'package:movie_app/models/film.dart';
+import 'package:movie_app/models/genre.dart';
+import 'package:movie_app/models/season.dart';
 import 'package:movie_app/screens/films_by_genre.dart';
 import 'package:movie_app/utils/common_variables.dart';
+import 'package:movie_app/utils/extension.dart';
 import 'package:movie_app/widgets/film_detail/download_button.dart';
 import 'package:movie_app/widgets/film_detail/favorite_button.dart';
 import 'package:movie_app/widgets/film_detail/reviews_bottom_sheet.dart';
@@ -36,10 +40,7 @@ class FilmDetail extends StatefulWidget {
 }
 
 class _FilmDetailState extends State<FilmDetail> {
-  late final Map<String, dynamic>? _film;
-  late final List<dynamic> genres;
-  late final List<dynamic> _seasons;
-  final List<ReviewFilm> _reviews = [];
+  late final Film _film;
 
   late final bool isMovie;
   bool _isExpandOverview = false;
@@ -47,24 +48,80 @@ class _FilmDetailState extends State<FilmDetail> {
   late final _futureMovie = _fetchMovie();
 
   Future<void> _fetchMovie() async {
-    _film = await supabase
+    final filmInfo = await supabase
         .from('film')
         .select(
-          'id, name, release_date, vote_average, vote_count, overview, backdrop_path, poster_path, content_rating, trailer',
+          'name, release_date, vote_average, vote_count, overview, backdrop_path, poster_path, content_rating, trailer',
         )
         .eq('id', widget.filmId)
         .single();
-    // print('backdrop_path = ${_film!['backdrop_path']}');
 
-    genres =
+    // print('filmData = $filmInfo');
+
+    _film = Film(
+      id: widget.filmId,
+      name: filmInfo['name'],
+      releaseDate: DateTime.parse(filmInfo['release_date']),
+      voteAverage: filmInfo['vote_average'],
+      voteCount: filmInfo['vote_count'],
+      overview: filmInfo['overview'],
+      backdropPath: filmInfo['backdrop_path'],
+      posterPath: filmInfo['poster_path'],
+      contentRating: filmInfo['content_rating'],
+      trailer: filmInfo['trailer'],
+      genres: [],
+      seasons: [],
+      reviews: [],
+    );
+    // print('backdrop_path = ${_film!['backdrop_path']}');
+    final List<dynamic> genresData =
         await supabase.from('film_genre').select('genre(*)').eq('film_id', widget.filmId);
 
-    _seasons = await supabase
+    for (var genreRow in genresData) {
+      _film.genres.add(
+        Genre(
+          genreId: genreRow['genre']['id'],
+          name: genreRow['genre']['name'],
+        ),
+      );
+    }
+
+    // print(_film.genres.length);
+
+    final List<dynamic> seasonsData = await supabase
         .from('season')
         .select('id, name, episode(*)')
         .eq('film_id', widget.filmId)
         .order('id', ascending: true)
         .order('order', foreignTable: 'episode', ascending: true);
+
+    for (var seasonRow in seasonsData) {
+      final season = Season(
+        seasonId: seasonRow['id'],
+        name: seasonRow['name'],
+        episodes: [],
+      );
+
+      final List<dynamic> episodesData = seasonRow['episode'];
+      // print(episodesData);
+
+      for (final episodeRow in episodesData) {
+        season.episodes.add(
+          Episode(
+            episodeId: episodeRow['id'],
+            order: episodeRow['order'],
+            stillPath: episodeRow['still_path'],
+            title: episodeRow['title'],
+            runtime: episodeRow['runtime'],
+            subtitle: episodeRow['subtitle'],
+            linkEpisode: episodeRow['link'],
+          ),
+        );
+      }
+
+      _film.seasons.add(season);
+    }
+    // print(_film.seasons.length);
 
     final List<dynamic> reviewsData = await supabase
         .from('review')
@@ -74,7 +131,7 @@ class _FilmDetailState extends State<FilmDetail> {
     // print(reviewsData);
 
     for (var element in reviewsData) {
-      _reviews.add(
+      _film.reviews.add(
         ReviewFilm(
           userId: element['user_id'],
           hoTen: element['profile']['full_name'],
@@ -85,16 +142,16 @@ class _FilmDetailState extends State<FilmDetail> {
       );
     }
 
-    _reviews.sort((a, b) => b.createAt.compareTo(a.createAt));
+    _film.reviews.sort((a, b) => b.createAt.compareTo(a.createAt));
 
-    isMovie = _seasons[0]['name'] == null;
+    isMovie = _film.seasons[0].name == '';
 
     offlineData.addAll({
-      'film_id': _film!['id'],
-      'film_name': _film!['name'],
-      'poster_path': _film!['poster_path'],
-      'season_id': _seasons[0]['id'],
-      'season_name': _seasons[0]['name'],
+      'film_id': _film.id,
+      'film_name': _film.name,
+      'poster_path': _film.posterPath,
+      'season_id': _film.seasons[0].seasonId,
+      'season_name': _film.seasons[0].name,
     });
   }
 
@@ -103,7 +160,7 @@ class _FilmDetailState extends State<FilmDetail> {
     return WillPopScope(
       // Đã test - Không sửa
       onWillPop: () async {
-        if (context.read<RouteStackCubit>().top().contains(_film!['id'])) {
+        if (context.read<RouteStackCubit>().top().contains(_film.id)) {
           context.read<RouteStackCubit>().pop();
         }
         return true;
@@ -151,17 +208,17 @@ class _FilmDetailState extends State<FilmDetail> {
               // print('film_id = ' + offlineData['film_id']);
 
               double voteAverage = 0;
-              if (_reviews.isNotEmpty) {
-                voteAverage = _reviews.fold(
-                        0, (previousValue, review) => previousValue + review.star) /
-                    _reviews.length;
+              if (_film.reviews.isNotEmpty) {
+                voteAverage = _film.reviews
+                        .fold(0, (previousValue, review) => previousValue + review.star) /
+                    _film.reviews.length;
 
                 // print(voteAverage);
               }
 
               final textPainter = TextPainter(
                 text: TextSpan(
-                  text: _film!['overview'],
+                  text: _film.overview,
                   style: const TextStyle(color: Colors.white),
                 ),
                 maxLines: 4,
@@ -176,7 +233,7 @@ class _FilmDetailState extends State<FilmDetail> {
                     Stack(
                       children: [
                         Image.network(
-                          'https://image.tmdb.org/t/p/original/${_film!['backdrop_path']}',
+                          'https://image.tmdb.org/t/p/original/${_film.backdropPath}',
                           width: double.infinity,
                           height: 9 / 16 * MediaQuery.sizeOf(context).width,
                           fit: BoxFit.cover,
@@ -196,7 +253,7 @@ class _FilmDetailState extends State<FilmDetail> {
                               ),
                             ),
                             child: Text(
-                              _film!['content_rating'],
+                              _film.contentRating,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -207,7 +264,7 @@ class _FilmDetailState extends State<FilmDetail> {
                       ],
                     ),
                     Text(
-                      _film!['name'],
+                      _film.name,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 28,
@@ -215,9 +272,7 @@ class _FilmDetailState extends State<FilmDetail> {
                       ),
                     ),
                     Text(
-                      'Phát hành: ${DateFormat('dd-MM-yyyy').format(
-                        DateTime.parse(_film!['release_date']),
-                      )}',
+                      'Phát hành: ${_film.releaseDate.toVnFormat()}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -241,14 +296,14 @@ class _FilmDetailState extends State<FilmDetail> {
                               showModalBottomSheet(
                                 context: context,
                                 builder: (ctx) => ReviewsBottomSheet(
-                                  reviews: _reviews,
+                                  reviews: _film.reviews,
                                   onReviewHasChanged: () {
                                     setStateVoteAverage(() {
-                                      voteAverage = _reviews.fold(
+                                      voteAverage = _film.reviews.fold(
                                               0,
                                               (previousValue, review) =>
                                                   previousValue + review.star) /
-                                          _reviews.length;
+                                          _film.reviews.length;
                                     });
                                   },
                                 ),
@@ -283,7 +338,8 @@ class _FilmDetailState extends State<FilmDetail> {
                       width: double.infinity,
                       child: FilledButton.icon(
                         onPressed: () {
-                          final episodeId = _seasons[0]['episode'][0]['id'];
+                          // final episodeId = _seasons[0]['episode'][0]['id'];
+                          final episodeId = _film.seasons[0].episodes[0].episodeId;
                           final isDownloaded = downloadedEpisodeId.contains(episodeId);
                           Navigator.of(context).push(
                             MaterialPageRoute(
@@ -298,15 +354,16 @@ class _FilmDetailState extends State<FilmDetail> {
                                 ],
                                 child: isDownloaded
                                     ? VideoPlayerView(
-                                        title: _film!['name'],
+                                        title: _film.name,
                                         videoLink: isMovie
                                             ? '${appDir.path}/episode/$episodeId.mp4'
-                                            : '${appDir.path}/episode/${_film!['id']}/$episodeId.mp4',
+                                            : '${appDir.path}/episode/${_film.id}/$episodeId.mp4',
                                         videoLocation: 'local',
                                       )
                                     : VideoPlayerView(
-                                        title: _film!['name'],
-                                        videoLink: _seasons[0]['episode'][0]['link'],
+                                        title: _film.name,
+                                        videoLink:
+                                            _film.seasons[0].episodes[0].linkEpisode,
                                       ),
                               ),
                             ),
@@ -328,13 +385,13 @@ class _FilmDetailState extends State<FilmDetail> {
                     ),
                     if (isMovie)
                       DownloadButton(
-                        firstEpisodeId: _seasons[0]['episode'][0]['id'],
-                        firstEpisodeLink: _seasons[0]['episode'][0]['link'],
-                        runtime: _seasons[0]['episode'][0]['runtime'],
+                        firstEpisodeId: _film.seasons[0].episodes[0].episodeId,
+                        firstEpisodeLink: _film.seasons[0].episodes[0].linkEpisode,
+                        runtime: _film.seasons[0].episodes[0].runtime,
                       ),
                     const SizedBox(height: 6),
                     Text(
-                      _film!['overview'],
+                      _film.overview,
                       style: const TextStyle(color: Colors.white),
                       maxLines: _isExpandOverview ? null : 4,
                       textAlign: TextAlign.justify,
@@ -365,7 +422,7 @@ class _FilmDetailState extends State<FilmDetail> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            final genreId = genres[0]['genre']['id'];
+                            final genreId = _film.genres[0].genreId;
                             if (context
                                 .read<RouteStackCubit>()
                                 .top()
@@ -377,7 +434,7 @@ class _FilmDetailState extends State<FilmDetail> {
                               PageTransition(
                                 child: FilmsByGenre(
                                   genreId: genreId,
-                                  genreName: genres[0]['genre']['name'],
+                                  genreName: _film.genres[0].name,
                                 ),
                                 type: PageTransitionType.rightToLeft,
                                 duration: 300.ms,
@@ -394,16 +451,16 @@ class _FilmDetailState extends State<FilmDetail> {
                                 .push('/films_by_genre@$genreId');
                           },
                           child: Text(
-                            genres[0]['genre']['name'],
+                            _film.genres[0].name,
                             style: const TextStyle(
                               color: Colors.white,
                             ),
                           ),
                         ),
-                        for (int i = 1; i < genres.length; ++i)
+                        for (int i = 1; i < _film.genres.length; ++i)
                           GestureDetector(
                             onTap: () {
-                              final genreId = genres[i]['genre']['id'];
+                              final genreId = _film.genres[i].genreId;
                               if (context
                                   .read<RouteStackCubit>()
                                   .top()
@@ -414,7 +471,7 @@ class _FilmDetailState extends State<FilmDetail> {
                                 PageTransition(
                                   child: FilmsByGenre(
                                     genreId: genreId,
-                                    genreName: genres[i]['genre']['name'],
+                                    genreName: _film.genres[i].genreId,
                                   ),
                                   type: PageTransitionType.rightToLeft,
                                   duration: 300.ms,
@@ -432,7 +489,7 @@ class _FilmDetailState extends State<FilmDetail> {
                                   .push('/films_by_genre@$genreId');
                             },
                             child: Text(
-                              ', ${genres[i]['genre']['name']}',
+                              ', ${_film.genres[i].name}',
                               style: const TextStyle(
                                 color: Colors.white,
                               ),
@@ -441,7 +498,7 @@ class _FilmDetailState extends State<FilmDetail> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    SegmentCompose(_seasons, isMovie, widget.filmId),
+                    SegmentCompose(_film.seasons, isMovie, widget.filmId),
                   ],
                 ).animate().fade().slideY(
                       curve: Curves.easeInOut,
