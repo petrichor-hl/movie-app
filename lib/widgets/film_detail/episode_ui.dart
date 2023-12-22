@@ -7,6 +7,7 @@ import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dar
 import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
+import 'package:movie_app/models/episode.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:path_provider/path_provider.dart';
@@ -18,36 +19,25 @@ enum DownloadState {
   downloaded,
 }
 
-class Episode extends StatefulWidget {
-  const Episode(
-    this.episodeId,
-    this.order,
-    this.stillPath,
-    this.title,
-    this.runtime,
-    this.subtitle,
-    this.linkEpisode,
-    this.filmId, {
+class EpisodeUI extends StatefulWidget {
+  const EpisodeUI({
+    required this.episode,
+    required this.filmId,
     super.key,
   });
 
-  final String episodeId;
-  final int order;
-  final String stillPath;
-  final String title;
-  final int runtime;
-  final String subtitle;
-  final String linkEpisode;
+  final Episode episode;
   final String filmId;
 
   @override
-  State<Episode> createState() => _EpisodeState();
+  State<EpisodeUI> createState() => _EpisodeState();
 }
 
-class _EpisodeState extends State<Episode> {
-  late DownloadState downloadState = downloadedEpisodeId.contains(widget.episodeId)
-      ? DownloadState.downloaded
-      : DownloadState.ready;
+class _EpisodeState extends State<EpisodeUI> {
+  late DownloadState downloadState =
+      downloadedEpisodeId.contains(widget.episode.episodeId)
+          ? DownloadState.downloaded
+          : DownloadState.ready;
   double progress = 0;
 
   final filmInfo = Map.from(offlineData);
@@ -71,13 +61,13 @@ class _EpisodeState extends State<Episode> {
                 ],
                 child: downloadState == DownloadState.ready
                     ? VideoPlayerView(
-                        title: widget.title,
-                        videoLink: widget.linkEpisode,
+                        title: widget.episode.title,
+                        videoLink: widget.episode.linkEpisode,
                       )
                     : VideoPlayerView(
-                        title: widget.title,
+                        title: widget.episode.title,
                         videoLink:
-                            '${appDir.path}/episode/${filmInfo['film_id']}/${widget.episodeId}.mp4',
+                            '${appDir.path}/episode/${filmInfo['film_id']}/${widget.episode.episodeId}.mp4',
                         videoLocation: 'local',
                       ),
               ),
@@ -95,7 +85,7 @@ class _EpisodeState extends State<Episode> {
                   borderRadius: BorderRadius.circular(4),
                   clipBehavior: Clip.antiAlias,
                   child: Image.network(
-                    'https://www.themoviedb.org/t/p/w454_and_h254_bestv2/${widget.stillPath}',
+                    'https://www.themoviedb.org/t/p/w454_and_h254_bestv2/${widget.episode.stillPath}',
                     height: 80,
                     width: 143,
                     fit: BoxFit.cover,
@@ -109,14 +99,14 @@ class _EpisodeState extends State<Episode> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.title,
+                          widget.episode.title,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          '${widget.runtime} phút',
+                          '${widget.episode.runtime} phút',
                           style: const TextStyle(
                             color: Colors.grey,
                           ),
@@ -137,8 +127,8 @@ class _EpisodeState extends State<Episode> {
 
                       // 1. download video
                       await Dio().download(
-                        widget.linkEpisode,
-                        '${appDir.path}/episode/${filmInfo['film_id']}/${widget.episodeId}.mp4',
+                        widget.episode.linkEpisode,
+                        '${appDir.path}/episode/${filmInfo['film_id']}/${widget.episode.episodeId}.mp4',
                         onReceiveProgress: (count, total) {
                           if (mounted) {
                             setState(() {
@@ -149,12 +139,12 @@ class _EpisodeState extends State<Episode> {
                         deleteOnError: true,
                       );
 
-                      // print('added episode_id = ${widget.episodeId}');
+                      // print('added episode_id = ${widget.episode.episodeId}');
 
                       // 2. download still_path
                       await Dio().download(
-                        'https://www.themoviedb.org/t/p/w454_and_h254_bestv2/${widget.stillPath}',
-                        '${appDir.path}/still_path/${filmInfo['film_id']}/${widget.stillPath}',
+                        'https://www.themoviedb.org/t/p/w454_and_h254_bestv2/${widget.episode.stillPath}',
+                        '${appDir.path}/still_path/${filmInfo['film_id']}/${widget.episode.stillPath}',
                         deleteOnError: true,
                       );
 
@@ -183,16 +173,16 @@ class _EpisodeState extends State<Episode> {
                       );
 
                       await databaseUtils.insertEpisode(
-                        id: widget.episodeId,
-                        order: widget.order,
-                        title: widget.title,
-                        runtime: widget.runtime,
-                        stillPath: widget.stillPath,
+                        id: widget.episode.episodeId,
+                        order: widget.episode.order,
+                        title: widget.episode.title,
+                        runtime: widget.episode.runtime,
+                        stillPath: widget.episode.stillPath,
                         seasonId: filmInfo['season_id'],
                       );
 
                       await databaseUtils.close();
-                      downloadedEpisodeId.add(widget.episodeId);
+                      downloadedEpisodeId.add(widget.episode.episodeId);
 
                       final existingIndexTv = offlineTvs.indexWhere(
                         (tv) => tv['id'] == filmInfo['film_id'],
@@ -208,11 +198,11 @@ class _EpisodeState extends State<Episode> {
                               'season_name': filmInfo['season_name'],
                               'episodes': [
                                 {
-                                  'id': widget.episodeId,
-                                  'order': widget.order,
-                                  'still_path': widget.stillPath,
-                                  'title': widget.title,
-                                  'runtime': widget.runtime,
+                                  'id': widget.episode.episodeId,
+                                  'episode.order': widget.episode.order,
+                                  'still_path': widget.episode.stillPath,
+                                  'title': widget.episode.title,
+                                  'runtime': widget.episode.runtime,
                                 }
                               ],
                             }
@@ -232,11 +222,11 @@ class _EpisodeState extends State<Episode> {
                             'season_name': filmInfo['season_name'],
                             'episodes': [
                               {
-                                'id': widget.episodeId,
-                                'order': widget.order,
-                                'still_path': widget.stillPath,
-                                'title': widget.title,
-                                'runtime': widget.runtime,
+                                'id': widget.episode.episodeId,
+                                'episode.order': widget.episode.order,
+                                'still_path': widget.episode.stillPath,
+                                'title': widget.episode.title,
+                                'runtime': widget.episode.runtime,
                               }
                             ],
                           });
@@ -244,11 +234,11 @@ class _EpisodeState extends State<Episode> {
                           final Map existingSeason = seasons[existingIndexSeason];
                           final List episodes = existingSeason['episodes'];
                           episodes.add({
-                            'id': widget.episodeId,
-                            'order': widget.order,
-                            'still_path': widget.stillPath,
-                            'title': widget.title,
-                            'runtime': widget.runtime,
+                            'id': widget.episode.episodeId,
+                            'episode.order': widget.episode.order,
+                            'still_path': widget.episode.stillPath,
+                            'title': widget.episode.title,
+                            'runtime': widget.episode.runtime,
                           });
                         }
                       }
@@ -295,17 +285,17 @@ class _EpisodeState extends State<Episode> {
                     tooltip: '',
                     onSelected: (_) async {
                       final episodeFile = File(
-                          '${appDir.path}/episode/${filmInfo['film_id']}/${widget.episodeId}.mp4');
+                          '${appDir.path}/episode/${filmInfo['film_id']}/${widget.episode.episodeId}.mp4');
                       await episodeFile.delete();
 
                       final stillPathFile = File(
-                          '${appDir.path}/still_path/${filmInfo['film_id']}/${widget.stillPath}');
+                          '${appDir.path}/still_path/${filmInfo['film_id']}/${widget.episode.stillPath}');
                       await stillPathFile.delete();
 
                       final databaseUtils = DatabaseUtils();
                       await databaseUtils.connect();
                       await databaseUtils.deleteEpisode(
-                        id: widget.episodeId,
+                        id: widget.episode.episodeId,
                         seasonId: filmInfo['season_id'],
                         filmId: filmInfo['film_id'],
                         clean: () async {
@@ -324,7 +314,7 @@ class _EpisodeState extends State<Episode> {
                       );
                       await databaseUtils.close();
 
-                      downloadedEpisodeId.remove(widget.episodeId);
+                      downloadedEpisodeId.remove(widget.episode.episodeId);
 
                       // remove data in offlineTvs
                       final tvIndex =
@@ -337,7 +327,7 @@ class _EpisodeState extends State<Episode> {
 
                       final List episodes = seasons[seasonIndex]['episodes'];
                       episodes.removeWhere(
-                        (episode) => episode['id'] == widget.episodeId,
+                        (episode) => episode['id'] == widget.episode.episodeId,
                       );
 
                       if (episodes.isEmpty) {
@@ -365,7 +355,7 @@ class _EpisodeState extends State<Episode> {
               height: 8,
             ),
             Text(
-              widget.subtitle,
+              widget.episode.subtitle,
               style: const TextStyle(color: Colors.white70),
             ),
           ],

@@ -1,4 +1,9 @@
+import 'package:movie_app/dtos/review_film.dart';
+import 'package:movie_app/models/genre.dart';
+import 'package:movie_app/models/season.dart';
+
 class Film {
+  final String id;
   final String name;
   final DateTime releaseDate;
   final double voteAverage;
@@ -8,8 +13,12 @@ class Film {
   final String posterPath;
   final String contentRating;
   final String trailer;
+  final List<Genre> genres;
+  final List<Season> seasons;
+  final List<ReviewFilm> reviews;
 
   const Film({
+    required this.id,
     required this.name,
     required this.releaseDate,
     required this.voteAverage,
@@ -19,5 +28,8 @@ class Film {
     required this.posterPath,
     required this.contentRating,
     required this.trailer,
+    required this.genres,
+    required this.seasons,
+    required this.reviews,
   });
 }

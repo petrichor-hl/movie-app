@@ -17,7 +17,7 @@ void main() async {
   ]);
   await Supabase.initialize(
     url: 'https://kpaxjjmelbqpllxenpxz.supabase.co',
-    anonKey: 'service_role_key',
+    anonKey: '',
     authFlowType: AuthFlowType.pkce,
   );
   runApp(MultiBlocProvider(
@@ -34,9 +34,8 @@ void main() async {
 }
 
 final supabase = Supabase.instance.client;
-const tmdbApiKey = 'tmdbApiKey';
-const baseAvatarUrl =
-    'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/avatar/';
+const tmdbApiKey = '';
+const baseAvatarUrl = '';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

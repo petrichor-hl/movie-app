@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/screens/film_detail.dart';
-import 'package:movie_app/widgets/film_detail/episode.dart';
+import 'package:movie_app/widgets/film_detail/episode_ui.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DownloadButton extends StatefulWidget {
