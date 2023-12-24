@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:gap/gap.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
-import 'package:movie_app/widgets/downloaded_page/all_downloaded_episodes.dart';
-import 'package:movie_app/widgets/downloaded_page/all_downloaded_films.dart';
+import 'package:movie_app/models/offline_film.dart';
+import 'package:movie_app/widgets/downloaded_page/offline_movie_ui.dart';
+import 'package:movie_app/widgets/downloaded_page/offline_tv_ui.dart';
 
 class DownloadedScreen extends StatefulWidget {
   const DownloadedScreen({super.key});
@@ -15,330 +17,259 @@ class DownloadedScreen extends StatefulWidget {
 }
 
 class _DownloadedScreenState extends State<DownloadedScreen> {
-  int _currentPage = 0;
-  Map<String, dynamic> selectedTv = {};
+  final _offlineMovies = <OfflineFilm>[];
+  final _offlineTvs = <OfflineFilm>[];
+
   bool _isMultiSelectMode = false;
+
+  // Lưu id của các phim được chọn trong Multi Select Mode
   final _selectedMovieIds = <String>[];
   final _selectedTvIds = <String>[];
-  final _selectedEpisode = <String>[];
 
-  bool _isSelectAll = false;
-  bool _isUnSelectAll = false;
-
-  String multiModePage = "all_downloaded_films";
+  @override
+  void initState() {
+    super.initState();
+    for (var downloadedFilm in downloadedFilms.values) {
+      if (downloadedFilm.offlineSeasons[0].name.isEmpty) {
+        _offlineMovies.add(downloadedFilm);
+      } else {
+        _offlineTvs.add(downloadedFilm);
+      }
+    }
+    /* 
+    Lưu ý:
+    Khi xoá item trong downloadedFilm
+    thì offlineMovies, offlineTvs không bị ảnh hưởng
+    */
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: _isMultiSelectMode
-            ? multiModePage == "all_downloaded_films"
-                ? Checkbox(
-                    value: _isSelectAll,
-                    onChanged: (value) => setState(() {
-                      if (value != null) {
-                        _isSelectAll = value;
-
-                        _selectedMovieIds.clear();
-                        _selectedTvIds.clear();
-
-                        if (_isSelectAll) {
-                          _selectedMovieIds.addAll(
-                            [...offlineMovies.map((movie) => movie['id'])],
-                          );
-                          _selectedTvIds.addAll(
-                            [...offlineTvs.map((tv) => tv['id'])],
-                          );
-                        } else {
-                          _isUnSelectAll = true;
-                        }
-                      }
-                    }),
-                  )
-                : IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _currentPage = 0;
-                        _isMultiSelectMode = false;
-                        _selectedMovieIds.clear();
-                      });
-                    },
-                    icon: const Icon(Icons.arrow_back_ios),
-                    padding: const EdgeInsets.all(16),
-                  )
-            : _currentPage == 0
-                ? null
-                : IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _currentPage = 0;
-                      });
-                    },
-                    icon: const Icon(Icons.arrow_back_ios),
-                    padding: const EdgeInsets.all(16),
-                  ),
-        title: Text(
-          _currentPage == 0 ? 'Tệp tải xuống' : selectedTv['film_name'],
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ? IconButton(
+                onPressed: () {
+                  setState(() {
+                    _isMultiSelectMode = false;
+                    _selectedMovieIds.clear();
+                    _selectedTvIds.clear();
+                  });
+                },
+                icon: const Icon(Icons.cancel),
+                padding: const EdgeInsets.all(16),
+              ).animate().scale()
+            : null,
+        title: const Text(
+          'Tệp tải xuống',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: _isMultiSelectMode
             ? [
                 IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isMultiSelectMode = false;
-                      _selectedMovieIds.clear();
-                      _selectedTvIds.clear();
-                      _selectedEpisode.clear();
-                      _isSelectAll = false;
-                      _isUnSelectAll = false;
-                    });
-                  },
-                  icon: const Icon(Icons.cancel),
-                  padding: const EdgeInsets.all(16),
-                ).animate().scale(),
-                IconButton(
                   onPressed: () async {
-                    if (multiModePage == "all_downloaded_films") {
-                      // Xoá movie
-                      for (final movieId in _selectedMovieIds) {
-                        // 1. Xoá trong Application Directory
-                        final index = offlineMovies.indexWhere(
-                          (movie) => movie['id'] == movieId,
-                        );
-                        final episodeId =
-                            offlineMovies[index]['seasons'][0]['episodes'][0]['id'];
-
-                        final episodeFile = File('${appDir.path}/episode/$episodeId.mp4');
-                        await episodeFile.delete();
-
-                        // 2. Xoá movie trong database
-                        final databaseUtils = DatabaseUtils();
-                        await databaseUtils.connect();
-                        await databaseUtils.deleteEpisode(
-                          id: episodeId,
-                          seasonId: offlineMovies[index]['seasons'][0]['id'],
-                          filmId: offlineMovies[index]['id'],
-                          clean: () async {
-                            final posterFile = File(
-                              '${appDir.path}/poster_path/${offlineMovies[index]['poster_path']}',
-                            );
-                            await posterFile.delete();
-                          },
-                        );
-                        await databaseUtils.close();
-
-                        // 3. Xoá movie trong app's memory
-                        downloadedEpisodeId.remove(episodeId);
-                        offlineMovies.removeAt(index);
-                      }
-
-                      // Remove TV
-                      for (final tvId in _selectedTvIds) {
-                        // 1. Xoá trong Application Directory
-                        final index = offlineTvs.indexWhere(
-                          (tv) => tv['id'] == tvId,
-                        );
-                        final filmId = offlineTvs[index]['id'];
-
-                        final episodeDirectory =
-                            Directory('${appDir.path}/episode/$filmId');
-                        await episodeDirectory.delete(recursive: true);
-                        final stillPathDirectory =
-                            Directory('${appDir.path}/still_path/$filmId');
-                        await stillPathDirectory.delete(recursive: true);
-
-                        // 2. Xoá Tv trong database
-                        final databaseUtils = DatabaseUtils();
-                        await databaseUtils.connect();
-                        for (final season in offlineTvs[index]['seasons']) {
-                          for (final episode in season['episodes']) {
-                            await databaseUtils.deleteEpisode(
-                              id: episode['id'],
-                              seasonId: season['id'],
-                              filmId: filmId,
-                              clean: () async {
-                                final posterFile = File(
-                                  '${appDir.path}/poster_path/${offlineTvs[index]['poster_path']}',
-                                );
-                                await posterFile.delete();
-                              },
-                            );
-                            // 3. Xoá movie trong app's memory
-                            downloadedEpisodeId.remove(episode['id']);
-                          }
-                        }
-                        await databaseUtils.close();
-
-                        // 3. Xoá movie trong app's memory
-                        offlineTvs.removeAt(index);
-                      }
-                    } else {
+                    // Remove Movie
+                    for (final movieId in _selectedMovieIds) {
                       // 1. Xoá trong Application Directory
-                      for (final episode in _selectedEpisode) {
-                        final List<String> parts = episode.split('/');
-                        final seasonId = parts[0];
-                        final episodeId = parts[1];
+                      final index = _offlineMovies.indexWhere(
+                        (offlineMovie) => offlineMovie.id == movieId,
+                      );
+                      final episodeId = _offlineMovies[index]
+                          .offlineSeasons[0]
+                          .offlineEpisodes[0]
+                          .episodeId;
 
-                        final episodeFile = File(
-                            '${appDir.path}/episode/${selectedTv['id']}/$episodeId.mp4');
-                        await episodeFile.delete();
+                      final episodeFile = File('${appDir.path}/episode/$episodeId.mp4');
+                      await episodeFile.delete();
 
-                        final seasonIndex = (selectedTv['seasons'] as List).indexWhere(
-                          (season) => season['id'] == seasonId,
-                        );
-                        final Map<String, dynamic> season =
-                            selectedTv['seasons'][seasonIndex];
+                      // 2. Xoá movie trong database
+                      final databaseUtils = DatabaseUtils();
+                      await databaseUtils.connect();
+                      await databaseUtils.deleteEpisode(
+                        id: episodeId,
+                        seasonId: _offlineMovies[index].offlineSeasons[0].seasonId,
+                        filmId: _offlineMovies[index].id,
+                        clean: () async {
+                          final posterFile = File(
+                            '${appDir.path}/poster_path/${_offlineMovies[index].posterPath}',
+                          );
+                          await posterFile.delete();
+                        },
+                      );
+                      await databaseUtils.close();
 
-                        final selectedEpisodeIndex =
-                            (season['episodes'] as List).indexWhere(
-                          (episode) => episode['id'] == episodeId,
-                        );
-                        final Map<String, dynamic> seletedEpisode =
-                            season['episodes'][selectedEpisodeIndex];
+                      // 3. Xoá movie trong app's memory
+                      _offlineMovies.removeAt(index);
+                      downloadedFilms.remove(movieId);
+                    }
 
-                        final stillPathFile = File(
-                          '${appDir.path}/still_path/${selectedTv['id']}/${seletedEpisode['still_path']}',
-                        );
-                        await stillPathFile.delete();
+                    // Remove TV
+                    for (final tvId in _selectedTvIds) {
+                      // 1. Xoá trong Application Directory
+                      final index = _offlineTvs.indexWhere(
+                        (offlineTv) => offlineTv.id == tvId,
+                      );
+                      final filmId = _offlineTvs[index].id;
 
-                        // 2. Xoá trong database
-                        final databaseUtils = DatabaseUtils();
-                        await databaseUtils.connect();
-                        await databaseUtils.deleteEpisode(
-                          id: episodeId,
-                          seasonId: season['id'],
-                          filmId: selectedTv['id'],
-                          clean: () async {
-                            final posterFile = File(
-                              '${appDir.path}/poster_path/${selectedTv['poster_path']}',
-                            );
-                            await posterFile.delete();
+                      //  Xoá thư mục Tập phim
+                      final episodeDirectory =
+                          Directory('${appDir.path}/episode/$filmId');
+                      await episodeDirectory.delete(recursive: true);
 
-                            final episodeTvDir = Directory(
-                              '${appDir.path}/episode/${selectedTv['id']}',
-                            );
-                            await episodeTvDir.delete();
+                      //  Xoá thư mục Still Path
+                      final stillPathDirectory =
+                          Directory('${appDir.path}/still_path/$filmId');
+                      await stillPathDirectory.delete(recursive: true);
 
-                            final stillPathDir = Directory(
-                              '${appDir.path}/still_path/${selectedTv['id']}',
-                            );
-                            await stillPathDir.delete();
-                          },
-                        );
-                        await databaseUtils.close();
+                      // 2. Xoá Tv trong database
+                      final databaseUtils = DatabaseUtils();
+                      await databaseUtils.connect();
 
-                        // 3. Xoá movie trong app's memory
-                        downloadedEpisodeId.remove(episodeId);
-                        (season['episodes'] as List).removeAt(selectedEpisodeIndex);
-                        if ((season['episodes'] as List).isEmpty) {
-                          (selectedTv['seasons'] as List).removeAt(seasonIndex);
-                          if ((selectedTv['seasons'] as List).isEmpty) {
-                            offlineTvs.remove(selectedTv);
-                            setState(
-                              () => _currentPage = 0,
-                            );
-                          }
+                      for (final season in _offlineTvs[index].offlineSeasons) {
+                        for (final episode in season.offlineEpisodes) {
+                          await databaseUtils.deleteEpisode(
+                            id: episode.episodeId,
+                            seasonId: season.seasonId,
+                            filmId: filmId,
+                            clean: () async {
+                              final posterFile = File(
+                                '${appDir.path}/poster_path/${_offlineTvs[index].posterPath}',
+                              );
+                              await posterFile.delete();
+                            },
+                          );
                         }
                       }
+                      await databaseUtils.close();
+
+                      // 3. Xoá movie trong app's memory
+                      downloadedFilms.remove(tvId);
+                      _offlineTvs.removeAt(index);
                     }
 
                     setState(() {
                       _selectedMovieIds.clear();
                       _selectedTvIds.clear();
-                      _selectedEpisode.clear();
                       _isMultiSelectMode = false;
                     });
+
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Đã xoá các tệp phim'),
+                        ),
+                      );
+                    }
                   },
-                  icon: const Icon(Icons.delete),
+                  icon: const Icon(Icons.delete_rounded),
                   padding: const EdgeInsets.all(16),
                 ).animate().scale(),
               ]
             : null,
-        centerTitle: true,
         foregroundColor: Colors.white,
         backgroundColor: Colors.black,
       ),
-      body: Stack(
-        children: [
-          AllDownloadedFilm(
-            onSelectTv: (tv) {
-              selectedTv = tv;
-              setState(() {
-                _currentPage = 1;
-              });
-            },
-            isMultiSelectMode: _isMultiSelectMode,
-            isSelectAll: _isSelectAll,
-            unSelectAll: _isUnSelectAll,
-            turnOnMultiSelectMode: ({required String fromPage}) => setState(() {
-              _isMultiSelectMode = true;
-              multiModePage = fromPage;
-            }),
-            onSelectItemInMultiMode: (type, filmId) {
-              type == 'movie'
-                  ? _selectedMovieIds.add(filmId)
-                  : _selectedTvIds.add(filmId);
-              if (_selectedMovieIds.length + _selectedTvIds.length ==
-                  offlineMovies.length + offlineTvs.length) {
-                setState(() {
-                  _isSelectAll = true;
-                });
-              }
-            },
-            unSelectItemInMultiMode: (type, filmId) {
-              type == 'movie'
-                  ? _selectedMovieIds.remove(filmId)
-                  : _selectedTvIds.remove(filmId);
-              if (_isSelectAll) {
-                setState(() {
-                  _isSelectAll = false;
-                  _isUnSelectAll = false;
-                });
-              }
-            },
-          ),
-          AnimatedSlide(
-            offset: _currentPage == 0 ? const Offset(1, 0) : const Offset(0, 0),
-            duration: const Duration(milliseconds: 240),
-            child: AllDownloadedEpisode(
-              selectedTv,
-              isMultiSelectMode: _isMultiSelectMode,
-              turnOnMultiSelectMode: ({required String fromPage}) => setState(() {
-                _isMultiSelectMode = true;
-                _isMultiSelectMode = true;
-                multiModePage = fromPage;
-              }),
-              onSelectItemInMultiMode: (type, episode) {
-                type == 'episode'
-                    ? _selectedEpisode.add(episode)
-                    : _selectedEpisode.add(episode);
-              },
-              unSelectItemInMultiMode: (type, episode) {
-                type == 'episode'
-                    ? _selectedEpisode.remove(episode)
-                    : _selectedEpisode.remove(episode);
-              },
-              backToAllDownloadedFilm: () => setState(() {
-                _currentPage = 0;
-              }),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(left: 16.0),
+              child: Text(
+                'Phim',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
-        ],
+            const Gap(4),
+            Column(
+              children: List.generate(
+                _offlineMovies.length,
+                (index) {
+                  final offlineMovie = _offlineMovies[index];
+                  final season = offlineMovie.offlineSeasons[0];
+                  final episode = season.offlineEpisodes[0];
+                  final episodeFile =
+                      File('${appDir.path}/episode/${episode.episodeId}.mp4');
+                  return OfflineMovieUI(
+                    key: ValueKey(offlineMovie.id),
+                    offlineMovie: offlineMovie,
+                    isMultiSelectMode: _isMultiSelectMode,
+                    turnOnMultiSelectMode: () => setState(() {
+                      _isMultiSelectMode = true;
+                    }),
+                    onSelectItemInMultiMode: () => _selectedMovieIds.add(offlineMovie.id),
+                    unSelectItemInMultiMode: () =>
+                        _selectedMovieIds.remove(offlineMovie.id),
+                    fileSize: episodeFile.lengthSync(),
+                    onIndividualDelete: () {
+                      downloadedFilms.remove(offlineMovie.id);
+                      _offlineMovies.removeAt(index);
+                      // print("downloadedFilms.length = ${downloadedFilms.length}");
+                      // print("offlineMovies.length = ${offlineMovies.length}");
+                      setState(() {});
+                    },
+                  );
+                },
+              ),
+            ),
+            const Gap(12),
+            const Padding(
+              padding: EdgeInsets.only(left: 16.0),
+              child: Text(
+                'TV Series',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const Gap(4),
+            Column(
+              children: List.generate(
+                _offlineTvs.length,
+                (index) {
+                  final offlineTv = _offlineTvs[index];
+
+                  final episodeFolderOfTv =
+                      Directory('${appDir.path}/episode/${offlineTv.id}');
+
+                  int totalSize = 0;
+                  final entities = episodeFolderOfTv.listSync();
+
+                  for (final entity in entities) {
+                    final File file = File(entity.path);
+                    totalSize += file.lengthSync();
+                  }
+                  return OfflineTvUI(
+                    key: ValueKey(offlineTv),
+                    offlineTv: offlineTv,
+                    episodeCount: entities.length,
+                    allEpisodesSize: totalSize,
+                    isMultiSelectMode: _isMultiSelectMode,
+                    turnOnMultiSelectMode: () => setState(() {
+                      _isMultiSelectMode = true;
+                    }),
+                    onSelectItemInMultiMode: () => _selectedTvIds.add(offlineTv.id),
+                    unSelectItemInMultiMode: () => _selectedTvIds.remove(offlineTv.id),
+                    reloadDownloadedPage: () => setState(() {
+                      _offlineTvs.removeWhere((element) => element.id == offlineTv.id);
+                    }),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
-}
-
-String formatBytes(int bytes) {
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  int i = 0;
-  double fileSize = bytes.toDouble();
-
-  while (fileSize >= 1024 && i < sizes.length - 1) {
-    fileSize /= 1024;
-    i++;
-  }
-
-  return '${fileSize.toInt()} ${sizes[i]}';
 }

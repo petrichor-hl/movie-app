@@ -17,13 +17,15 @@ class SegmentCompose extends StatefulWidget {
   const SegmentCompose(
     this.seasons,
     this.isMovie,
-    this.filmId, {
+    this.filmId,
+    this.downloadedEpisodeIds, {
     super.key,
   });
 
   final List<Season> seasons;
   final bool isMovie;
   final String filmId;
+  final List<String> downloadedEpisodeIds;
 
   @override
   State<SegmentCompose> createState() => _SegmentComposeState();
@@ -31,7 +33,10 @@ class SegmentCompose extends StatefulWidget {
 
 class _SegmentComposeState extends State<SegmentCompose> {
   late int _segmentIndex = widget.isMovie ? 1 : 0;
-  late final _listEpisodes = ListEpisodes(widget.filmId, widget.seasons);
+  late final _listEpisodes = ListEpisodes(
+    widget.seasons,
+    widget.downloadedEpisodeIds,
+  );
   final _gridShimmer = const GridShimmer();
 
   final List<Poster> _recommendFilms = [];

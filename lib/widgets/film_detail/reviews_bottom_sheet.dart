@@ -139,14 +139,24 @@ class _ReviewsBottomSheetState extends State<ReviewsBottomSheet> {
             const Gap(4),
             SizedBox(
               height: MediaQuery.sizeOf(context).height * 0.35,
-              child: AnimatedList(
-                key: _reviewsListKey,
-                initialItemCount: widget.reviews.length,
-                itemBuilder: (ctx, index, animation) => SizeTransition(
-                  sizeFactor: animation,
-                  child: buildReviewItem(index),
-                ),
-              ),
+              child: widget.reviews.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('Chưa có nhận xét nào'),
+                          Text('Hãy là người đánh giá đầu tiên'),
+                        ],
+                      ),
+                    )
+                  : AnimatedList(
+                      key: _reviewsListKey,
+                      initialItemCount: widget.reviews.length,
+                      itemBuilder: (ctx, index, animation) => SizeTransition(
+                        sizeFactor: animation,
+                        child: buildReviewItem(index),
+                      ),
+                    ),
             ),
             const Padding(
               padding: EdgeInsets.only(right: 16),

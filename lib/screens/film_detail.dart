@@ -47,6 +47,8 @@ class _FilmDetailState extends State<FilmDetail> {
 
   late final _futureMovie = _fetchMovie();
 
+  List<String> downloadedEpisodeIds = [];
+
   Future<void> _fetchMovie() async {
     final filmInfo = await supabase
         .from('film')
@@ -145,6 +147,15 @@ class _FilmDetailState extends State<FilmDetail> {
     _film.reviews.sort((a, b) => b.createAt.compareTo(a.createAt));
 
     isMovie = _film.seasons[0].name == '';
+
+    final existingDownloadedFilm = downloadedFilms[_film.id];
+    if (existingDownloadedFilm != null) {
+      for (var season in existingDownloadedFilm.offlineSeasons) {
+        for (var episode in season.offlineEpisodes) {
+          downloadedEpisodeIds.add(episode.episodeId);
+        }
+      }
+    }
 
     offlineData.addAll({
       'film_id': _film.id,
@@ -340,7 +351,7 @@ class _FilmDetailState extends State<FilmDetail> {
                         onPressed: () {
                           // final episodeId = _seasons[0]['episode'][0]['id'];
                           final episodeId = _film.seasons[0].episodes[0].episodeId;
-                          final isDownloaded = downloadedEpisodeId.contains(episodeId);
+                          final isDownloaded = downloadedEpisodeIds.contains(episodeId);
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (ctx) => MultiBlocProvider(
@@ -388,6 +399,8 @@ class _FilmDetailState extends State<FilmDetail> {
                         firstEpisodeId: _film.seasons[0].episodes[0].episodeId,
                         firstEpisodeLink: _film.seasons[0].episodes[0].linkEpisode,
                         runtime: _film.seasons[0].episodes[0].runtime,
+                        isEpisodeDownloaded: downloadedEpisodeIds
+                            .contains(_film.seasons[0].episodes[0].episodeId),
                       ),
                     const SizedBox(height: 6),
                     Text(
@@ -498,7 +511,12 @@ class _FilmDetailState extends State<FilmDetail> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    SegmentCompose(_film.seasons, isMovie, widget.filmId),
+                    SegmentCompose(
+                      _film.seasons,
+                      isMovie,
+                      widget.filmId,
+                      downloadedEpisodeIds,
+                    ),
                   ],
                 ).animate().fade().slideY(
                       curve: Curves.easeInOut,

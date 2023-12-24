@@ -1,11 +1,12 @@
 import 'dart:io';
 import 'package:movie_app/database/database_utils.dart';
+import 'package:movie_app/models/offfline_season.dart';
+import 'package:movie_app/models/offline_episode.dart';
+import 'package:movie_app/models/offline_film.dart';
 import 'package:path_provider/path_provider.dart';
 
-final List<Map<String, dynamic>> offlineMovies = [];
-final List<Map<String, dynamic>> offlineTvs = [];
+final Map<String, OfflineFilm> downloadedFilms = {};
 
-final List<String> downloadedEpisodeId = [];
 late Directory appDir;
 
 Future<void> getDownloadedFilms() async {
@@ -21,60 +22,40 @@ Future<void> getDownloadedFilms() async {
   appDir = await getApplicationDocumentsDirectory();
   print('app dir: ${appDir.path}');
 
-  downloadedEpisodeId.addAll(
-    List.generate(
-      episodes.length,
-      (index) => episodes[index]['id'],
-    ),
-  );
   // print('episode_ids = $episodeIds');
 
   for (final film in films) {
-    final filmData = {
-      'id': film['id'],
-      'film_name': film['name'],
-      'poster_path': film['poster_path'],
-    };
-    final filteredSeason = [];
+    final offlineFilm = OfflineFilm(
+      id: film['id'],
+      name: film['name'],
+      posterPath: film['poster_path'],
+      offlineSeasons: [],
+    );
     for (final season in seasons) {
       if (season['film_id'] == film['id']) {
-        final seasonData = {
-          'id': season['id'],
-          'season_name': season['name'],
-          'episodes':
-              episodes.where((episode) => episode['season_id'] == season['id']).toList(),
-        };
-        filteredSeason.add(seasonData);
+        offlineFilm.offlineSeasons.add(
+          OfflineSeason(
+            seasonId: season['id'],
+            name: season['name'],
+            offlineEpisodes: episodes
+                .where((episode) => episode['season_id'] == season['id'])
+                .map(
+                  (episode) => OfflineEpisode(
+                    episodeId: episode['id'],
+                    order: episode['order'],
+                    title: episode['title'],
+                    runtime: episode['runtime'],
+                    stillPath: episode['still_path'],
+                  ),
+                )
+                .toList(),
+          ),
+        );
       }
     }
-    filmData['seasons'] = filteredSeason;
-
-    if (filteredSeason[0]['season_name'] == "") {
-      offlineMovies.add(filmData);
-    } else {
-      offlineTvs.add(filmData);
-    }
+    downloadedFilms[offlineFilm.id] = offlineFilm;
   }
+  // downloadedFilms.forEach((key, value) {
+  //   print(value.name);
+  // });
 }
-
-// List<Map<String, dynamic>> getMovies() {
-//   final List<Map<String, dynamic>> movies = [];
-//   for (var film in offlineFilms) {
-//     if (film['seasons'][0]['season_name'] == '') {
-//       movies.add(film);
-//     }
-//   }
-
-//   return movies;
-// }
-
-// List<Map<String, dynamic>> getTvSeries() {
-//   final List<Map<String, dynamic>> tvSeries = [];
-//   for (var film in offlineFilms) {
-//     if (film['seasons'][0]['season_name'] != '') {
-//       tvSeries.add(film);
-//     }
-//   }
-
-//   return tvSeries;
-// }

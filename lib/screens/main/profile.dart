@@ -29,9 +29,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _clearGlobalDataOfUser() {
     profileData.clear();
-    offlineMovies.clear();
-    offlineTvs.clear();
-    downloadedEpisodeId.clear();
+    downloadedFilms.clear();
+    // TODO: delete all downloaded film
   }
 
   @override
