@@ -6,13 +6,13 @@ import 'package:movie_app/widgets/film_detail/episode_ui.dart';
 
 class ListEpisodes extends StatefulWidget {
   const ListEpisodes(
-    this.filmId,
-    this.seasons, {
+    this.seasons,
+    this.downloadedEpisodeIds, {
     super.key,
   });
 
-  final String filmId;
   final List<Season> seasons;
+  final List<String> downloadedEpisodeIds;
 
   @override
   State<ListEpisodes> createState() => _ListEpisodesState();
@@ -61,8 +61,7 @@ class _ListEpisodesState extends State<ListEpisodes> {
             return EpisodeUI(
               key: ValueKey(e.episodeId),
               episode: e,
-              // Truyen filmId vao de lam gi ?
-              filmId: widget.filmId,
+              isEpisodeDownloaded: widget.downloadedEpisodeIds.contains(e.episodeId),
             );
           },
         ),

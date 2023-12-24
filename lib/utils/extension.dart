@@ -20,3 +20,16 @@ extension IntExtension on int {
     return "0$this";
   }
 }
+
+String formatBytes(int bytes) {
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  int i = 0;
+  double fileSize = bytes.toDouble();
+
+  while (fileSize >= 1024 && i < sizes.length - 1) {
+    fileSize /= 1024;
+    i++;
+  }
+
+  return '${fileSize.toInt()} ${sizes[i]}';
+}

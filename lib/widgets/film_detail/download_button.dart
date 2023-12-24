@@ -4,6 +4,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
+import 'package:movie_app/models/offfline_season.dart';
+import 'package:movie_app/models/offline_episode.dart';
+import 'package:movie_app/models/offline_film.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/film_detail/episode_ui.dart';
 import 'package:path_provider/path_provider.dart';
@@ -14,11 +17,13 @@ class DownloadButton extends StatefulWidget {
     required this.firstEpisodeLink,
     required this.firstEpisodeId,
     required this.runtime,
+    required this.isEpisodeDownloaded,
   });
 
   final String firstEpisodeLink;
   final String firstEpisodeId;
   final int runtime;
+  final bool isEpisodeDownloaded;
 
   @override
   State<DownloadButton> createState() => _DownloadButtonState();
@@ -28,9 +33,8 @@ class _DownloadButtonState extends State<DownloadButton> {
   late final widthButton = MediaQuery.sizeOf(context).width;
   double progress = 0;
 
-  late DownloadState downloadState = downloadedEpisodeId.contains(widget.firstEpisodeId)
-      ? DownloadState.downloaded
-      : DownloadState.ready;
+  late DownloadState downloadState =
+      widget.isEpisodeDownloaded ? DownloadState.downloaded : DownloadState.ready;
 
   final filmInfo = Map.from(offlineData);
 
@@ -71,10 +75,11 @@ class _DownloadButtonState extends State<DownloadButton> {
                             );
                             await databaseUtils.close();
 
-                            downloadedEpisodeId.remove(widget.firstEpisodeId);
-                            offlineMovies.removeWhere(
-                              (movie) => movie['id'] == filmInfo['film_id'],
-                            );
+                            // downloadedEpisodeId.remove(widget.firstEpisodeId);
+                            // offlineMovies.removeWhere(
+                            //   (movie) => movie['id'] == filmInfo['film_id'],
+                            // );
+                            downloadedFilms.remove(filmInfo['film_id']);
 
                             setState(() {
                               downloadState = DownloadState.ready;
@@ -169,24 +174,27 @@ class _DownloadButtonState extends State<DownloadButton> {
 
                     await databaseUtils.close();
 
-                    downloadedEpisodeId.add(widget.firstEpisodeId);
-                    offlineMovies.add({
-                      'id': filmInfo['film_id'],
-                      'film_name': filmInfo['film_name'],
-                      'poster_path': filmInfo['poster_path'],
-                      'seasons': [
-                        {
-                          'id': filmInfo['season_id'],
-                          'episodes': [
-                            {
-                              'id': widget.firstEpisodeId,
-                              'order': 1,
-                              'runtime': widget.runtime,
-                            }
-                          ]
-                        }
-                      ]
-                    });
+                    // Thêm dữ liệu về tập phim vừa tải vào downloadedFilms;
+                    downloadedFilms[filmInfo['film_id']] = OfflineFilm(
+                      id: filmInfo['film_id'],
+                      name: filmInfo['film_name'],
+                      posterPath: filmInfo['poster_path'],
+                      offlineSeasons: [
+                        OfflineSeason(
+                          seasonId: filmInfo['season_id'],
+                          name: '',
+                          offlineEpisodes: [
+                            OfflineEpisode(
+                              episodeId: widget.firstEpisodeId,
+                              order: 1,
+                              title: '',
+                              runtime: widget.runtime,
+                              stillPath: '',
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
 
                     if (mounted) {
                       setState(() {

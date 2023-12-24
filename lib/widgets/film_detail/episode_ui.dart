@@ -8,6 +8,9 @@ import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/models/episode.dart';
+import 'package:movie_app/models/offfline_season.dart';
+import 'package:movie_app/models/offline_episode.dart';
+import 'package:movie_app/models/offline_film.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,12 +25,12 @@ enum DownloadState {
 class EpisodeUI extends StatefulWidget {
   const EpisodeUI({
     required this.episode,
-    required this.filmId,
+    required this.isEpisodeDownloaded,
     super.key,
   });
 
   final Episode episode;
-  final String filmId;
+  final bool isEpisodeDownloaded;
 
   @override
   State<EpisodeUI> createState() => _EpisodeState();
@@ -35,9 +38,7 @@ class EpisodeUI extends StatefulWidget {
 
 class _EpisodeState extends State<EpisodeUI> {
   late DownloadState downloadState =
-      downloadedEpisodeId.contains(widget.episode.episodeId)
-          ? DownloadState.downloaded
-          : DownloadState.ready;
+      widget.isEpisodeDownloaded ? DownloadState.downloaded : DownloadState.ready;
   double progress = 0;
 
   final filmInfo = Map.from(offlineData);
@@ -182,64 +183,62 @@ class _EpisodeState extends State<EpisodeUI> {
                       );
 
                       await databaseUtils.close();
-                      downloadedEpisodeId.add(widget.episode.episodeId);
 
-                      final existingIndexTv = offlineTvs.indexWhere(
-                        (tv) => tv['id'] == filmInfo['film_id'],
-                      );
-                      if (existingIndexTv == -1) {
-                        offlineTvs.add({
-                          'id': filmInfo['film_id'],
-                          'film_name': filmInfo['film_name'],
-                          'poster_path': filmInfo['poster_path'],
-                          'seasons': [
-                            {
-                              'id': filmInfo['season_id'],
-                              'season_name': filmInfo['season_name'],
-                              'episodes': [
-                                {
-                                  'id': widget.episode.episodeId,
-                                  'episode.order': widget.episode.order,
-                                  'still_path': widget.episode.stillPath,
-                                  'title': widget.episode.title,
-                                  'runtime': widget.episode.runtime,
-                                }
+                      // Thêm dữ liệu cho tập phim vừa tải
+                      final existingTv = downloadedFilms[filmInfo['film_id']];
+                      if (existingTv == null) {
+                        downloadedFilms[filmInfo['film_id']] = OfflineFilm(
+                          id: filmInfo['film_id'],
+                          name: filmInfo['film_name'],
+                          posterPath: filmInfo['poster_path'],
+                          offlineSeasons: [
+                            OfflineSeason(
+                              seasonId: filmInfo['season_id'],
+                              name: filmInfo['season_name'],
+                              offlineEpisodes: [
+                                OfflineEpisode(
+                                  episodeId: widget.episode.episodeId,
+                                  order: widget.episode.order,
+                                  title: widget.episode.title,
+                                  runtime: widget.episode.runtime,
+                                  stillPath: widget.episode.stillPath,
+                                ),
                               ],
-                            }
-                          ]
-                        });
-                      } else {
-                        final Map<String, dynamic> existingTv =
-                            offlineTvs[existingIndexTv];
-                        final List<dynamic> seasons = existingTv['seasons'];
-                        final existingIndexSeason = seasons.indexWhere(
-                          (season) => season['id'] == filmInfo['season_id'],
+                            ),
+                          ],
                         );
-
+                      } else {
+                        final seasons = existingTv.offlineSeasons;
+                        final existingIndexSeason = seasons.indexWhere(
+                          (season) => season.seasonId == filmInfo['season_id'],
+                        );
                         if (existingIndexSeason == -1) {
-                          seasons.add({
-                            'id': filmInfo['season_id'],
-                            'season_name': filmInfo['season_name'],
-                            'episodes': [
-                              {
-                                'id': widget.episode.episodeId,
-                                'episode.order': widget.episode.order,
-                                'still_path': widget.episode.stillPath,
-                                'title': widget.episode.title,
-                                'runtime': widget.episode.runtime,
-                              }
-                            ],
-                          });
+                          seasons.add(
+                            OfflineSeason(
+                              seasonId: filmInfo['season_id'],
+                              name: filmInfo['season_name'],
+                              offlineEpisodes: [
+                                OfflineEpisode(
+                                  episodeId: widget.episode.episodeId,
+                                  order: widget.episode.order,
+                                  title: widget.episode.title,
+                                  runtime: widget.episode.runtime,
+                                  stillPath: widget.episode.stillPath,
+                                ),
+                              ],
+                            ),
+                          );
                         } else {
-                          final Map existingSeason = seasons[existingIndexSeason];
-                          final List episodes = existingSeason['episodes'];
-                          episodes.add({
-                            'id': widget.episode.episodeId,
-                            'episode.order': widget.episode.order,
-                            'still_path': widget.episode.stillPath,
-                            'title': widget.episode.title,
-                            'runtime': widget.episode.runtime,
-                          });
+                          final existingSeason = seasons[existingIndexSeason];
+                          existingSeason.offlineEpisodes.add(
+                            OfflineEpisode(
+                              episodeId: widget.episode.episodeId,
+                              order: widget.episode.order,
+                              title: widget.episode.title,
+                              runtime: widget.episode.runtime,
+                              stillPath: widget.episode.stillPath,
+                            ),
+                          );
                         }
                       }
 
@@ -292,8 +291,10 @@ class _EpisodeState extends State<EpisodeUI> {
                           '${appDir.path}/still_path/${filmInfo['film_id']}/${widget.episode.stillPath}');
                       await stillPathFile.delete();
 
+                      // Xoá dữ liệu trong Database
                       final databaseUtils = DatabaseUtils();
                       await databaseUtils.connect();
+
                       await databaseUtils.deleteEpisode(
                         id: widget.episode.episodeId,
                         seasonId: filmInfo['season_id'],
@@ -314,26 +315,20 @@ class _EpisodeState extends State<EpisodeUI> {
                       );
                       await databaseUtils.close();
 
-                      downloadedEpisodeId.remove(widget.episode.episodeId);
-
-                      // remove data in offlineTvs
-                      final tvIndex =
-                          offlineTvs.indexWhere((tv) => tv['id'] == filmInfo['film_id']);
-
-                      final List seasons = offlineTvs[tvIndex]['seasons'];
-
-                      final seasonIndex = seasons
-                          .indexWhere((season) => season['id'] == filmInfo['season_id']);
-
-                      final List episodes = seasons[seasonIndex]['episodes'];
-                      episodes.removeWhere(
-                        (episode) => episode['id'] == widget.episode.episodeId,
+                      // Xoá dữ liệu trong app's memory
+                      final tv = downloadedFilms[filmInfo['film_id']]!;
+                      final seasons = tv.offlineSeasons;
+                      final seasonIndex = seasons.indexWhere(
+                        (season) => season.seasonId == filmInfo['season_id'],
                       );
-
+                      final episodes = seasons[seasonIndex].offlineEpisodes;
+                      episodes.removeWhere(
+                        (episode) => episode.episodeId == widget.episode.episodeId,
+                      );
                       if (episodes.isEmpty) {
                         seasons.removeAt(seasonIndex);
                         if (seasons.isEmpty) {
-                          offlineTvs.removeAt(tvIndex);
+                          downloadedFilms.remove(filmInfo['film_id']);
                         }
                       }
 
