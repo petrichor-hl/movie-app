@@ -45,13 +45,13 @@ class SliderVideo extends StatelessWidget {
         curve: Curves.easeInOut,
         child: IgnorePointer(
           ignoring: !overlayVisible,
-          child: Row(
-            children: [
-              Expanded(
-                child: BlocBuilder<VideoSliderCubit, double>(
-                  builder: (context, progressSlider) {
-                    // print('progressSlider = $progressSlider');
-                    return Slider(
+          child: BlocBuilder<VideoSliderCubit, double>(
+            builder: (context, progressSlider) {
+              // print('progressSlider = $progressSlider');
+              return Row(
+                children: [
+                  Expanded(
+                    child: Slider(
                       value: progressSlider,
                       label: _convertFromSeconds(
                         (progressSlider * videoPlayerController.value.duration.inSeconds)
@@ -77,16 +77,16 @@ class SliderVideo extends StatelessWidget {
                         videoPlayerController.play();
                         startCountdownToDismissControls();
                       },
-                    );
-                  },
-                ),
-              ),
-              Text(
-                _convertFromDuration(videoPlayerController.value.duration -
-                    videoPlayerController.value.position),
-                style: const TextStyle(color: Colors.white),
-              ),
-            ],
+                    ),
+                  ),
+                  Text(
+                    _convertFromDuration(videoPlayerController.value.duration -
+                        videoPlayerController.value.position),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
