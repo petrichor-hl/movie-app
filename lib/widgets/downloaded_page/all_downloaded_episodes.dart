@@ -1,113 +1,15 @@
-// import 'dart:io';
-
-// import 'package:flutter/material.dart';
-// import 'package:movie_app/data/downloaded_film.dart';
-// import 'package:movie_app/widgets/downloaded_page/downloaded_episode.dart';
-
-// class AllDownloadedEpisode extends StatefulWidget {
-//   const AllDownloadedEpisode(
-//     this.selectedTv, {
-//     super.key,
-//     required this.backToAllDownloadedFilm,
-//     required this.isMultiSelectMode,
-//     required this.turnOnMultiSelectMode,
-//     required this.onSelectItemInMultiMode,
-//     required this.unSelectItemInMultiMode,
-//   });
-
-//   final Map<String, dynamic> selectedTv;
-//   final void Function() backToAllDownloadedFilm;
-//   final bool isMultiSelectMode;
-//   final void Function({required String fromPage}) turnOnMultiSelectMode;
-//   final void Function(String filmType, String episodeId) onSelectItemInMultiMode;
-//   final void Function(String filmType, String episodeId) unSelectItemInMultiMode;
-
-//   @override
-//   State<AllDownloadedEpisode> createState() => _AllDownloadedEpisodeState();
-// }
-
-// class _AllDownloadedEpisodeState extends State<AllDownloadedEpisode> {
-//   @override
-//   Widget build(BuildContext context) {
-//     final List<dynamic> seasons = widget.selectedTv['seasons'] ?? [];
-
-//     return Scaffold(
-//       body: SizedBox.expand(
-//         child: widget.selectedTv.isEmpty
-//             ? null
-//             : ListView(
-//                 children: List.generate(seasons.length, (index) {
-//                   final season = seasons[index];
-//                   final List<Map<String, dynamic>> episodes = season['episodes'];
-//                   episodes.sort(
-//                     (a, b) => (a['order'] as int).compareTo(b['order']),
-//                   );
-//                   return Column(
-//                     mainAxisSize: MainAxisSize.min,
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Padding(
-//                         padding: const EdgeInsets.only(left: 8),
-//                         child: Text(
-//                           season['season_name'],
-//                           style: const TextStyle(
-//                             color: Colors.white,
-//                             fontSize: 24,
-//                             fontWeight: FontWeight.bold,
-//                           ),
-//                         ),
-//                       ),
-//                       const SizedBox(height: 4),
-//                       ListView.builder(
-//                         shrinkWrap: true,
-//                         physics: const NeverScrollableScrollPhysics(),
-//                         itemCount: episodes.length,
-//                         itemBuilder: (ctx, index) {
-//                           final episodeFile = File(
-//                             '${appDir.path}/episode/${widget.selectedTv['id']}/${episodes[index]['id']}.mp4',
-//                           );
-
-//                           return DownloadedEpisode(
-//                             episodeId: episodes[index]['id'],
-//                             title: episodes[index]['title'],
-//                             order: episodes[index]['order'],
-//                             stillPath: episodes[index]['still_path'],
-//                             runtime: episodes[index]['runtime'],
-//                             fileSize: episodeFile.lengthSync(),
-//                             seasonId: season['id'],
-//                             filmId: widget.selectedTv['id'],
-//                             posterPath: widget.selectedTv['poster_path'],
-//                             onDeleteSeason: () => setState(() {}),
-//                             backToAllDownloadedFilm: widget.backToAllDownloadedFilm,
-//                             onIndividualDelete: () => setState(() {}),
-//                             isMultiSelectMode: widget.isMultiSelectMode,
-//                             turnOnMultiSelectMode: () => widget.turnOnMultiSelectMode(
-//                               fromPage: "all_downloaded_episodes",
-//                             ),
-//                             onSelectItemInMultiMode: () => widget.onSelectItemInMultiMode(
-//                                 'episode', season['id'] + '/' + episodes[index]['id']),
-//                             unSelectItemInMultiMode: () => widget.unSelectItemInMultiMode(
-//                                 'episode', season['id'] + '/' + episodes[index]['id']),
-//                           );
-//                         },
-//                       ),
-//                     ],
-//                   );
-//                 }),
-//               ),
-//       ),
-//     );
-//   }
-// }
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
+import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/models/offline_film.dart';
 import 'package:movie_app/widgets/downloaded_page/downloaded_episode.dart';
+import 'package:movie_app/widgets/video_player_offline/video_player_offline_view.dart';
 
 class AllDownloadedEpisodesOfTV extends StatefulWidget {
   const AllDownloadedEpisodesOfTV({
@@ -245,8 +147,8 @@ class _AllDownloadedEpisodesOfTVState extends State<AllDownloadedEpisodesOfTV> {
       body: ListView(
         children: List.generate(
           seasons.length,
-          (index) {
-            final season = seasons[index];
+          (seasonIndex) {
+            final season = seasons[seasonIndex];
             final episodes = season.offlineEpisodes;
             episodes.sort(
               (a, b) => (a.order).compareTo(b.order),
@@ -271,26 +173,51 @@ class _AllDownloadedEpisodesOfTVState extends State<AllDownloadedEpisodesOfTV> {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: episodes.length,
-                  itemBuilder: (ctx, index) {
+                  itemBuilder: (ctx, episodeIndex) {
                     final episodeFile = File(
-                      '${appDir.path}/episode/$filmId/${episodes[index].episodeId}.mp4',
+                      '${appDir.path}/episode/$filmId/${episodes[episodeIndex].episodeId}.mp4',
                     );
 
                     return DownloadedEpisode(
-                      offlineEpisode: episodes[index],
+                      offlineEpisode: episodes[episodeIndex],
                       fileSize: episodeFile.lengthSync(),
-                      seasonId: season.seasonId,
+                      /*
+                      Truyền filmId, posterPath, seasonId sẽ có tác dụng khi cần xoá những tệp đã tải
+                      */
                       filmId: filmId,
                       posterPath: widget.offlineTv.posterPath,
+                      seasonId: season.seasonId,
                       isMultiSelectMode: _isMultiSelectMode,
                       turnOnMultiSelectMode: () => setState(() {
                         _isMultiSelectMode = true;
                       }),
                       onSelectItemInMultiMode: () => _selectedEpisodes.add(
-                          '${season.seasonId}/${episodes[index].episodeId}/${episodes[index].stillPath}'),
+                          '${season.seasonId}/${episodes[episodeIndex].episodeId}/${episodes[episodeIndex].stillPath}'),
                       unSelectItemInMultiMode: () => _selectedEpisodes.remove(
-                          '${season.seasonId}/${episodes[index].episodeId}/${episodes[index].stillPath}'),
+                          '${season.seasonId}/${episodes[episodeIndex].episodeId}/${episodes[episodeIndex].stillPath}'),
                       onIndividualDelete: () => setState(() {}),
+                      watchEpisode: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => MultiBlocProvider(
+                              providers: [
+                                BlocProvider(
+                                  create: (ctx) => VideoSliderCubit(),
+                                ),
+                                BlocProvider(
+                                  create: (ctx) => VideoPlayControlCubit(),
+                                ),
+                              ],
+                              child: VideoPlayerOfflineView(
+                                filmId: filmId,
+                                seasons: seasons,
+                                firstEpisodeToPlay: episodes[episodeIndex],
+                                firstSeasonIndex: seasonIndex,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

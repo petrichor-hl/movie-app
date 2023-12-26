@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:movie_app/models/episode.dart';
-import 'package:movie_app/models/season.dart';
-import 'package:movie_app/widgets/video_player/horizontal_list_episodes.dart';
+import 'package:movie_app/models/offfline_season.dart';
+import 'package:movie_app/models/offline_episode.dart';
+import 'package:movie_app/widgets/video_player_offline/horizontal_list_offline_episodes.dart';
 import 'package:video_player/video_player.dart';
 
-class VideoBottomUtils extends StatefulWidget {
-  const VideoBottomUtils({
+class VideoOfflineBottomUtils extends StatefulWidget {
+  const VideoOfflineBottomUtils({
     required this.overlayVisible,
     required this.videoPlayerController,
     required this.startCountdownToDismissControls,
     required this.cancelTimer,
     required this.lockControls,
-    required this.currentEpisodeId,
+    required this.filmId,
     required this.seasons,
     required this.seasonIndex,
+    required this.currentEpisodeId,
     required this.moveToEdpisode,
     super.key,
   });
@@ -25,17 +26,18 @@ class VideoBottomUtils extends StatefulWidget {
 
   final void Function(bool) lockControls;
 
-  final String currentEpisodeId;
-  final List<Season> seasons;
+  final String filmId;
+  final List<OfflineSeason> seasons;
   final int seasonIndex;
+  final String currentEpisodeId;
 
-  final void Function(Episode, int) moveToEdpisode;
+  final void Function(OfflineEpisode, int) moveToEdpisode;
 
   @override
-  State<VideoBottomUtils> createState() => _VideoBottomUtilsState();
+  State<VideoOfflineBottomUtils> createState() => _VideoOfflineBottomUtilsState();
 }
 
-class _VideoBottomUtilsState extends State<VideoBottomUtils> {
+class _VideoOfflineBottomUtilsState extends State<VideoOfflineBottomUtils> {
   /*
   NOTE:
   Ban đầu, tôi thiết lập VideoBottomUtils là StatelessWidget
@@ -49,7 +51,7 @@ class _VideoBottomUtilsState extends State<VideoBottomUtils> {
 
   Map<String, dynamic>? findNextEpisode() {
     for (int i = 0; i < widget.seasons.length; ++i) {
-      final episodes = widget.seasons[i].episodes;
+      final episodes = widget.seasons[i].offlineEpisodes;
       for (int j = 0; j < episodes.length; ++j) {
         if (episodes[j].episodeId == widget.currentEpisodeId) {
           if (i == widget.seasons.length - 1 && j == episodes.length - 1) {
@@ -65,7 +67,7 @@ class _VideoBottomUtilsState extends State<VideoBottomUtils> {
             => Tập tiếp theo là Tập 1 của Seaon thứ (i+1)
             */
             return {
-              'episode': widget.seasons[i + 1].episodes[0],
+              'episode': widget.seasons[i + 1].offlineEpisodes[0],
               'season_index': i + 1,
             };
           }
@@ -81,9 +83,8 @@ class _VideoBottomUtilsState extends State<VideoBottomUtils> {
 
   @override
   Widget build(BuildContext context) {
-    // print("_VideoBottomUtilsState rebuild");
-    final totalEpisodes = widget.seasons
-        .fold(0, (previousValue, season) => previousValue + season.episodes.length);
+    final totalEpisodes = widget.seasons.fold(
+        0, (previousValue, season) => previousValue + season.offlineEpisodes.length);
 
     final nextEpisode = findNextEpisode();
 
@@ -169,7 +170,12 @@ class _VideoBottomUtilsState extends State<VideoBottomUtils> {
                   final Map<String, dynamic>? selectedEpisode =
                       await showModalBottomSheet(
                     context: context,
-                    builder: (ctx) => HorizontalListEpisodes(
+                    builder: (ctx) => HorizontalListOfflineEpisodes(
+                      /* 
+                      Truyền filmId vào để DownloadedEpisodeUISecond có thể truy xuất được 
+                      đường link dẫn đến nơi lưu episode và stillPath
+                      */
+                      widget.filmId,
                       widget.seasons,
                       seasonsIndex: widget.seasonIndex,
                     ),

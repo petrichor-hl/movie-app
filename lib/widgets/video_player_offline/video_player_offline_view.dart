@@ -4,43 +4,38 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
+import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
-import 'package:movie_app/models/episode.dart';
-import 'package:movie_app/models/season.dart';
+import 'package:movie_app/models/offfline_season.dart';
+import 'package:movie_app/models/offline_episode.dart';
 import 'package:movie_app/widgets/video_player/brightness_slider.dart';
 import 'package:movie_app/widgets/video_player/control_buttons.dart';
-import 'package:movie_app/widgets/video_player/video_bottom_utils.dart';
+import 'package:movie_app/widgets/video_player/slider_video.dart';
+import 'package:movie_app/widgets/video_player_offline/video_offline_bottom_utils.dart';
 import 'package:screen_brightness/screen_brightness.dart';
-
 import 'package:video_player/video_player.dart';
 import 'package:wakelock/wakelock.dart';
 
-import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
-import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
-
-import 'package:movie_app/widgets/video_player/slider_video.dart';
-
-class VideoPlayerView extends StatefulWidget {
-  const VideoPlayerView({
+class VideoPlayerOfflineView extends StatefulWidget {
+  const VideoPlayerOfflineView({
     super.key,
     required this.filmId,
     required this.seasons,
-    required this.downloadedEpisodeIds,
     required this.firstEpisodeToPlay,
     required this.firstSeasonIndex,
   });
 
   final String filmId;
-  final List<Season> seasons;
-  final List<String> downloadedEpisodeIds;
-  final Episode firstEpisodeToPlay;
+  final List<OfflineSeason> seasons;
+  final OfflineEpisode firstEpisodeToPlay;
   final int firstSeasonIndex;
 
   @override
-  State<VideoPlayerView> createState() => _VideoPlayerViewState();
+  State<VideoPlayerOfflineView> createState() => _VideoPlayerOfflineViewState();
 }
 
-class _VideoPlayerViewState extends State<VideoPlayerView> {
+class _VideoPlayerOfflineViewState extends State<VideoPlayerOfflineView> {
   late VideoPlayerController _videoPlayerController;
 
   bool _isLockControls = false;
@@ -55,7 +50,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   late bool isMovie;
 
   late int _currentSeasonIndex = widget.firstSeasonIndex;
-  late Episode _currentEpisode;
+  late OfflineEpisode _currentEpisode;
 
   void setLock(bool value) {
     _isLockControls = value;
@@ -142,7 +137,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
     }
   }
 
-  void setVideoController(Episode episode) {
+  void setVideoController(OfflineEpisode episode) {
     _controlsTimer.cancel();
     _currentEpisode = episode;
 
@@ -150,21 +145,14 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
       _controlsOverlayVisible = false;
     });
 
-    if (widget.downloadedEpisodeIds.contains(episode.episodeId)) {
-      print('LOADING VIDEO FROM LOCAL');
-      String link = isMovie
-          ? '${appDir.path}/episode/${episode.episodeId}.mp4'
-          : '${appDir.path}/episode/${widget.filmId}/${episode.episodeId}.mp4';
+    // print('LOADING VIDEO FROM LOCAL');
+    String link = isMovie
+        ? '${appDir.path}/episode/${episode.episodeId}.mp4'
+        : '${appDir.path}/episode/${widget.filmId}/${episode.episodeId}.mp4';
 
-      _videoPlayerController = VideoPlayerController.file(
-        File(link),
-      );
-    } else {
-      print('LOADING VIDEO FROM NETWORK');
-      _videoPlayerController = VideoPlayerController.networkUrl(
-        Uri.parse(episode.linkEpisode),
-      );
-    }
+    _videoPlayerController = VideoPlayerController.file(
+      File(link),
+    );
 
     _videoPlayerController.initialize().then((value) {
       _videoPlayerController.addListener(_onVideoPlayerPositionChanged);
@@ -330,15 +318,20 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                     () =>
                         _videoPlayerController.addListener(_onVideoPlayerPositionChanged),
                   ),
-                  VideoBottomUtils(
+                  VideoOfflineBottomUtils(
                     overlayVisible: _controlsOverlayVisible,
                     videoPlayerController: _videoPlayerController,
                     startCountdownToDismissControls: _startCountdownToDismissControls,
                     cancelTimer: () => _controlsTimer.cancel(),
                     lockControls: setLock,
-                    currentEpisodeId: _currentEpisode.episodeId,
+                    /* 
+                    Truyền filmId vào để DownloadedEpisodeUISecond có thể truy xuất được 
+                    đường link dẫn đến nơi lưu episode và stillPath
+                    */
+                    filmId: widget.filmId,
                     seasons: widget.seasons,
                     seasonIndex: _currentSeasonIndex,
+                    currentEpisodeId: _currentEpisode.episodeId,
                     moveToEdpisode: (episode, seasonIndex) {
                       /*
                       Remove Listener để không xảy ra lỗi
