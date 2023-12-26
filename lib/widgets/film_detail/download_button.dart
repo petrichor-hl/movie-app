@@ -8,7 +8,7 @@ import 'package:movie_app/models/offfline_season.dart';
 import 'package:movie_app/models/offline_episode.dart';
 import 'package:movie_app/models/offline_film.dart';
 import 'package:movie_app/screens/film_detail.dart';
-import 'package:movie_app/widgets/film_detail/episode_ui.dart';
+import 'package:movie_app/widgets/film_detail/episode_ui_first.dart';
 import 'package:path_provider/path_provider.dart';
 
 class DownloadButton extends StatefulWidget {

@@ -4,6 +4,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/data/downloaded_film.dart';
+import 'package:movie_app/models/episode.dart';
+import 'package:movie_app/models/season.dart';
 import 'package:movie_app/widgets/video_player/brightness_slider.dart';
 import 'package:movie_app/widgets/video_player/control_buttons.dart';
 import 'package:movie_app/widgets/video_player/video_bottom_utils.dart';
@@ -20,23 +23,32 @@ import 'package:movie_app/widgets/video_player/slider_video.dart';
 class VideoPlayerView extends StatefulWidget {
   const VideoPlayerView({
     super.key,
-    required this.title,
-    required this.videoLink,
-    this.videoLocation = 'network',
-    this.startAt = 0,
+    // required this.title,
+    // required this.videoLink,
+    // this.videoLocation = 'network',
+    required this.filmId,
+    required this.seasons,
+    required this.downloadedEpisodeIds,
+    required this.firstEpisodeToPlay,
+    required this.firstSeasonIndex,
   });
 
-  final String title;
-  final String videoLink;
-  final String videoLocation;
-  final int startAt;
+  // final String title;
+  // final String videoLink;
+  // final String videoLocation;
+
+  final String filmId;
+  final List<Season> seasons;
+  final List<String> downloadedEpisodeIds;
+  final Episode firstEpisodeToPlay;
+  final int firstSeasonIndex;
 
   @override
   State<VideoPlayerView> createState() => _VideoPlayerViewState();
 }
 
 class _VideoPlayerViewState extends State<VideoPlayerView> {
-  late final VideoPlayerController _videoPlayerController;
+  late VideoPlayerController _videoPlayerController;
 
   bool _isLockControls = false;
 
@@ -46,6 +58,11 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
 
   late Timer _controlsTimer = Timer(Duration.zero, () {});
   late Timer _lockTimer = Timer(Duration.zero, () {});
+
+  late bool isMovie;
+
+  late int _currentSeasonIndex = widget.firstSeasonIndex;
+  late Episode _currentEpisode;
 
   void setLock(bool value) {
     _isLockControls = value;
@@ -110,6 +127,12 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
             _videoPlayerController.value.duration.inMilliseconds);
   }
 
+  void _onVideoPlayerStatusChanged() {
+    _videoPlayerController.value.isPlaying
+        ? context.read<VideoPlayControlCubit>().play()
+        : context.read<VideoPlayControlCubit>().pause();
+  }
+
   void setBrightness(double brightness) {
     try {
       ScreenBrightness().setScreenBrightness(brightness);
@@ -124,6 +147,40 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
     } catch (e) {
       //
     }
+  }
+
+  void setVideoController(Episode episode) {
+    _controlsTimer.cancel();
+    _currentEpisode = episode;
+
+    setState(() {
+      _controlsOverlayVisible = false;
+    });
+
+    if (widget.downloadedEpisodeIds.contains(episode.episodeId)) {
+      print('LOADING VIDEO FROM LOCAL');
+      String link = isMovie
+          ? '${appDir.path}/episode/${episode.episodeId}.mp4'
+          : '${appDir.path}/episode/${widget.filmId}/${episode.episodeId}.mp4';
+
+      _videoPlayerController = VideoPlayerController.file(
+        File(link),
+      );
+    } else {
+      print('LOADING VIDEO FROM NETWORK');
+      _videoPlayerController = VideoPlayerController.networkUrl(
+        Uri.parse(episode.linkEpisode),
+      );
+    }
+
+    _videoPlayerController.initialize().then((value) {
+      _videoPlayerController.addListener(_onVideoPlayerPositionChanged);
+      _videoPlayerController.addListener(_onVideoPlayerStatusChanged);
+      setState(() {
+        _controlsOverlayVisible = true;
+      });
+      _videoPlayerController.play().then((_) => _startCountdownToDismissControls());
+    });
   }
 
   @override
@@ -141,21 +198,8 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
-    _videoPlayerController = widget.videoLocation == 'network'
-        ? VideoPlayerController.networkUrl(Uri.parse(widget.videoLink))
-        : VideoPlayerController.file(File(widget.videoLink))
-      ..initialize().then((value) {
-        _videoPlayerController.addListener(_onVideoPlayerPositionChanged);
-
-        _videoPlayerController.addListener(() {
-          _videoPlayerController.value.isPlaying
-              ? context.read<VideoPlayControlCubit>().play()
-              : context.read<VideoPlayControlCubit>().pause();
-        });
-
-        setState(() {});
-      })
-      ..play();
+    isMovie = widget.seasons[0].name == '';
+    setVideoController(widget.firstEpisodeToPlay);
   }
 
   @override
@@ -182,9 +226,14 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GestureDetector(
-        onTap: _isLockControls ? _toggleLockOverlay : _toggleControlsOverlay,
+        onTap: _videoPlayerController.value.isInitialized
+            ? _isLockControls
+                ? _toggleLockOverlay
+                : _toggleControlsOverlay
+            : null,
         child: Stack(
           children: [
+            /* Video */
             Container(
               color: Colors.black,
               alignment: Alignment.center,
@@ -201,6 +250,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                       ),
               ),
             ),
+            /* Controls Button */
             AnimatedOpacity(
               opacity: _controlsOverlayVisible ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 300),
@@ -228,6 +278,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                 ),
               ),
             ),
+            // Header
             Positioned(
               top: 0,
               left: Platform.isAndroid ? 20 : 0,
@@ -253,7 +304,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                       ),
                       Expanded(
                         child: Text(
-                          widget.title,
+                          _currentEpisode.title,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -269,6 +320,7 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                 ),
               ),
             ),
+            // Bottom Utils
             Positioned(
               bottom: 0,
               left: Platform.isAndroid ? 20 : 0,
@@ -286,15 +338,36 @@ class _VideoPlayerViewState extends State<VideoPlayerView> {
                         _videoPlayerController.addListener(_onVideoPlayerPositionChanged),
                   ),
                   VideoBottomUtils(
-                    _controlsOverlayVisible,
-                    _videoPlayerController,
-                    _startCountdownToDismissControls,
-                    () => _controlsTimer.cancel(),
-                    setLock,
+                    overlayVisible: _controlsOverlayVisible,
+                    videoPlayerController: _videoPlayerController,
+                    startCountdownToDismissControls: _startCountdownToDismissControls,
+                    cancelTimer: () => _controlsTimer.cancel(),
+                    lockControls: setLock,
+                    currentEpisodeId: _currentEpisode.episodeId,
+                    seasons: widget.seasons,
+                    seasonIndex: _currentSeasonIndex,
+                    moveToEdpisode: (episode, seasonIndex) {
+                      /*
+                      Remove Listener để không xảy ra lỗi
+                      VD: 
+                      _onVideoPlayerPositionChanged sẽ kích hoạt cả khi _videoPlayerController bị destruct
+                      Khi đó, 
+                      _videoPlayerController.value.duration.inMilliseconds = 0; => Lỗi
+                      */
+                      _videoPlayerController
+                          .removeListener(_onVideoPlayerPositionChanged);
+                      _videoPlayerController.removeListener(_onVideoPlayerStatusChanged);
+                      //
+                      _videoPlayerController.dispose();
+                      //
+                      _currentSeasonIndex = seasonIndex;
+                      setVideoController(episode);
+                    },
                   ),
                 ],
               ),
             ),
+            // Brightness Screen Slider
             Positioned(
               left: 0,
               top: 0,

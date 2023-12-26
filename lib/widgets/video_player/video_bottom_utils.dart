@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:movie_app/models/episode.dart';
+import 'package:movie_app/models/season.dart';
+import 'package:movie_app/widgets/video_player/horizontal_list_episodes.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoBottomUtils extends StatelessWidget {
-  VideoBottomUtils(
-    this.overlayVisible,
-    this.videoPlayerController,
-    this.startCountdownToDismissControls,
-    this.cancelTimer,
-    this.lockControls, {
+  VideoBottomUtils({
+    required this.overlayVisible,
+    required this.videoPlayerController,
+    required this.startCountdownToDismissControls,
+    required this.cancelTimer,
+    required this.lockControls,
+    required this.currentEpisodeId,
+    required this.seasons,
+    required this.seasonIndex,
+    required this.moveToEdpisode,
     super.key,
   });
 
@@ -18,11 +25,54 @@ class VideoBottomUtils extends StatelessWidget {
 
   final void Function(bool) lockControls;
 
+  final String currentEpisodeId;
+  final List<Season> seasons;
+  final int seasonIndex;
+
+  final void Function(Episode, int) moveToEdpisode;
+
   final speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5];
+
+  Map<String, dynamic>? findNextEpisode() {
+    for (int i = 0; i < seasons.length; ++i) {
+      final episodes = seasons[i].episodes;
+      for (int j = 0; j < episodes.length; ++j) {
+        if (episodes[j].episodeId == currentEpisodeId) {
+          if (i == seasons.length - 1 && j == episodes.length - 1) {
+            /*
+            Tập cuối của Season cuối 
+            => Không có tập tiếp theo
+            */
+            return null;
+          }
+          if (j == episodes.length - 1) {
+            /*
+            Tập cuối của Season thứ i
+            => Tập tiếp theo là Tập 1 của Seaon thứ (i+1)
+            */
+            return {
+              'episode': seasons[i + 1].episodes[0],
+              'season_index': i + 1,
+            };
+          }
+          return {
+            'episode': episodes[j + 1],
+            'season_index': i,
+          };
+        }
+      }
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
     double currentSpeedOption = speedOptions[2];
+
+    final totalEpisodes = seasons.fold(
+        0, (previousValue, season) => previousValue + season.episodes.length);
+
+    final nextEpisode = findNextEpisode();
 
     return SafeArea(
       child: AnimatedSlide(
@@ -94,18 +144,57 @@ class VideoBottomUtils extends StatelessWidget {
               label: const Text('Khoá'),
               style: TextButton.styleFrom(foregroundColor: Colors.white),
             ),
-            TextButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.view_carousel_rounded),
-              label: const Text('Các tập'),
-              style: TextButton.styleFrom(foregroundColor: Colors.white),
-            ),
-            TextButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.skip_next_rounded),
-              label: const Text('Tập tiếp theo'),
-              style: TextButton.styleFrom(foregroundColor: Colors.white),
-            ),
+            if (totalEpisodes != 1)
+              TextButton.icon(
+                onPressed: () async {
+                  cancelTimer();
+
+                  videoPlayerController.pause();
+                  final Map<String, dynamic>? selectedEpisode =
+                      await showModalBottomSheet(
+                    context: context,
+                    builder: (ctx) => HorizontalListEpisodes(
+                      seasons,
+                      seasonsIndex: seasonIndex,
+                    ),
+                    /*
+                  Gỡ bỏ giới hạn của chiều cao của BottomSheet
+                  */
+                    shape: const RoundedRectangleBorder(),
+                    backgroundColor: Colors.black,
+                    isDismissible: false,
+                    isScrollControlled: true,
+                  );
+                  /*
+                  selectedEpisode là Tập phim được người dùng chọn để xem
+                  */
+                  if (selectedEpisode == null) {
+                    videoPlayerController.play();
+                    startCountdownToDismissControls();
+                  } else {
+                    // Chuyển sang xem tập phim này
+                    moveToEdpisode(
+                      selectedEpisode['episode'],
+                      selectedEpisode['season_index'],
+                    );
+                  }
+                },
+                icon: const Icon(Icons.view_carousel_rounded),
+                label: const Text('Các tập'),
+                style: TextButton.styleFrom(foregroundColor: Colors.white),
+              ),
+            if (nextEpisode != null)
+              TextButton.icon(
+                onPressed: () {
+                  moveToEdpisode(
+                    nextEpisode['episode'],
+                    nextEpisode['season_index'],
+                  );
+                },
+                icon: const Icon(Icons.skip_next_rounded),
+                label: const Text('Tập tiếp theo'),
+                style: TextButton.styleFrom(foregroundColor: Colors.white),
+              ),
           ],
         ),
       ),

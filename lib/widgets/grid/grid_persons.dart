@@ -69,7 +69,7 @@ class GridPersons extends StatelessWidget {
                       : ClipRRect(
                           borderRadius: BorderRadius.circular(7),
                           child: Image.network(
-                            'https://www.themoviedb.org/t/p/w276_and_h350_face${personsData[index]['person']['profile_path']}',
+                            'https://www.themoviedb.org/t/p/w276_and_h350_face/${personsData[index]['person']['profile_path']}',
                             width: double.infinity, // minus border's width = 1
                             height: 155,
                             fit: BoxFit.cover,

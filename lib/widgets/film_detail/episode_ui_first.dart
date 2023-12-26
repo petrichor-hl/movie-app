@@ -2,9 +2,6 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
-import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/models/episode.dart';
@@ -12,7 +9,6 @@ import 'package:movie_app/models/offfline_season.dart';
 import 'package:movie_app/models/offline_episode.dart';
 import 'package:movie_app/models/offline_film.dart';
 import 'package:movie_app/screens/film_detail.dart';
-import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:path_provider/path_provider.dart';
 
 enum DownloadState {
@@ -22,21 +18,23 @@ enum DownloadState {
   downloaded,
 }
 
-class EpisodeUI extends StatefulWidget {
-  const EpisodeUI({
+class EpisodeUIFrist extends StatefulWidget {
+  const EpisodeUIFrist({
     required this.episode,
     required this.isEpisodeDownloaded,
+    required this.watchEpisode,
     super.key,
   });
 
   final Episode episode;
   final bool isEpisodeDownloaded;
+  final void Function() watchEpisode;
 
   @override
-  State<EpisodeUI> createState() => _EpisodeState();
+  State<EpisodeUIFrist> createState() => _EpisodeUIFristState();
 }
 
-class _EpisodeState extends State<EpisodeUI> {
+class _EpisodeUIFristState extends State<EpisodeUIFrist> {
   late DownloadState downloadState =
       widget.isEpisodeDownloaded ? DownloadState.downloaded : DownloadState.ready;
   double progress = 0;
@@ -49,31 +47,7 @@ class _EpisodeState extends State<EpisodeUI> {
       padding: const EdgeInsets.only(bottom: 30),
       child: InkWell(
         onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (ctx) => MultiBlocProvider(
-                providers: [
-                  BlocProvider(
-                    create: (ctx) => VideoSliderCubit(),
-                  ),
-                  BlocProvider(
-                    create: (ctx) => VideoPlayControlCubit(),
-                  ),
-                ],
-                child: downloadState == DownloadState.ready
-                    ? VideoPlayerView(
-                        title: widget.episode.title,
-                        videoLink: widget.episode.linkEpisode,
-                      )
-                    : VideoPlayerView(
-                        title: widget.episode.title,
-                        videoLink:
-                            '${appDir.path}/episode/${filmInfo['film_id']}/${widget.episode.episodeId}.mp4',
-                        videoLocation: 'local',
-                      ),
-              ),
-            ),
-          );
+          widget.watchEpisode();
         },
         splashColor: const Color.fromARGB(255, 52, 52, 52),
         borderRadius: BorderRadius.circular(4),

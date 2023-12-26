@@ -332,26 +332,26 @@ class _DownloadedEpisodeState extends State<DownloadedEpisode> {
               });
             }
           : () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => MultiBlocProvider(
-                    providers: [
-                      BlocProvider(
-                        create: (ctx) => VideoSliderCubit(),
-                      ),
-                      BlocProvider(
-                        create: (ctx) => VideoPlayControlCubit(),
-                      ),
-                    ],
-                    child: VideoPlayerView(
-                      title: widget.offlineEpisode.title,
-                      videoLink:
-                          '${appDir.path}/episode/${widget.filmId}/${widget.offlineEpisode.episodeId}.mp4',
-                      videoLocation: 'local',
-                    ),
-                  ),
-                ),
-              );
+              // Navigator.of(context).push(
+              //   MaterialPageRoute(
+              //     builder: (ctx) => MultiBlocProvider(
+              //       providers: [
+              //         BlocProvider(
+              //           create: (ctx) => VideoSliderCubit(),
+              //         ),
+              //         BlocProvider(
+              //           create: (ctx) => VideoPlayControlCubit(),
+              //         ),
+              //       ],
+              //       child: VideoPlayerView(
+              //         title: widget.offlineEpisode.title,
+              //         videoLink:
+              //             '${appDir.path}/episode/${widget.filmId}/${widget.offlineEpisode.episodeId}.mp4',
+              //         videoLocation: 'local',
+              //       ),
+              //     ),
+              //   ),
+              // );
             },
       onLongPress: () {
         widget.turnOnMultiSelectMode();

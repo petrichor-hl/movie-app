@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:movie_app/cubits/video_play_control/video_play_control_cubit.dart';
+import 'package:movie_app/cubits/video_slider/video_slider_cubit.dart';
 import 'package:movie_app/models/season.dart';
 import 'package:movie_app/screens/film_detail.dart';
-import 'package:movie_app/widgets/film_detail/episode_ui.dart';
+import 'package:movie_app/widgets/film_detail/episode_ui_first.dart';
+import 'package:movie_app/widgets/video_player/video_player_view.dart';
 
 class ListEpisodes extends StatefulWidget {
   const ListEpisodes(
@@ -58,10 +62,33 @@ class _ListEpisodesState extends State<ListEpisodes> {
         ...(widget.seasons[selectedSeason].episodes).map(
           (e) {
             // print('episode_id = ${e['id']}');
-            return EpisodeUI(
+            return EpisodeUIFrist(
               key: ValueKey(e.episodeId),
               episode: e,
               isEpisodeDownloaded: widget.downloadedEpisodeIds.contains(e.episodeId),
+              watchEpisode: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => MultiBlocProvider(
+                      providers: [
+                        BlocProvider(
+                          create: (ctx) => VideoSliderCubit(),
+                        ),
+                        BlocProvider(
+                          create: (ctx) => VideoPlayControlCubit(),
+                        ),
+                      ],
+                      child: VideoPlayerView(
+                        filmId: offlineData['film_id'],
+                        seasons: widget.seasons,
+                        downloadedEpisodeIds: widget.downloadedEpisodeIds,
+                        firstEpisodeToPlay: e,
+                        firstSeasonIndex: selectedSeason,
+                      ),
+                    ),
+                  ),
+                );
+              },
             );
           },
         ),
