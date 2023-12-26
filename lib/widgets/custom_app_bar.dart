@@ -41,6 +41,7 @@ class CustomAppBar extends StatelessWidget {
                   IconButton(
                     onPressed: () {
                       context.read<RouteStackCubit>().push('/search_film_screen');
+                      context.read<RouteStackCubit>().printRouteStack();
                       Navigator.of(context).push(
                         PageTransition(
                           child: const SearchFilmScreen(),

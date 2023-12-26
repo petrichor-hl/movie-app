@@ -92,17 +92,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               iconData: Icons.list,
               onTap: () {
                 context.read<RouteStackCubit>().push('/my_list_films');
-                Navigator.of(context)
-                    .push(
-                      PageTransition(
-                        child: const MyListFilms(),
-                        type: PageTransitionType.rightToLeft,
-                        duration: 300.ms,
-                        reverseDuration: 300.ms,
-                        settings: const RouteSettings(name: '/my_list_films'),
-                      ),
-                    )
-                    .then((_) => context.read<RouteStackCubit>().pop());
+                context.read<RouteStackCubit>().printRouteStack();
+                Navigator.of(context).push(
+                  PageTransition(
+                    child: const MyListFilms(),
+                    type: PageTransitionType.rightToLeft,
+                    duration: 300.ms,
+                    reverseDuration: 300.ms,
+                    settings: const RouteSettings(name: '/my_list_films'),
+                  ),
+                );
               },
             ),
             _ProfileSettingItem(

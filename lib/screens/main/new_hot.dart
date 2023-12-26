@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/skeleton_loading.dart';
@@ -332,12 +334,17 @@ class NotificationNewFilm extends StatelessWidget {
                     const SizedBox(width: 20),
                     InkWell(
                       borderRadius: BorderRadius.circular(4),
-                      onTap: () => Navigator.of(context).push(
-                        PageTransition(
-                          child: FilmDetail(filmId: id),
-                          type: PageTransitionType.fade,
-                        ),
-                      ),
+                      onTap: () {
+                        context.read<RouteStackCubit>().push('/film_detail@$id');
+                        context.read<RouteStackCubit>().printRouteStack();
+                        Navigator.of(context).push(
+                          PageTransition(
+                            child: FilmDetail(filmId: id),
+                            type: PageTransitionType.fade,
+                            settings: RouteSettings(name: '/film_detail@$id'),
+                          ),
+                        );
+                      },
                       child: const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 4),
                         child: Icon(

@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
+import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/models/poster.dart';
 import 'package:movie_app/widgets/grid/grid_films.dart';
@@ -76,115 +78,122 @@ class _SearchFilmScreenState extends State<SearchFilmScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      body: Column(
-        children: [
-          TextField(
-            controller: _searchController,
-            autofocus: true,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color(0xFF2B2B2B),
-              border: InputBorder.none,
-              prefixIcon: const Icon(
-                Icons.search_rounded,
-              ),
-              prefixIconColor: Colors.white.withOpacity(0.5),
-              suffixIcon: _resultStatus == "processing"
-                  ? const SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: Padding(
-                        padding: EdgeInsets.all(12.0),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
+    return WillPopScope(
+      onWillPop: () async {
+        context.read<RouteStackCubit>().pop();
+        context.read<RouteStackCubit>().printRouteStack();
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+        ),
+        body: Column(
+          children: [
+            TextField(
+              controller: _searchController,
+              autofocus: true,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF2B2B2B),
+                border: InputBorder.none,
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                ),
+                prefixIconColor: Colors.white.withOpacity(0.5),
+                suffixIcon: _resultStatus == "processing"
+                    ? const SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                          ),
+                        ),
+                      )
+                    : IconButton(
+                        onPressed: _searchBarStatus == "empty"
+                            ? () {}
+                            : () {
+                                _searchController.clear();
+                                setState(() {
+                                  _searchResults.clear();
+                                  _searchBarStatus = "empty";
+                                  _resultStatus = "none";
+                                });
+                              },
+                        style: IconButton.styleFrom(
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                          ),
+                        ),
+                        icon: Icon(
+                          _searchBarStatus == "empty"
+                              ? Icons.mic_rounded
+                              : Icons.close_rounded,
                         ),
                       ),
-                    )
-                  : IconButton(
-                      onPressed: _searchBarStatus == "empty"
-                          ? () {}
-                          : () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchResults.clear();
-                                _searchBarStatus = "empty";
-                                _resultStatus = "none";
-                              });
-                            },
-                      style: IconButton.styleFrom(
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
-                        ),
-                      ),
-                      icon: Icon(
-                        _searchBarStatus == "empty"
-                            ? Icons.mic_rounded
-                            : Icons.close_rounded,
-                      ),
-                    ),
-              suffixIconColor: Colors.white.withOpacity(0.5),
-              hintText: 'Tìm kiếm bộ phim của bạn',
-              hintStyle: const TextStyle(
-                color: Color.fromARGB(255, 120, 120, 120),
+                suffixIconColor: Colors.white.withOpacity(0.5),
+                hintText: 'Tìm kiếm bộ phim của bạn',
+                hintStyle: const TextStyle(
+                  color: Color.fromARGB(255, 120, 120, 120),
+                ),
+                contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
               ),
-              contentPadding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-            ),
-            style: const TextStyle(
-              color: Colors.white,
-            ),
-            autocorrect: false,
-            onChanged: (value) async {
-              // Khi người dùng từng ký tự => Kích hoạt lại bộ đếm
-              if (_timer.isActive) {
-                _timer.cancel();
-              }
-              // Khi người dùng từng ký tự => Đánh dấu là chưa kích hoạt tìm kiếm
-              _resultStatus = "none";
+              style: const TextStyle(
+                color: Colors.white,
+              ),
+              autocorrect: false,
+              onChanged: (value) async {
+                // Khi người dùng từng ký tự => Kích hoạt lại bộ đếm
+                if (_timer.isActive) {
+                  _timer.cancel();
+                }
+                // Khi người dùng từng ký tự => Đánh dấu là chưa kích hoạt tìm kiếm
+                _resultStatus = "none";
 
-              /*
-              Khi người dùng xoá hết tự khoá tìm kiếm
-              => Delay 1 khoảng 50ms để tạo độ mượt mà 
-              => Clear kết quả tìm kiếm trước đó
-              => Thiết lập Trạng thái của thanh tìm kiếm là rỗng (chưa nhập bất kỳ ký tự nào)
-              */
-              if (value.isEmpty) {
-                await Future.delayed(
-                  const Duration(milliseconds: 50),
-                );
-                setState(() {
-                  _searchResults.clear();
-                  _searchBarStatus = "empty";
-                });
-              } else {
                 /*
-                Khi người dùng nhập từ khoá tìm kiếm
-                => Thiết lập Trạng thái của thanh tìm kiếm là hasText
-                => Tạo bộ điếm ngược, có tác dụng sau 1s sẽ kích hoạt tìm kiếm với từ khoá được nhập
+                Khi người dùng xoá hết tự khoá tìm kiếm
+                => Delay 1 khoảng 50ms để tạo độ mượt mà 
+                => Clear kết quả tìm kiếm trước đó
+                => Thiết lập Trạng thái của thanh tìm kiếm là rỗng (chưa nhập bất kỳ ký tự nào)
                 */
-                if (_searchBarStatus != "hasText") {
+                if (value.isEmpty) {
+                  await Future.delayed(
+                    const Duration(milliseconds: 50),
+                  );
                   setState(() {
-                    _searchBarStatus = "hasText";
+                    _searchResults.clear();
+                    _searchBarStatus = "empty";
+                  });
+                } else {
+                  /*
+                  Khi người dùng nhập từ khoá tìm kiếm
+                  => Thiết lập Trạng thái của thanh tìm kiếm là hasText
+                  => Tạo bộ điếm ngược, có tác dụng sau 1s sẽ kích hoạt tìm kiếm với từ khoá được nhập
+                  */
+                  if (_searchBarStatus != "hasText") {
+                    setState(() {
+                      _searchBarStatus = "hasText";
+                    });
+                  }
+                  _timer = Timer(const Duration(seconds: 1), () {
+                    search(keyword: value);
                   });
                 }
-                _timer = Timer(const Duration(seconds: 1), () {
-                  search(keyword: value);
-                });
-              }
-            },
-            onEditingComplete: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
-          ),
-          const Gap(10),
-          Expanded(
-            child: buildSearchResult(),
-          )
-        ],
+              },
+              onEditingComplete: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+              },
+            ),
+            const Gap(10),
+            Expanded(
+              child: buildSearchResult(),
+            )
+          ],
+        ),
       ),
     );
   }
