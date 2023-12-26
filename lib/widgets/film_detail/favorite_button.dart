@@ -58,6 +58,7 @@ class FavoriteButton extends StatelessWidget {
                     label: 'Xem',
                     onPressed: () {
                       context.read<RouteStackCubit>().push('/my_list_films');
+                      context.read<RouteStackCubit>().printRouteStack();
                       Navigator.of(context).push(
                         PageTransition(
                           child: const MyListFilms(),

@@ -34,16 +34,16 @@ class GridFilms extends StatelessWidget {
           return GestureDetector(
             onTap: canClick
                 ? () {
-                    // print('current: ${context.read<RouteStackCubit>().state}');
-                    // print('top_stack: ${context.read<RouteStackCubit>().top()}');
+                    String? prior =
+                        context.read<RouteStackCubit>().findPrior('/film_detail@$filmId');
+                    // print('prior = $prior');
+                    /*
+                    prior là route trước của /film_detail@$filmId
+                    nếu /film_detail@$filmId có trong RouteStack
+                    */
 
-                    // print('film_id: $filmId');
-                    // print(
-                    //     "FilmID trùng với top_stack: ${'/film_detail@${posters[index]['film']['id']}' == context.read<RouteStackCubit>().top()}");
-
-                    if ('/film_detail@$filmId' == context.read<RouteStackCubit>().top()) {
-                      // Không fix code chỗ này
-                      context.read<RouteStackCubit>().pop();
+                    if (prior != null) {
+                      // Trong Stack đã từng di chuyển tới Phim này rồi
                       Navigator.of(context).pushAndRemoveUntil(
                         PageTransition(
                           child: FilmDetail(
@@ -55,13 +55,26 @@ class GridFilms extends StatelessWidget {
                           settings: RouteSettings(name: '/film_detail@$filmId'),
                         ),
                         (route) {
-                          return route.settings.name ==
-                              context.read<RouteStackCubit>().top();
+                          // print(route.settings.name);
+                          if (route.settings.name == prior) {
+                            /*
+                            Khi đã gặp prior route của /film_detail@$filmId
+                            Thì push /film_detail@$filmId vào Stack
+                            */
+                            context.read<RouteStackCubit>().push('/film_detail@$filmId');
+                            context.read<RouteStackCubit>().printRouteStack();
+                            return true;
+                          } else {
+                            context.read<RouteStackCubit>().pop();
+                            return false;
+                          }
                         },
                       );
-                      context.read<RouteStackCubit>().push('/film_detail@$filmId');
                     } else {
-                      Navigator.of(context).pushAndRemoveUntil(
+                      // Chưa từng di chuyển tới Phim này
+                      context.read<RouteStackCubit>().push('/film_detail@$filmId');
+                      context.read<RouteStackCubit>().printRouteStack();
+                      Navigator.of(context).push(
                         PageTransition(
                           child: FilmDetail(
                             filmId: filmId,
@@ -69,45 +82,46 @@ class GridFilms extends StatelessWidget {
                           type: PageTransitionType.rightToLeft,
                           duration: 300.ms,
                           reverseDuration: 300.ms,
+                          settings: RouteSettings(name: '/film_detail@$filmId'),
                         ),
-                        (route) {
-                          return route.settings.name ==
-                              context.read<RouteStackCubit>().top();
-                        },
                       );
                     }
-                    //     Navigator.of(context).pushAndRemoveUntil(
-                    //       PageTransition(
-                    //         child: FilmDetail(
-                    //           filmId: posters[index]['film']['id'],
-                    //         ),
-                    //         type: PageTransitionType.rightToLeft,
-                    //         duration: 300.ms,
-                    //         reverseDuration: 300.ms,
-                    //         settings:
-                    //             RouteSettings(name: '/film_detail@${posters[index]['film']['id']}'),
+
+                    // if ('/film_detail@$filmId' == context.read<RouteStackCubit>().top()) {
+                    //   // Không fix code chỗ này
+                    //   context.read<RouteStackCubit>().pop();
+                    //   Navigator.of(context).pushAndRemoveUntil(
+                    //     PageTransition(
+                    //       child: FilmDetail(
+                    //         filmId: filmId,
                     //       ),
-                    //       (route) {
-                    //         // print('route: ${route.settings.name}');
-                    //         return route.settings.name == context.read<RouteStackCubit>().top();
-                    //       },
-                    //     );
-                    //   } else {
-                    // Navigator.of(context).pushAndRemoveUntil(
-                    //   PageTransition(
-                    //     child: FilmDetail(
-                    //       filmId: posters[index]['film']['id'],
+                    //       type: PageTransitionType.rightToLeft,
+                    //       duration: 300.ms,
+                    //       reverseDuration: 300.ms,
+                    //       settings: RouteSettings(name: '/film_detail@$filmId'),
                     //     ),
-                    //     type: PageTransitionType.rightToLeft,
-                    //     duration: 300.ms,
-                    //     reverseDuration: 300.ms,
-                    //   ),
-                    //   (route) {
-                    //     // print('route: ${route.settings.name}');
-                    //     return route.settings.name == context.read<RouteStackCubit>().top();
-                    //   },
-                    // );
-                    //   }
+                    //     (route) {
+                    //       return route.settings.name ==
+                    //           context.read<RouteStackCubit>().top();
+                    //     },
+                    //   );
+                    //   context.read<RouteStackCubit>().push('/film_detail@$filmId');
+                    // } else {
+                    //   Navigator.of(context).pushAndRemoveUntil(
+                    //     PageTransition(
+                    //       child: FilmDetail(
+                    //         filmId: filmId,
+                    //       ),
+                    //       type: PageTransitionType.rightToLeft,
+                    //       duration: 300.ms,
+                    //       reverseDuration: 300.ms,
+                    //     ),
+                    //     (route) {
+                    //       return route.settings.name ==
+                    //           context.read<RouteStackCubit>().top();
+                    //     },
+                    //   );
+                    // }
                   }
                 : null,
             child: ClipRRect(

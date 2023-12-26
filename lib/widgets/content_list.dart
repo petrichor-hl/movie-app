@@ -41,18 +41,15 @@ class ContentList extends StatelessWidget {
             itemBuilder: (ctx, index) {
               final film = films[index];
               return GestureDetector(
-                onTap: () {
+                onTap: () async {
                   context.read<RouteStackCubit>().push('/film_detail@${film['id']}');
-                  Navigator.of(context).push(
+                  context.read<RouteStackCubit>().printRouteStack();
+                  await Navigator.of(context).push(
                     PageTransition(
                       child: FilmDetail(filmId: film['id']),
                       type: PageTransitionType.rightToLeft,
                       duration: 300.ms,
                       reverseDuration: 300.ms,
-                      // settings: context.read<RouteStackCubit>().top() != '/film_detail'
-                      //     ? const RouteSettings(name: '/film_detail')
-                      //     : null,
-
                       settings: RouteSettings(name: '/film_detail@${film['id']}'),
                     ),
                   );
