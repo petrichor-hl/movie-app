@@ -7,7 +7,7 @@ import 'package:movie_app/models/poster.dart';
 import 'package:movie_app/models/season.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:movie_app/widgets/film_detail/grid_shimmer.dart';
-import 'package:movie_app/widgets/film_detail/list_episodes.dart';
+import 'package:movie_app/widgets/film_detail/vertical_list_episodes.dart';
 import 'package:movie_app/widgets/grid/grid_films.dart';
 import 'package:movie_app/widgets/grid/grid_persons.dart';
 

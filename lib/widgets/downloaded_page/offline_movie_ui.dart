@@ -278,25 +278,25 @@ class _OfflineMovieUIState extends State<OfflineMovieUI> {
               });
             }
           : () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => MultiBlocProvider(
-                    providers: [
-                      BlocProvider(
-                        create: (ctx) => VideoSliderCubit(),
-                      ),
-                      BlocProvider(
-                        create: (ctx) => VideoPlayControlCubit(),
-                      ),
-                    ],
-                    child: VideoPlayerView(
-                      title: widget.offlineMovie.name,
-                      videoLink: '${appDir.path}/episode/${episode.episodeId}.mp4',
-                      videoLocation: 'local',
-                    ),
-                  ),
-                ),
-              );
+              // Navigator.of(context).push(
+              //   MaterialPageRoute(
+              //     builder: (ctx) => MultiBlocProvider(
+              //       providers: [
+              //         BlocProvider(
+              //           create: (ctx) => VideoSliderCubit(),
+              //         ),
+              //         BlocProvider(
+              //           create: (ctx) => VideoPlayControlCubit(),
+              //         ),
+              //       ],
+              //       child: VideoPlayerView(
+              //         title: widget.offlineMovie.name,
+              //         videoLink: '${appDir.path}/episode/${episode.episodeId}.mp4',
+              //         videoLocation: 'local',
+              //       ),
+              //     ),
+              //   ),
+              // );
             },
       onLongPress: () {
         widget.turnOnMultiSelectMode();

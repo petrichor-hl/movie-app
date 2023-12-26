@@ -16,7 +16,7 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
   await Supabase.initialize(
-    url: 'https://kpaxjjmelbqpllxenpxz.supabase.co',
+    url: '',
     anonKey: '',
     authFlowType: AuthFlowType.pkce,
   );

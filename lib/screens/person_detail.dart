@@ -98,7 +98,7 @@ class _PersonDetailState extends State<PersonDetail> {
                         clipBehavior: Clip.antiAlias,
                         child: _person['profile_path'] != null
                             ? Image.network(
-                                'https://image.tmdb.org/t/p/w440_and_h660_face${_person['profile_path']}',
+                                'https://image.tmdb.org/t/p/w440_and_h660_face/${_person['profile_path']}',
                                 width: 160,
                               )
                             : const SizedBox(

@@ -47,7 +47,7 @@ class _FilmDetailState extends State<FilmDetail> {
 
   late final _futureMovie = _fetchMovie();
 
-  List<String> downloadedEpisodeIds = [];
+  final List<String> _downloadedEpisodeIds = [];
 
   Future<void> _fetchMovie() async {
     final filmInfo = await supabase
@@ -152,7 +152,7 @@ class _FilmDetailState extends State<FilmDetail> {
     if (existingDownloadedFilm != null) {
       for (var season in existingDownloadedFilm.offlineSeasons) {
         for (var episode in season.offlineEpisodes) {
-          downloadedEpisodeIds.add(episode.episodeId);
+          _downloadedEpisodeIds.add(episode.episodeId);
         }
       }
     }
@@ -322,6 +322,8 @@ class _FilmDetailState extends State<FilmDetail> {
                                   Gỡ bỏ giới hạn của chiều cao của BottomSheet
                                   */
                                 isScrollControlled: true,
+                                // Không hoạt động useSafeArea
+                                // useSafeArea: true,
                               );
                             },
                             borderRadius: BorderRadius.circular(8),
@@ -349,9 +351,6 @@ class _FilmDetailState extends State<FilmDetail> {
                       width: double.infinity,
                       child: FilledButton.icon(
                         onPressed: () {
-                          // final episodeId = _seasons[0]['episode'][0]['id'];
-                          final episodeId = _film.seasons[0].episodes[0].episodeId;
-                          final isDownloaded = downloadedEpisodeIds.contains(episodeId);
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (ctx) => MultiBlocProvider(
@@ -363,19 +362,13 @@ class _FilmDetailState extends State<FilmDetail> {
                                     create: (ctx) => VideoPlayControlCubit(),
                                   ),
                                 ],
-                                child: isDownloaded
-                                    ? VideoPlayerView(
-                                        title: _film.name,
-                                        videoLink: isMovie
-                                            ? '${appDir.path}/episode/$episodeId.mp4'
-                                            : '${appDir.path}/episode/${_film.id}/$episodeId.mp4',
-                                        videoLocation: 'local',
-                                      )
-                                    : VideoPlayerView(
-                                        title: _film.name,
-                                        videoLink:
-                                            _film.seasons[0].episodes[0].linkEpisode,
-                                      ),
+                                child: VideoPlayerView(
+                                  filmId: _film.id,
+                                  seasons: _film.seasons,
+                                  downloadedEpisodeIds: _downloadedEpisodeIds,
+                                  firstEpisodeToPlay: _film.seasons[0].episodes[0],
+                                  firstSeasonIndex: 0,
+                                ),
                               ),
                             ),
                           );
@@ -399,7 +392,7 @@ class _FilmDetailState extends State<FilmDetail> {
                         firstEpisodeId: _film.seasons[0].episodes[0].episodeId,
                         firstEpisodeLink: _film.seasons[0].episodes[0].linkEpisode,
                         runtime: _film.seasons[0].episodes[0].runtime,
-                        isEpisodeDownloaded: downloadedEpisodeIds
+                        isEpisodeDownloaded: _downloadedEpisodeIds
                             .contains(_film.seasons[0].episodes[0].episodeId),
                       ),
                     const SizedBox(height: 6),
@@ -515,7 +508,7 @@ class _FilmDetailState extends State<FilmDetail> {
                       _film.seasons,
                       isMovie,
                       widget.filmId,
-                      downloadedEpisodeIds,
+                      _downloadedEpisodeIds,
                     ),
                   ],
                 ).animate().fade().slideY(

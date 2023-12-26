@@ -50,11 +50,11 @@ class SliderVideo extends StatelessWidget {
               Expanded(
                 child: BlocBuilder<VideoSliderCubit, double>(
                   builder: (context, progressSlider) {
+                    // print('progressSlider = $progressSlider');
                     return Slider(
                       value: progressSlider,
                       label: _convertFromSeconds(
-                        (progressSlider *
-                                videoPlayerController.value.duration.inSeconds)
+                        (progressSlider * videoPlayerController.value.duration.inSeconds)
                             .toInt(),
                       ),
                       onChanged: (value) {
@@ -69,8 +69,7 @@ class SliderVideo extends StatelessWidget {
                         await videoPlayerController.seekTo(
                           Duration(
                             milliseconds: (value *
-                                    videoPlayerController
-                                        .value.duration.inMilliseconds)
+                                    videoPlayerController.value.duration.inMilliseconds)
                                 .toInt(),
                           ),
                         );
