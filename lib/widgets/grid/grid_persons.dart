@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
 import 'package:movie_app/screens/person_detail.dart';
 import 'package:page_transition/page_transition.dart';
 
@@ -31,17 +33,64 @@ class GridPersons extends StatelessWidget {
 
           return GestureDetector(
             onTap: () {
-              Navigator.of(context).push(
-                PageTransition(
-                  child: PersonDetail(
-                    personId: personsData[index]['person']['id'],
-                    isCast: isCast,
+              String? prior = context
+                  .read<RouteStackCubit>()
+                  .findPrior('/person_detail@${personsData[index]['person']['id']}');
+              /*
+              prior là route trước của /person_detail@${personsData[index]['person']['id']}
+              nếu /person_detail@${personsData[index]['person']['id']} có trong RouteStack
+              */
+              if (prior != null) {
+                // Trong Stack đã từng di chuyển tới Person này rồi
+                Navigator.of(context).pushAndRemoveUntil(
+                  PageTransition(
+                    child: PersonDetail(
+                      personId: personsData[index]['person']['id'],
+                      isCast: isCast,
+                    ),
+                    type: PageTransitionType.rightToLeft,
+                    duration: 240.ms,
+                    reverseDuration: 240.ms,
+                    settings: RouteSettings(
+                        name: '/person_detail@${personsData[index]['person']['id']}'),
                   ),
-                  type: PageTransitionType.rightToLeft,
-                  duration: 240.ms,
-                  reverseDuration: 240.ms,
-                ),
-              );
+                  (route) {
+                    if (route.settings.name == prior) {
+                      /*
+                      Khi đã gặp prior route của /person_detail@${personsData[index]['person']['id']}
+                      Thì push /person_detail@${personsData[index]['person']['id']} vào Stack
+                      */
+                      context
+                          .read<RouteStackCubit>()
+                          .push('/person_detail@${personsData[index]['person']['id']}');
+                      context.read<RouteStackCubit>().printRouteStack();
+                      return true;
+                    } else {
+                      context.read<RouteStackCubit>().pop();
+                      return false;
+                    }
+                  },
+                );
+              } else {
+                // Chưa từng di chuyển tới Person này
+                context
+                    .read<RouteStackCubit>()
+                    .push('/person_detail@${personsData[index]['person']['id']}');
+                context.read<RouteStackCubit>().printRouteStack();
+                Navigator.of(context).push(
+                  PageTransition(
+                    child: PersonDetail(
+                      personId: personsData[index]['person']['id'],
+                      isCast: isCast,
+                    ),
+                    type: PageTransitionType.rightToLeft,
+                    duration: 240.ms,
+                    reverseDuration: 240.ms,
+                    settings: RouteSettings(
+                        name: '/person_detail@${personsData[index]['person']['id']}'),
+                  ),
+                );
+              }
             },
             child: Container(
               decoration: BoxDecoration(

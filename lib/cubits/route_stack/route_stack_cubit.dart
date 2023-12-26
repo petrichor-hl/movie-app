@@ -13,5 +13,20 @@ class RouteStackCubit extends Cubit<List<String>> {
     // print('route_stack: $state');
   }
 
-  String top() => state.last;
+  String? findPrior(String route) {
+    for (int i = 1; i < state.length; ++i) {
+      if (state[i] == route) {
+        return state[i - 1];
+      }
+    }
+    return null;
+  }
+
+  void printRouteStack() {
+    String routeStack = '';
+    for (var route in state) {
+      routeStack += '$route  ';
+    }
+    print('RouteStack: $routeStack');
+  }
 }

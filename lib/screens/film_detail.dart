@@ -171,9 +171,8 @@ class _FilmDetailState extends State<FilmDetail> {
     return WillPopScope(
       // Đã test - Không sửa
       onWillPop: () async {
-        if (context.read<RouteStackCubit>().top().contains(_film.id)) {
-          context.read<RouteStackCubit>().pop();
-        }
+        context.read<RouteStackCubit>().pop();
+        context.read<RouteStackCubit>().printRouteStack();
         return true;
       },
       child: Scaffold(
@@ -429,32 +428,65 @@ class _FilmDetailState extends State<FilmDetail> {
                         GestureDetector(
                           onTap: () {
                             final genreId = _film.genres[0].genreId;
-                            if (context
-                                .read<RouteStackCubit>()
-                                .top()
-                                .contains('/films_by_genre')) {
-                              context.read<RouteStackCubit>().pop();
-                            }
 
-                            Navigator.of(context).pushAndRemoveUntil(
-                              PageTransition(
-                                child: FilmsByGenre(
-                                  genreId: genreId,
-                                  genreName: _film.genres[0].name,
-                                ),
-                                type: PageTransitionType.rightToLeft,
-                                duration: 300.ms,
-                                reverseDuration: 300.ms,
-                                settings: RouteSettings(name: '/films_by_genre@$genreId'),
-                              ),
-                              (route) {
-                                return route.settings.name ==
-                                    context.read<RouteStackCubit>().top();
-                              },
-                            );
-                            context
+                            String? prior = context
                                 .read<RouteStackCubit>()
-                                .push('/films_by_genre@$genreId');
+                                .findPrior('/films_by_genre@$genreId');
+                            /*
+                            prior là route trước của /person_detail@${personsData[index]['person']['id']}
+                            nếu /person_detail@${personsData[index]['person']['id']} có trong RouteStack
+                            */
+                            if (prior != null) {
+                              // Trong Stack đã từng di chuyển tới films_by_genre này rồi
+                              Navigator.of(context).pushAndRemoveUntil(
+                                PageTransition(
+                                  child: FilmsByGenre(
+                                    genreId: genreId,
+                                    genreName: _film.genres[0].name,
+                                  ),
+                                  type: PageTransitionType.rightToLeft,
+                                  duration: 300.ms,
+                                  reverseDuration: 300.ms,
+                                  settings:
+                                      RouteSettings(name: '/films_by_genre@$genreId'),
+                                ),
+                                (route) {
+                                  if (route.settings.name == prior) {
+                                    /*
+                                    Khi đã gặp prior route của /films_by_genre@$genreId
+                                    Thì push /films_by_genre@$genreId vào Stack
+                                    */
+                                    context
+                                        .read<RouteStackCubit>()
+                                        .push('/films_by_genre@$genreId');
+                                    context.read<RouteStackCubit>().printRouteStack();
+                                    return true;
+                                  } else {
+                                    context.read<RouteStackCubit>().pop();
+                                    return false;
+                                  }
+                                },
+                              );
+                            } else {
+                              // Chưa từng di chuyển tới films_by_genre này
+                              context
+                                  .read<RouteStackCubit>()
+                                  .push('/films_by_genre@$genreId');
+                              context.read<RouteStackCubit>().printRouteStack();
+                              Navigator.of(context).push(
+                                PageTransition(
+                                  child: FilmsByGenre(
+                                    genreId: genreId,
+                                    genreName: _film.genres[0].name,
+                                  ),
+                                  type: PageTransitionType.rightToLeft,
+                                  duration: 300.ms,
+                                  reverseDuration: 300.ms,
+                                  settings:
+                                      RouteSettings(name: '/films_by_genre@$genreId'),
+                                ),
+                              );
+                            }
                           },
                           child: Text(
                             _film.genres[0].name,
@@ -467,17 +499,15 @@ class _FilmDetailState extends State<FilmDetail> {
                           GestureDetector(
                             onTap: () {
                               final genreId = _film.genres[i].genreId;
-                              if (context
+                              context
                                   .read<RouteStackCubit>()
-                                  .top()
-                                  .contains('/films_by_genre')) {
-                                context.read<RouteStackCubit>().pop();
-                              }
-                              Navigator.of(context).pushAndRemoveUntil(
+                                  .push('/films_by_genre@$genreId');
+                              context.read<RouteStackCubit>().printRouteStack();
+                              Navigator.of(context).push(
                                 PageTransition(
                                   child: FilmsByGenre(
                                     genreId: genreId,
-                                    genreName: _film.genres[i].genreId,
+                                    genreName: _film.genres[i].name,
                                   ),
                                   type: PageTransitionType.rightToLeft,
                                   duration: 300.ms,
@@ -485,14 +515,7 @@ class _FilmDetailState extends State<FilmDetail> {
                                   settings:
                                       RouteSettings(name: '/films_by_genre@$genreId'),
                                 ),
-                                (route) {
-                                  return route.settings.name ==
-                                      context.read<RouteStackCubit>().top();
-                                },
                               );
-                              context
-                                  .read<RouteStackCubit>()
-                                  .push('/films_by_genre@$genreId');
                             },
                             child: Text(
                               ', ${_film.genres[i].name}',

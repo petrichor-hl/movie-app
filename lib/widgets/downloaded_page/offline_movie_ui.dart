@@ -8,7 +8,6 @@ import 'package:movie_app/data/downloaded_film.dart';
 import 'package:movie_app/database/database_utils.dart';
 import 'package:movie_app/models/offline_film.dart';
 import 'package:movie_app/utils/extension.dart';
-import 'package:movie_app/widgets/video_player/video_player_view.dart';
 import 'package:movie_app/widgets/video_player_offline/video_player_offline_view.dart';
 
 class OfflineMovieUI extends StatefulWidget {

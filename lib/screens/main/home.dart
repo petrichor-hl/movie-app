@@ -135,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             context
                                 .read<RouteStackCubit>()
                                 .push('/films_by_genre@$genreId');
+                            context.read<RouteStackCubit>().printRouteStack();
                             Navigator.of(context).push(
                               PageTransition(
                                 child: FilmsByGenre(

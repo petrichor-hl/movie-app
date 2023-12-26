@@ -44,9 +44,8 @@ class _FilmsByGenreState extends State<FilmsByGenre> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        if (context.read<RouteStackCubit>().top().contains(widget.genreId)) {
-          context.read<RouteStackCubit>().pop();
-        }
+        context.read<RouteStackCubit>().pop();
+        context.read<RouteStackCubit>().printRouteStack();
         return true;
       },
       child: Scaffold(
