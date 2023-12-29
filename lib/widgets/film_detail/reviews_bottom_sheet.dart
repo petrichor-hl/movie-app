@@ -82,13 +82,21 @@ class _ReviewsBottomSheetState extends State<ReviewsBottomSheet> {
       ),
     );
 
-    _reviewsListKey.currentState!.insertItem(
-      0,
-      duration: const Duration(milliseconds: 500),
-    );
-
     _existingRateIndex = 0;
 
+    /*
+    Nếu widget.reviews.isEmpty thì _reviewsListKey.currentState == null
+    */
+    if (_reviewsListKey.currentState != null) {
+      _reviewsListKey.currentState!.insertItem(
+        0,
+        duration: const Duration(milliseconds: 500),
+      );
+    }
+
+    /*
+    Thông báo cho Widget cha để cập nhật lại điểm số với đánh giá mới
+    */
     widget.onReviewHasChanged();
 
     setState(() {

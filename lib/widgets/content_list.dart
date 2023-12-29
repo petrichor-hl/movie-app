@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movie_app/cubits/route_stack/route_stack_cubit.dart';
+import 'package:movie_app/models/poster.dart';
 import 'package:movie_app/screens/film_detail.dart';
 import 'package:page_transition/page_transition.dart';
 
@@ -14,7 +15,7 @@ class ContentList extends StatelessWidget {
   });
 
   final String title;
-  final List<dynamic> films;
+  final List<Poster> films;
   final bool isOriginals;
 
   @override
@@ -42,15 +43,15 @@ class ContentList extends StatelessWidget {
               final film = films[index];
               return GestureDetector(
                 onTap: () async {
-                  context.read<RouteStackCubit>().push('/film_detail@${film['id']}');
+                  context.read<RouteStackCubit>().push('/film_detail@${film.filmId}');
                   context.read<RouteStackCubit>().printRouteStack();
                   await Navigator.of(context).push(
                     PageTransition(
-                      child: FilmDetail(filmId: film['id']),
+                      child: FilmDetail(filmId: film.filmId),
                       type: PageTransitionType.rightToLeft,
                       duration: 300.ms,
                       reverseDuration: 300.ms,
-                      settings: RouteSettings(name: '/film_detail@${film['id']}'),
+                      settings: RouteSettings(name: '/film_detail@${film.filmId}'),
                     ),
                   );
                 },
@@ -64,8 +65,8 @@ class ContentList extends StatelessWidget {
                   child: Image(
                     image: NetworkImage(
                       isOriginals
-                          ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${film['poster_path']}'
-                          : 'https://image.tmdb.org/t/p/w440_and_h660_face/${film['poster_path']}',
+                          ? 'https://image.tmdb.org/t/p/w600_and_h900_bestv2/${film.posterPath}'
+                          : 'https://image.tmdb.org/t/p/w440_and_h660_face/${film.posterPath}',
                     ),
                     fit: BoxFit.cover,
                     // https://api.flutter.dev/flutter/widgets/Image/frameBuilder.html

@@ -81,12 +81,12 @@ class _HomeScreenState extends State<HomeScreen> {
           //   ),
           // ),
           ...topicsData.map(
-            (row) => SliverToBoxAdapter(
+            (topic) => SliverToBoxAdapter(
               child: ContentList(
-                key: PageStorageKey(topicsData[0]['name']),
-                title: row['name'],
-                films: row['films'],
-                isOriginals: row['name'] == 'Chỉ có trên Netflix',
+                key: PageStorageKey(topic),
+                title: topic.name,
+                films: topic.posters,
+                isOriginals: topic.name == 'Chỉ có trên Netflix',
               ),
             ),
           ),

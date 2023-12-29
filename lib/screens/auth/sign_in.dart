@@ -117,7 +117,7 @@ class _SignInState extends State<SignInScreen> {
                 enableSuggestions: false, // No work
                 keyboardType: TextInputType.emailAddress, // Trick: disable suggestions
                 validator: (value) {
-                  print('Value = $value');
+                  // print('Value = $value');
                   if (value == null || value.isEmpty) {
                     return 'Bạn chưa nhập Email';
                   }

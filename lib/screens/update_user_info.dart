@@ -102,7 +102,7 @@ class _UpdateUserInfoState extends State<UpdateUserInfo> {
             {'avatar_url': '${supabase.auth.currentUser!.email!}$extensionImage'});
       }
 
-      print('updatedInfo = $updatedInfo');
+      // print('updatedInfo = $updatedInfo');
 
       await supabase.from('profile').update(updatedInfo).eq(
             'id',
