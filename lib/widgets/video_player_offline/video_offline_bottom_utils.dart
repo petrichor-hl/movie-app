@@ -184,8 +184,8 @@ class _VideoOfflineBottomUtilsState extends State<VideoOfflineBottomUtils> {
                   */
                     shape: const RoundedRectangleBorder(),
                     backgroundColor: Colors.black,
-                    isDismissible: false,
                     isScrollControlled: true,
+                    constraints: const BoxConstraints(maxWidth: double.infinity),
                   );
                   /*
                   selectedEpisode là Tập phim được người dùng chọn để xem

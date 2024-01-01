@@ -95,7 +95,7 @@ class _EpisodeUISecondState extends State<EpisodeUISecond> {
               color: Colors.grey,
             ),
             overflow: TextOverflow.ellipsis,
-            maxLines: 6,
+            maxLines: 5,
           ),
         ],
       ),

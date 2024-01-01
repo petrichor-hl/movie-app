@@ -62,7 +62,7 @@ class _ListEpisodesState extends State<ListEpisodes> {
         ...(widget.seasons[selectedSeason].episodes).map(
           (e) {
             // print('episode_id = ${e['id']}');
-            return EpisodeUIFrist(
+            return EpisodeUIFirst(
               key: ValueKey(e.episodeId),
               episode: e,
               isEpisodeDownloaded: widget.downloadedEpisodeIds.contains(e.episodeId),

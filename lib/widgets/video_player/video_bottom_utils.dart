@@ -176,9 +176,9 @@ class _VideoBottomUtilsState extends State<VideoBottomUtils> {
                     /*
                   Gỡ bỏ giới hạn của chiều cao của BottomSheet
                   */
+                    constraints: const BoxConstraints(maxWidth: double.infinity),
                     shape: const RoundedRectangleBorder(),
                     backgroundColor: Colors.black,
-                    isDismissible: false,
                     isScrollControlled: true,
                   );
                   /*

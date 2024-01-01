@@ -18,8 +18,8 @@ enum DownloadState {
   downloaded,
 }
 
-class EpisodeUIFrist extends StatefulWidget {
-  const EpisodeUIFrist({
+class EpisodeUIFirst extends StatefulWidget {
+  const EpisodeUIFirst({
     required this.episode,
     required this.isEpisodeDownloaded,
     required this.watchEpisode,
@@ -31,10 +31,10 @@ class EpisodeUIFrist extends StatefulWidget {
   final void Function() watchEpisode;
 
   @override
-  State<EpisodeUIFrist> createState() => _EpisodeUIFristState();
+  State<EpisodeUIFirst> createState() => _EpisodeUIFristState();
 }
 
-class _EpisodeUIFristState extends State<EpisodeUIFrist> {
+class _EpisodeUIFristState extends State<EpisodeUIFirst> {
   late DownloadState downloadState =
       widget.isEpisodeDownloaded ? DownloadState.downloaded : DownloadState.ready;
   double progress = 0;
