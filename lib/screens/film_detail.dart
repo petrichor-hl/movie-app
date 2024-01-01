@@ -95,7 +95,7 @@ class _FilmDetailState extends State<FilmDetail> {
         .select('id, name, episode(*)')
         .eq('film_id', widget.filmId)
         .order('id', ascending: true)
-        .order('order', foreignTable: 'episode', ascending: true);
+        .order('order', referencedTable: 'episode', ascending: true);
 
     for (var seasonRow in seasonsData) {
       final season = Season(

@@ -100,10 +100,9 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ),
           ],
-          backgroundColor: const Color.fromARGB(255, 20, 20, 20),
+          backgroundColor: Colors.black,
           iconTheme: const IconThemeData(color: Colors.white),
         ),
-        backgroundColor: const Color.fromARGB(255, 20, 20, 20),
         body: PageView(
           controller: _pageController,
           children: [

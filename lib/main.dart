@@ -19,7 +19,18 @@ void main() async {
     url: 'https://kpaxjjmelbqpllxenpxz.supabase.co',
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwYXhqam1lbGJxcGxseGVucHh6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5MzA0NjQ5NCwiZXhwIjoyMDA4NjIyNDk0fQ.hGeExPN7h7gYiOILzPU57vSob9LC1UB-W2o6Z7WGLZs',
-    authFlowType: AuthFlowType.pkce,
+    authOptions: const FlutterAuthClientOptions(
+      // authFlowType: AuthFlowType.pkce,
+      authFlowType: AuthFlowType.implicit,
+    ),
+    /*
+    If you use PKCE (default), this link only works on the device or browser where the original reset request was made. Display a message to the user to make sure they don't change devices or browsers.
+    If you used PKCE (default), the redirect contains the code query param.
+    If you use the implicit grant flow, the link can be opened on any device.
+    If you used the implicit flow, the redirect contains a URL fragment encoding the user's session.
+    
+    More: https://supabase.com/docs/guides/auth/passwords
+    */
   );
   runApp(
     MultiBlocProvider(

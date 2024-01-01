@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/main.dart';
+import 'package:movie_app/screens/auth/request_recovery.dart';
 import 'package:movie_app/utils/common_variables.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -51,12 +54,22 @@ class _SignInState extends State<SignInScreen> {
       }
     } on AuthException catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error.message),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        print(error.message);
+        if (error.message == "Invalid login credentials") {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tên đăng nhập hoặc mật khẩu sai'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error.message),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
         setState(() {
           _isProcessing = false;
         });
@@ -161,7 +174,14 @@ class _SignInState extends State<SignInScreen> {
                 height: 16,
               ),
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    PageTransition(
+                      child: const RequestRecovery(),
+                      type: PageTransitionType.fade,
+                    ),
+                  );
+                },
                 borderRadius: BorderRadius.circular(8),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),

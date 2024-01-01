@@ -54,64 +54,104 @@ class _NewHotScreenState extends State<NewHotScreen> {
   @override
   void initState() {
     super.initState();
-    supabase.channel('insert_notification').on(
-      RealtimeListenTypes.postgresChanges,
-      ChannelFilter(event: 'insert', schema: 'public', table: 'notification'),
-      (payload, [ref]) async {
-        final newNotificationFilm = await supabase
-            .from('film')
-            .select('id, name, backdrop_path, overview, content_rating')
-            .eq('id', payload['new']['film_id'])
-            .single();
+    // supabase.channel('delete').on(
+    //   RealtimeListenTypes.postgresChanges,
+    //   ChannelFilter(event: 'delete', schema: 'public', table: 'notification'),
+    //   (payload, [ref]) async {
+    //     final removedItemId = payload['old']['created_at'];
+    //     final index = _notificationFilms!.indexWhere(
+    //       (element) => element['created_at'] == removedItemId,
+    //     );
 
-        // insert underlying data
-        _notificationFilms!.insert(
-          0,
-          {
-            'created_at': payload['new']['created_at'],
-            'film': newNotificationFilm,
+    //     final deleteItem = NotificationNewFilm(
+    //       uploadDate: _notificationFilms![index]['created_at'],
+    //       id: _notificationFilms![index]['film']['id'],
+    //       name: _notificationFilms![index]['film']['name'],
+    //       backdropPath: _notificationFilms![index]['film']['backdrop_path'],
+    //       overview: _notificationFilms![index]['film']['overview'],
+    //       contentRating: _notificationFilms![index]['film']['content_rating'],
+    //     );
+
+    //     _notificationListKey.currentState!.removeItem(
+    //       index,
+    //       // animation
+    //       (ctx, animation) => SizeTransition(
+    //         sizeFactor: animation,
+    //         child: deleteItem,
+    //       ),
+    //       duration: const Duration(milliseconds: 300),
+    //     );
+
+    //     // remove underlying data
+    //     _notificationFilms!.removeAt(index);
+    //   },
+    // ).subscribe();
+    supabase
+        .channel('insert_notification')
+        .onPostgresChanges(
+          schema: 'public',
+          table: 'notification',
+          event: PostgresChangeEvent.insert,
+          callback: (payload) async {
+            final newNotificationFilm = await supabase
+                .from('film')
+                .select('id, name, backdrop_path, overview, content_rating')
+                .eq('id', payload.newRecord['film_id'])
+                .single();
+
+            // insert underlying data
+            _notificationFilms!.insert(
+              0,
+              {
+                'created_at': payload.newRecord['created_at'],
+                'film': newNotificationFilm,
+              },
+            );
+
+            _notificationListKey.currentState!.insertItem(
+              0,
+              duration: const Duration(milliseconds: 300),
+            );
           },
-        );
+        )
+        .subscribe();
 
-        _notificationListKey.currentState!.insertItem(
-          0,
-          duration: const Duration(milliseconds: 300),
-        );
-      },
-    ).subscribe();
+    supabase
+        .channel('delete_notification')
+        .onPostgresChanges(
+          schema: 'public',
+          table: 'notification',
+          event: PostgresChangeEvent.delete,
+          callback: (payload) async {
+            final removedItemId = payload.oldRecord['created_at'];
+            final index = _notificationFilms!.indexWhere(
+              (element) => element['created_at'] == removedItemId,
+            );
 
-    supabase.channel('delete').on(
-      RealtimeListenTypes.postgresChanges,
-      ChannelFilter(event: 'delete', schema: 'public', table: 'notification'),
-      (payload, [ref]) async {
-        final removedItemId = payload['old']['created_at'];
-        final index = _notificationFilms!.indexWhere(
-          (element) => element['created_at'] == removedItemId,
-        );
+            final deleteItem = NotificationNewFilm(
+              uploadDate: _notificationFilms![index]['created_at'],
+              id: _notificationFilms![index]['film']['id'],
+              name: _notificationFilms![index]['film']['name'],
+              backdropPath: _notificationFilms![index]['film']['backdrop_path'],
+              overview: _notificationFilms![index]['film']['overview'],
+              contentRating: _notificationFilms![index]['film']['content_rating'],
+            );
 
-        final deleteItem = NotificationNewFilm(
-          uploadDate: _notificationFilms![index]['created_at'],
-          id: _notificationFilms![index]['film']['id'],
-          name: _notificationFilms![index]['film']['name'],
-          backdropPath: _notificationFilms![index]['film']['backdrop_path'],
-          overview: _notificationFilms![index]['film']['overview'],
-          contentRating: _notificationFilms![index]['film']['content_rating'],
-        );
+            _notificationListKey.currentState!.removeItem(
+              index,
+              // animation
+              (ctx, animation) => SizeTransition(
+                sizeFactor: animation,
+                child: deleteItem,
+              ),
+              duration: const Duration(milliseconds: 300),
+            );
 
-        _notificationListKey.currentState!.removeItem(
-          index,
-          // animation
-          (ctx, animation) => SizeTransition(
-            sizeFactor: animation,
-            child: deleteItem,
-          ),
-          duration: const Duration(milliseconds: 300),
-        );
-
-        // remove underlying data
-        _notificationFilms!.removeAt(index);
-      },
-    ).subscribe();
+            // remove underlying data
+            _notificationFilms!.removeAt(index);
+          },
+        )
+        .subscribe();
   }
 
   @override
