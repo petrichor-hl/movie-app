@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:movie_app/main.dart';
 import 'package:movie_app/screens/auth/request_recovery.dart';
 import 'package:movie_app/utils/common_variables.dart';
@@ -54,7 +53,6 @@ class _SignInState extends State<SignInScreen> {
       }
     } on AuthException catch (error) {
       if (mounted) {
-        print(error.message);
         if (error.message == "Invalid login credentials") {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(

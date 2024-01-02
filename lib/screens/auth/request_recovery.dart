@@ -92,80 +92,78 @@ class _RequestRecoveryState extends State<RequestRecovery> {
   Widget buildFirstPage() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Khôi phục mật khẩu',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 28,
-            ),
-          ),
-          const Gap(20),
-          TextFormField(
-            controller: _emailController,
-            decoration: const InputDecoration(
-              filled: true,
-              fillColor: Color.fromARGB(255, 51, 51, 51),
-              hintText: 'Email của bạn',
-              hintStyle: TextStyle(color: Color(0xFFACACAC)),
-              border: OutlineInputBorder(
-                borderSide: BorderSide.none,
+      child: StatefulBuilder(builder: (ctx, setStateColumn) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Khôi phục mật khẩu',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 28,
               ),
-              errorStyle: TextStyle(
-                fontSize: 14,
-              ),
-              contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
             ),
-            style: const TextStyle(color: Colors.white),
-            autocorrect: false,
-            enableSuggestions: false, // No work
-            keyboardType: TextInputType.emailAddress, // Trick: disable suggestions
-            validator: (value) {
-              // print('Value = $value');
-              if (value == null || value.isEmpty) {
-                return 'Bạn chưa nhập Email';
-              }
-              return null;
-            },
-          ),
-          const Gap(30),
-          _isProcessing
-              ? const Align(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 14),
-                    child: SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                      ),
-                    ),
-                  ),
-                )
-              : SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: _submit,
-                    style: FilledButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    child: const Text(
-                      'ĐĂNG NHẬP',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+            const Gap(20),
+            TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                filled: true,
+                fillColor: Color.fromARGB(255, 51, 51, 51),
+                hintText: 'Email của bạn',
+                hintStyle: TextStyle(color: Color(0xFFACACAC)),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide.none,
                 ),
-          const Gap(50),
-        ],
-      ),
+                errorStyle: TextStyle(
+                  fontSize: 14,
+                ),
+                contentPadding: EdgeInsets.fromLTRB(16, 20, 16, 12),
+              ),
+              style: const TextStyle(color: Colors.white),
+              autocorrect: false,
+              enableSuggestions: false, // No work
+              keyboardType: TextInputType.emailAddress, // Trick: disable suggestions
+              onChanged: (_) => setStateColumn(() {}),
+            ),
+            const Gap(30),
+            _isProcessing
+                ? const Align(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                        ),
+                      ),
+                    ),
+                  )
+                : SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: validateEmail(_emailController.text) ? _submit : null,
+                      style: FilledButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        disabledBackgroundColor: const Color(0xAA333333),
+                        disabledForegroundColor: Colors.grey,
+                      ),
+                      child: const Text(
+                        'XÁC NHẬN',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+            const Gap(50),
+          ],
+        );
+      }),
     );
   }
 

@@ -16,9 +16,8 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
   await Supabase.initialize(
-    url: 'https://kpaxjjmelbqpllxenpxz.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwYXhqam1lbGJxcGxseGVucHh6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY5MzA0NjQ5NCwiZXhwIjoyMDA4NjIyNDk0fQ.hGeExPN7h7gYiOILzPU57vSob9LC1UB-W2o6Z7WGLZs',
+    url: '',
+    anonKey: '',
     authOptions: const FlutterAuthClientOptions(
       // authFlowType: AuthFlowType.pkce,
       authFlowType: AuthFlowType.implicit,
@@ -48,9 +47,8 @@ void main() async {
 }
 
 final supabase = Supabase.instance.client;
-const tmdbApiKey = 'a29284b32c092cc59805c9f5513d3811';
-const baseAvatarUrl =
-    'https://kpaxjjmelbqpllxenpxz.supabase.co/storage/v1/object/public/avatar/';
+const tmdbApiKey = '';
+const baseAvatarUrl = '';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

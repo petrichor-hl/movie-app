@@ -21,12 +21,16 @@ class _SignInState extends State<SignUpScreen> {
 
   bool _isProcessing = false;
 
+  String _errorText = '';
+
   void _signUpAccount() async {
     final isValid = _formKey.currentState!.validate();
 
     if (!isValid) {
       return;
     }
+
+    _errorText = '';
 
     setState(() {
       _isProcessing = true;
@@ -40,25 +44,33 @@ class _SignInState extends State<SignUpScreen> {
     // print(_dobController.text);
 
     try {
-      await supabase.auth.signUp(
-        email: enteredEmail,
-        password: enteredPassword,
-        emailRedirectTo: 'io.supabase.movie-app://login-callback/',
-        data: {
-          'password': enteredPassword,
-          'full_name': enteredUsername,
-          'dob': enteredDob,
-          'avatar_url': 'default_avt.png',
-        },
-      );
+      final List<Map<String, dynamic>> checkDuplicate =
+          await supabase.from('profile').select('email').eq('email', enteredEmail);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Xác thực Email trong Hộp thư đến.'),
-            behavior: SnackBarBehavior.floating,
-          ),
+      if (checkDuplicate.isEmpty) {
+        await supabase.auth.signUp(
+          email: enteredEmail,
+          password: enteredPassword,
+          emailRedirectTo: 'http://localhost:56441/#/cofirmed-sign-up',
+          data: {
+            'email': enteredEmail,
+            'password': enteredPassword,
+            'full_name': enteredUsername,
+            'dob': enteredDob,
+            'avatar_url': 'default_avt.png',
+          },
         );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Xác thực Email trong Hộp thư đến.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else {
+        _errorText = 'Email $enteredEmail đã tồn tại.';
       }
     } on AuthException catch (error) {
       if (mounted) {
@@ -121,7 +133,7 @@ class _SignInState extends State<SignUpScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Gap(screenSize.height * 0.1),
+              Gap(screenSize.height * 0.07),
               Container(
                 height: 150,
                 width: 150,
@@ -197,21 +209,6 @@ class _SignInState extends State<SignUpScreen> {
                         color: Colors.white,
                       ),
                     )
-                    // IconButton(
-                    //   onPressed: _pickAvatar,
-                    //   style: IconButton.styleFrom(
-                    //     backgroundColor: Theme.of(context).colorScheme.primary,
-                    //     foregroundColor: Colors.white,
-                    //     padding: const EdgeInsets.all(12),
-                    //     shape: const RoundedRectangleBorder(
-                    //       borderRadius: BorderRadius.only(
-                    //         topLeft: Radius.circular(10),
-                    //         bottomRight: Radius.circular(10),
-                    //       ),
-                    //     ),
-                    //   ),
-                    //   icon: const Icon(Icons.image_rounded),
-                    // )
                   ],
                 ),
               ),
@@ -324,6 +321,17 @@ class _SignInState extends State<SignUpScreen> {
               ),
               _PasswordTextFormField(passwordController: _passwordController),
               const Gap(50),
+
+              if (_errorText.isNotEmpty) ...[
+                Text(
+                  _errorText,
+                  style: errorTextStyle(
+                    context,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Gap(12),
+              ],
               _isProcessing
                   ? const Padding(
                       padding: EdgeInsets.symmetric(vertical: 14),
