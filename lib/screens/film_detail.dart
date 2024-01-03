@@ -294,7 +294,7 @@ class _FilmDetailState extends State<FilmDetail> {
                           Text(
                             voteAverage == 0
                                 ? 'Chưa có đánh giá'
-                                : 'Điểm: ${(voteAverage * 2).toStringAsFixed(2)}',
+                                : 'Điểm: ${voteAverage.toStringAsFixed(2)}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
